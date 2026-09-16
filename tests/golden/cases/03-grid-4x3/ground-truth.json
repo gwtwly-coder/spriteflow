@@ -1,0 +1,317 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "03-grid-4x3",
+  "title": "规整透明网格 4×3",
+  "category": "regular-grid",
+  "inputType": "A",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 160,
+    "height": 132,
+    "sha256": "abf11d915702c5d55c16e13dfe6fa858ab2a12659ad1252bc1bb5c1203fb196a"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 12,
+    "strategy": "grid",
+    "origin": "grid",
+    "layout": {
+      "rows": 3,
+      "columns": 4
+    },
+    "degraded": null,
+    "warningCodes": [],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 10,
+          "y": 9,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 40,
+          "y": 0,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 50,
+          "y": 9,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 80,
+          "y": 0,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 90,
+          "y": 9,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 120,
+          "y": 0,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 130,
+          "y": 9,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 4,
+        "sourceRect": {
+          "x": 0,
+          "y": 44,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 10,
+          "y": 53,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 5,
+        "sourceRect": {
+          "x": 40,
+          "y": 44,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 50,
+          "y": 53,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 6,
+        "sourceRect": {
+          "x": 80,
+          "y": 44,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 90,
+          "y": 53,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 7,
+        "sourceRect": {
+          "x": 120,
+          "y": 44,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 130,
+          "y": 53,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 8,
+        "sourceRect": {
+          "x": 0,
+          "y": 88,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 10,
+          "y": 97,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 9,
+        "sourceRect": {
+          "x": 40,
+          "y": 88,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 50,
+          "y": 97,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 10,
+        "sourceRect": {
+          "x": 80,
+          "y": 88,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 90,
+          "y": 97,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 11,
+        "sourceRect": {
+          "x": 120,
+          "y": 88,
+          "width": 40,
+          "height": 44
+        },
+        "bbox": {
+          "x": 130,
+          "y": 97,
+          "width": 20,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "regular-transparent-grid"
+  ]
+}

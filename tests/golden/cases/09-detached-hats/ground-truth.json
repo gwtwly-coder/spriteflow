@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "09-detached-hats",
+  "title": "帽子与身体断开",
+  "category": "detached-parts",
+  "inputType": "E",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 168,
+    "height": 96,
+    "sha256": "b4117898b1e7735e3bc0b550601c733cecf1457996ee37c5373d28492c1ae50d"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 4,
+    "strategy": "components",
+    "origin": "components",
+    "layout": null,
+    "degraded": null,
+    "warningCodes": [
+      "MULTIPLE_COMPONENTS"
+    ],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 12,
+          "y": 32,
+          "width": 20,
+          "height": 32
+        },
+        "bbox": {
+          "x": 12,
+          "y": 32,
+          "width": 20,
+          "height": 32
+        },
+        "flags": {
+          "outlier": false,
+          "merged": true,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 92,
+          "y": 32,
+          "width": 20,
+          "height": 32
+        },
+        "bbox": {
+          "x": 92,
+          "y": 32,
+          "width": 20,
+          "height": 32
+        },
+        "flags": {
+          "outlier": false,
+          "merged": true,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 52,
+          "y": 35,
+          "width": 20,
+          "height": 32
+        },
+        "bbox": {
+          "x": 52,
+          "y": 35,
+          "width": 20,
+          "height": 32
+        },
+        "flags": {
+          "outlier": false,
+          "merged": true,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 132,
+          "y": 35,
+          "width": 20,
+          "height": 32
+        },
+        "bbox": {
+          "x": 132,
+          "y": 35,
+          "width": 20,
+          "height": 32
+        },
+        "flags": {
+          "outlier": false,
+          "merged": true,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "detached-parts",
+    "dilation-merge",
+    "hat"
+  ]
+}

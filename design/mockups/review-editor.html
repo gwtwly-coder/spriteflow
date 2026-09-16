@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<!--
+  SpriteFlow M1 · 审校编辑器静态稿（单文件，内联 CSS + 少量克隆脚本，假数据）
+  覆盖状态（ui-spec.md 第 9 节）：
+    主屏  C-19~C-25、C-29、C-38~C-50（工具栏/画布帧框与角标/侧栏/时间轴/筛选/待复核摘要/未确认）
+    变体1 B-16 低置信度降级（横幅 + 手动网格侧栏 + 建议网格帧）
+    变体2 C-39 参数重算中（横幅 + 帧 40% + 编辑禁用 + settings.pending）
+    变体3 C-43 筛选空状态（时间轴空态 + 画布帧 15% + 「全部帧」清除入口）
+  文案全部取自 docs/copy-m1.md；右上角按钮切换 zh/EN。
+  布局与令牌对应 docs/ui-spec.md 第 3/4/5.3 节：顶栏40 工具栏48 侧栏292 时间轴152 状态栏28。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SpriteFlow · 审校编辑器静态稿</title>
+<style>
+  :root{
+    --bg-0:#0e1116; --bg-1:#151a22; --bg-2:#1c232e; --bg-3:#242d3b;
+    --border-1:#2a3342; --border-2:#3a465a;
+    --text-1:#e8edf5; --text-2:#a7b1c4; --text-3:#6b7688;
+    --accent:#4d8dff; --accent-hover:#6ea3ff; --accent-active:#3b74e0; --accent-dim:rgba(77,141,255,.16);
+    --ok:#43d17c; --warn:#f0b13e; --danger:#f0596a;
+    --frame:#98a5bd; --frame-selected:var(--accent);
+    --badge-outlier:#f0b13e; --badge-multi:#b48bff; --badge-empty:#8b96a8;
+    --checker-a:#232a35; --checker-b:#1a202a;
+    --ui:system-ui,"Segoe UI","Microsoft YaHei",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#080a0d;color:var(--text-1);font-family:var(--ui);font-size:13px;line-height:20px;padding:24px 24px 80px}
+  /* ===== 评审脚手架 ===== */
+  .review-note{max-width:1312px;margin:0 auto 20px;padding:10px 14px;border:1px solid var(--border-1);border-radius:8px;background:#10141b;color:var(--text-2)}
+  .review-note b{color:var(--text-1)}
+  .variant-label{max-width:1312px;margin:44px auto 10px;font-family:var(--mono);font-size:12px;color:var(--warn);letter-spacing:.4px}
+  .frame-note{max-width:1312px;margin:6px auto 0;color:var(--text-3);font-size:12px}
+  .legend{max-width:1312px;margin:44px auto 0;display:flex;gap:20px;align-items:center;border:1px solid var(--border-1);border-radius:8px;background:#10141b;padding:10px 14px;color:var(--text-2);font-size:12px}
+  .legend .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+  .lang-toggle{position:fixed;top:12px;right:16px;z-index:99;height:30px;padding:0 12px;border:1px solid var(--warn);border-radius:6px;background:#10141b;color:var(--warn);cursor:pointer;font:600 12px var(--ui)}
+  /* ===== 屏幕外壳 1280×800 ===== */
+  .screen{width:1280px;margin:0 auto;border:1px solid var(--border-1);border-radius:8px;overflow:hidden;background:var(--bg-0);
+    display:flex;flex-direction:column;height:800px}
+  .topbar{height:40px;flex:none;display:flex;align-items:center;gap:12px;padding:0 12px;background:var(--bg-1);border-bottom:1px solid var(--border-1)}
+  .brand{font-weight:650;font-size:14px}
+  .file-meta{color:var(--text-2);font-family:var(--mono);font-size:12px}
+  .topbar .spacer{flex:1}
+  .ghost-btn{height:28px;padding:0 10px;border:1px solid var(--border-1);border-radius:6px;background:transparent;color:var(--text-1);cursor:pointer;font-size:12px}
+  .ghost-btn:hover{background:var(--bg-2)}
+  .icon-btn{min-width:28px;height:28px;padding:0 6px;border:none;border-radius:6px;background:transparent;color:var(--text-2);cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;font-size:14px}
+  .icon-btn:hover{background:var(--bg-2);color:var(--text-1)}
+  .icon-btn.key{font-family:var(--mono);font-size:12px;border:1px solid var(--border-1)}
+  .icon-btn.active-tool{background:var(--accent-dim);color:var(--accent);box-shadow:inset 0 -2px 0 var(--accent)}
+  .lang-select{height:28px;padding:0 8px;border:1px solid var(--border-1);border-radius:6px;background:var(--bg-2);color:var(--text-1);font-size:12px}
+  /* 工具栏 */
+  .toolbar{height:48px;flex:none;display:flex;align-items:center;gap:4px;padding:0 12px;background:var(--bg-1);border-bottom:1px solid var(--border-1)}
+  .tb-sep{width:1px;height:24px;background:var(--border-1);margin:0 8px}
+  .toolbar .spring{flex:1}
+  .btn-primary{height:34px;padding:0 18px;border:none;border-radius:6px;background:var(--accent);color:#0b1220;font:600 13px/1 var(--ui);cursor:pointer}
+  .btn-primary:hover{background:var(--accent-hover)}
+  .btn-primary:active{background:var(--accent-active)}
+  .btn-secondary{height:34px;padding:0 16px;border:1px solid var(--border-1);border-radius:6px;background:transparent;color:var(--text-1);font:13px/1 var(--ui);cursor:pointer}
+  .btn-secondary:hover{background:var(--bg-2)}
+  /* 主区 */
+  .main{flex:1;display:flex;min-height:0}
+  .canvas-wrap{flex:1;position:relative;background:var(--bg-0);min-width:0}
+  .canvas-viewport{position:absolute;inset:0;overflow:hidden}
+  .canvas-viewport::before{content:"";position:absolute;inset:0;background:
+    linear-gradient(45deg,var(--checker-a) 25%,transparent 25%,transparent 75%,var(--checker-a) 75%) 0 0/16px 16px,
+    linear-gradient(45deg,var(--checker-a) 25%,var(--checker-b) 25%,var(--checker-b) 75%,var(--checker-a) 75%) 8px 8px/16px 16px;
+    opacity:.35}
+  .img-layer{position:absolute;left:154px;top:22px;width:640px;height:480px}
+  .img-layer svg{position:absolute;inset:0;display:block}
+  /* 帧框 */
+  .frame{position:absolute;border:1.5px solid var(--frame)}
+  .frame .idx{position:absolute;left:0;top:-20px;font:500 11px/16px var(--mono);color:var(--text-2);
+    background:rgba(21,26,34,.85);padding:0 5px;border-radius:3px}
+  .frame.selected{border:2px solid var(--frame-selected);box-shadow:0 0 0 1px var(--accent-dim)}
+  .frame.selected .idx{color:var(--text-1)}
+  .frame.empty-frame{border-style:dashed;border-color:var(--badge-empty)}
+  .size-label{position:absolute;right:-4px;bottom:-26px;font:400 11px/16px var(--mono);color:#0b1220;
+    background:var(--accent);padding:0 6px;border-radius:3px;white-space:nowrap}
+  /* 8 手柄 */
+  .handles{display:block}
+  .h{position:absolute;width:8px;height:8px;background:var(--bg-1);border:2px solid var(--accent);border-radius:1px;z-index:3}
+  .h.nw{left:-5px;top:-5px;cursor:nwse-resize}.h.n{left:calc(50% - 4px);top:-5px;cursor:ns-resize}
+  .h.ne{right:-5px;top:-5px;cursor:nesw-resize}.h.e{right:-5px;top:calc(50% - 4px);cursor:ew-resize}
+  .h.se{right:-5px;bottom:-5px;cursor:nwse-resize}.h.s{left:calc(50% - 4px);bottom:-5px;cursor:ns-resize}
+  .h.sw{left:-5px;bottom:-5px;cursor:nesw-resize}.h.w{left:-5px;top:calc(50% - 4px);cursor:ew-resize}
+  /* 角标芯片（画布） */
+  .badges{position:absolute;top:-10px;right:-4px;display:flex;gap:4px;z-index:2}
+  .badge{height:18px;padding:0 6px;border-radius:4px;font:500 11px/18px var(--ui);color:#0e1116;white-space:nowrap}
+  .badge.outlier{background:var(--badge-outlier)}
+  .badge.multi{background:var(--badge-multi)}
+  .badge.empty{background:var(--badge-empty)}
+  /* 降级建议网格单元 */
+  .frame.gridcell{display:none;border-style:dashed;border-color:var(--frame)}
+  /* 画布浮层：缩放簇 */
+  .zoom-cluster{position:absolute;right:12px;bottom:12px;z-index:10;display:flex;flex-direction:column;gap:2px;
+    background:var(--bg-1);border:1px solid var(--border-1);border-radius:6px;padding:4px}
+  .zoom-cluster .zl{height:24px;min-width:44px;padding:0 6px;display:flex;align-items:center;justify-content:center;gap:4px;
+    border:none;background:transparent;color:var(--text-2);cursor:pointer;border-radius:4px;font:400 12px var(--mono)}
+  .zoom-cluster .zl:hover{background:var(--bg-2);color:var(--text-1)}
+  /* 画布横幅 */
+  .banner{position:absolute;top:8px;left:8px;right:8px;z-index:10;display:none;align-items:center;gap:10px;
+    background:var(--bg-1);border:1px solid var(--border-1);border-left:3px solid var(--warn);border-radius:6px;padding:8px 12px}
+  .banner.show{display:flex}
+  .banner .b-title{font-weight:600}
+  .banner .b-body{color:var(--text-2);flex:1;min-width:0}
+  .banner .b-col{display:flex;flex-direction:column;gap:0;flex:1;min-width:0}
+  .spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-2);border-top-color:var(--accent);animation:spin 1s linear infinite;flex:none}
+  .spinner.warn{border-top-color:var(--warn)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .banner .btn-secondary{height:28px;font-size:12px}
+  .banner .close-x{margin-left:auto;border:none;background:none;color:var(--text-3);cursor:pointer;font-size:14px}
+  /* ===== 侧栏 ===== */
+  .sidebar{width:292px;flex:none;background:var(--bg-1);border-left:1px solid var(--border-1);overflow-y:auto;padding:12px}
+  .sgroup{padding:12px;border:1px solid var(--border-1);border-radius:8px;margin-bottom:16px;background:var(--bg-0)}
+  .sgroup h3{font-size:14px;line-height:22px;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+  .sgroup h3 .pending-tag{display:none;margin-left:auto;font:500 11px/18px var(--ui);color:var(--warn);
+    border:1px solid var(--warn);border-radius:4px;padding:0 6px}
+  .method-chip{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:4px;
+    background:var(--bg-2);border:1px solid var(--border-2);font-size:12px}
+  .method-chip::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--ok)}
+  .sgroup .full-btn{width:100%;margin-top:8px}
+  .link-row{margin-top:8px}
+  .link-btn{border:none;background:none;color:var(--accent);cursor:pointer;font-size:12px;padding:0}
+  .link-btn:hover{color:var(--accent-hover);text-decoration:underline}
+  /* 滑杆 */
+  .slider-row{margin-top:12px}
+  .slider-row:first-of-type{margin-top:0}
+  .slider-head{display:flex;justify-content:space-between;align-items:baseline}
+  .slider-head label{font-size:12px;font-weight:500;color:var(--text-1)}
+  .slider-head .val{font:400 12px var(--mono);color:var(--text-2)}
+  input[type=range]{width:100%;height:20px;appearance:none;background:transparent;cursor:pointer}
+  input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--bg-3)}
+  input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);margin-top:-5px}
+  .slider-help{font-size:11px;line-height:16px;color:var(--text-3)}
+  /* 步进器 */
+  .steppers{display:flex;gap:8px}
+  .stepper{flex:1}
+  .stepper label{display:block;font-size:12px;color:var(--text-3);margin-bottom:4px}
+  .stepper .st-in{display:flex;align-items:center;border:1px solid var(--border-1);border-radius:6px;background:var(--bg-2);overflow:hidden}
+  .stepper button{width:26px;height:30px;border:none;background:transparent;color:var(--text-2);cursor:pointer;font-size:14px}
+  .stepper button:hover{background:var(--bg-3);color:var(--text-1)}
+  .stepper input{flex:1;width:30px;border:none;background:transparent;color:var(--text-1);text-align:center;font:400 13px var(--mono);outline:none}
+  .hint-text{margin-top:8px;font-size:11px;line-height:16px;color:var(--text-3)}
+  /* 导出预览 */
+  .norm-preview{width:100%;height:150px;border:1px solid var(--border-1);border-radius:6px;position:relative;
+    background:linear-gradient(45deg,var(--checker-a) 25%,transparent 25%,transparent 75%,var(--checker-a) 75%) 0 0/16px 16px,
+               linear-gradient(45deg,var(--checker-a) 25%,var(--checker-b) 25%,var(--checker-b) 75%,var(--checker-a) 75%) 8px 8px/16px 16px}
+  .norm-preview .np-sprite{position:absolute;left:50%;top:50%;width:72px;height:78px;transform:translate(-50%,-50%)}
+  .norm-meta{margin-top:6px;font:400 11px var(--mono);color:var(--text-2)}
+  /* ===== 时间轴 ===== */
+  .timeline{height:152px;flex:none;background:var(--bg-1);border-top:1px solid var(--border-1);display:flex;flex-direction:column}
+  .tl-head{height:40px;flex:none;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--border-1)}
+  .tl-title{font-size:12px;font-weight:600;color:var(--text-2)}
+  .transport{display:flex;align-items:center;gap:2px}
+  .fps-box{display:flex;align-items:center;height:26px;border:1px solid var(--border-1);border-radius:6px;background:var(--bg-2);overflow:hidden;margin-left:4px}
+  .fps-box button{width:22px;height:24px;border:none;background:transparent;color:var(--text-2);cursor:pointer}
+  .fps-box .fps-val{min-width:52px;text-align:center;font:400 12px var(--mono);color:var(--text-1)}
+  .toggle-chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border:1px solid var(--border-1);border-radius:13px;background:transparent;color:var(--text-2);cursor:pointer;font-size:12px}
+  .toggle-chip .tk{width:22px;height:12px;border-radius:6px;background:var(--bg-3);position:relative}
+  .toggle-chip .tk::after{content:"";position:absolute;left:2px;top:2px;width:8px;height:8px;border-radius:50%;background:var(--text-3)}
+  .toggle-chip.on{color:var(--accent);border-color:var(--accent)}
+  .toggle-chip.on .tk{background:var(--accent-dim)}
+  .toggle-chip.on .tk::after{left:12px;background:var(--accent)}
+  .tl-head .spring{flex:1}
+  .filter-group{display:flex;align-items:center;gap:6px}
+  .filter-group .fg-label{font-size:11px;color:var(--text-3)}
+  .fchip{height:24px;padding:0 8px;display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border-1);border-radius:12px;
+    background:var(--bg-2);color:var(--text-2);cursor:pointer;font-size:11px}
+  .fchip:hover{background:var(--bg-3)}
+  .fchip.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  .fchip .cnt{font:400 10px var(--mono)}
+  .frame-count{font:400 12px var(--mono);color:var(--text-2);margin-left:4px}
+  /* 待复核摘要条 */
+  .attention-strip{display:flex;align-items:center;gap:8px;height:26px;padding:0 12px;border-bottom:1px solid var(--border-1);
+    background:rgba(240,177,62,.07);border-left:3px solid var(--warn);font-size:11px}
+  .attention-strip .at-title{color:var(--warn);font-weight:600}
+  .attention-strip .at-body{color:var(--text-3);flex:1}
+  .attention-strip .caret{border:none;background:none;color:var(--text-3);cursor:pointer}
+  /* 芯片行 */
+  .chips-row{flex:1;display:flex;align-items:center;gap:8px;padding:0 12px;overflow-x:auto}
+  .chip{flex:none;width:64px;border:1.5px solid var(--border-1);border-radius:6px;padding:3px;cursor:grab;background:var(--bg-0)}
+  .chip:hover{border-color:var(--border-2)}
+  .chip.selected{border-color:var(--frame-selected);background:var(--accent-dim)}
+  .chip .thumb{width:100%;height:52px;border-radius:4px;position:relative;
+    background:linear-gradient(45deg,var(--checker-a) 25%,transparent 25%,transparent 75%,var(--checker-a) 75%) 0 0/12px 12px,
+               linear-gradient(45deg,var(--checker-a) 25%,var(--checker-b) 25%,var(--checker-b) 75%,var(--checker-a) 75%) 6px 6px/12px 12px}
+  .chip .thumb .mini{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30px;height:34px;border-radius:8px 8px 4px 4px}
+  .chip .num{text-align:center;font:500 11px/16px var(--mono);color:var(--text-2);margin-top:2px}
+  .chip.selected .num{color:var(--accent)}
+  .chip.empty-chip{border-style:dashed}
+  .chip.empty-chip .thumb .mini{display:none}
+  .dot{position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;border:1px solid #0e1116}
+  .dot.outlier{background:var(--badge-outlier)}
+  .dot.multi{background:var(--badge-multi)}
+  .dot.empty{background:var(--badge-empty)}
+  .filter-empty-msg{display:none;flex:1;align-items:center;justify-content:center;gap:12px;color:var(--text-3);font-size:12px}
+  .filter-empty-msg .link-btn{font-size:12px}
+  /* ===== 状态栏 ===== */
+  .statusbar{height:28px;flex:none;display:flex;align-items:center;gap:16px;padding:0 12px;background:var(--bg-1);
+    border-top:1px solid var(--border-1);font:400 12px var(--mono);color:var(--text-2)}
+  .statusbar .sdot{width:8px;height:8px;border-radius:50%;background:var(--text-3);flex:none}
+  .statusbar .sdot.busy{background:var(--accent);animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .statusbar .sep{width:1px;height:12px;background:var(--border-1)}
+  .statusbar .spring{flex:1}
+  .statusbar .pending-txt{color:var(--warn);font-family:var(--ui)}
+  .statusbar .label{color:var(--text-3)}
+  /* ===== 变体状态类 ===== */
+  .is-fallback .frame.scattered{display:none}
+  .is-fallback .frame.gridcell{display:block}
+  .is-fallback .sgroup.detect-settings{display:none}
+  .is-fallback .sgroup.manual-grid{display:block}
+  .is-fallback .banner.fallback-banner{display:flex}
+  .is-fallback .attention-strip{display:none}
+  .is-fallback .handles,.is-fallback .size-label{display:none}
+  .is-fallback .frame.selected{border-color:var(--frame)}
+  .is-recalc .banner.recalc-banner{display:flex}
+  .is-recalc .frame{opacity:.4}
+  .is-recalc .chip{opacity:.6}
+  .is-recalc .edit-action{opacity:.35;pointer-events:none}
+  .is-recalc .btn-export{opacity:.4;pointer-events:none}
+  .is-recalc .pending-tag{display:inline-flex}
+  .is-recalc input[type=range]{opacity:.5;pointer-events:none}
+  .is-recalc .statusbar .sdot{background:var(--warn);animation:pulse 1.6s ease-in-out infinite}
+  .is-filter-empty .frame{opacity:.15}
+  .is-filter-empty .chips-row .chip{display:none}
+  .is-filter-empty .filter-empty-msg{display:flex}
+  .sgroup.manual-grid{display:none}
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" id="langToggle" onclick="toggleLang()">预览 English</button>
+
+<div class="review-note">
+  <b>SpriteFlow 审校编辑器静态稿</b> · 主屏为「自动检测成功（区域策略）」态；下方三个变体由状态类切换：B-16 低置信度降级 / C-39 参数重算中 / C-43 筛选空。文案取自 docs/copy-m1.md，右上角可切换双语。假数据：1024×768 透明 WebP、12 帧（#5 尺寸异常、#8 可能粘连、#11 空帧）。
+</div>
+
+<!-- ================= 主屏 ================= -->
+<div class="variant-label">C-19 主屏 · 自动检测成功（detect.method.components / review.* / settings.* / preview.*）</div>
+<div class="screen" id="screen-main">
+  <div class="topbar">
+    <span class="brand">SpriteFlow</span>
+    <span class="file-meta">kenney_sheet.webp · 1024×768</span>
+    <span class="spacer"></span>
+    <button class="ghost-btn" data-zh="换一张图" data-en="Choose another image">换一张图</button>
+    <button class="icon-btn" title="快捷键 Shortcuts" data-zh="快捷键" data-en="Shortcuts">⌨</button>
+    <select class="lang-select" aria-label="语言 Language"><option>中文</option><option>English</option></select>
+  </div>
+
+  <div class="toolbar">
+    <button class="icon-btn key active-tool" title="选择 (V) Select" data-zh="选择" data-en="Select">V</button>
+    <button class="icon-btn key" title="平移 (H) Pan" data-zh="平移" data-en="Pan">H</button>
+    <button class="icon-btn key" title="新增帧 (A) Add frame" data-zh="新增帧" data-en="Add frame">A</button>
+    <button class="icon-btn key" title="拆分帧 (S) Split" data-zh="拆分帧" data-en="Split">S</button>
+    <span class="tb-sep"></span>
+    <button class="icon-btn edit-action" title="删除帧 (Del)" data-zh="删除帧" data-en="Delete frame">⌫</button>
+    <button class="icon-btn edit-action" title="合并帧 (M)" data-zh="合并帧" data-en="Merge frames">⊞</button>
+    <span class="tb-sep"></span>
+    <button class="icon-btn edit-action" title="撤销 (Ctrl+Z)" data-zh="撤销" data-en="Undo">↶</button>
+    <button class="icon-btn edit-action" title="重做 (Ctrl+Shift+Z)" data-zh="重做" data-en="Redo">↷</button>
+    <span class="spring"></span>
+    <button class="btn-primary" style="margin-right:8px" data-zh="确认审校" data-en="Confirm review">确认审校</button>
+    <button class="btn-secondary btn-export" data-zh="导出" data-en="Export">导出</button>
+  </div>
+
+  <div class="main">
+    <div class="canvas-wrap">
+      <!-- 画布横幅：重算中（C-39 变体显示） -->
+      <div class="banner recalc-banner">
+        <span class="spinner warn"></span>
+        <div class="b-col">
+          <span class="b-title" data-zh="正在重新检测…" data-en="Re-running detection…">正在重新检测…</span>
+          <span class="b-body" data-zh="先显示近似结果，停下后用原图完成最终检测。" data-en="Approximate results first; the final pass runs on the full image after you stop.">先显示近似结果，停下后用原图完成最终检测。</span>
+        </div>
+        <button class="btn-secondary" data-zh="停止检测" data-en="Stop detection">停止检测</button>
+      </div>
+      <!-- 画布横幅：低置信度降级（B-16 变体显示） -->
+      <div class="banner fallback-banner">
+        <div class="b-col">
+          <span class="b-title" data-zh="这张图没法可靠地自动切" data-en="This image can't be split reliably">这张图没法可靠地自动切</span>
+          <span class="b-body" data-zh="我们没有硬猜。已切到手动网格，你可以调行列或直接画框。" data-en="We didn't guess. You're in manual grid mode—adjust rows and columns or draw frames.">我们没有硬猜。已切到手动网格，你可以调行列或直接画框。</span>
+        </div>
+        <button class="btn-secondary" data-zh="重试自动检测" data-en="Retry auto detection">重试自动检测</button>
+        <button class="close-x" title="收起">✕</button>
+      </div>
+
+      <div class="canvas-viewport">
+        <div class="img-layer">
+          <!-- 假精灵表（程序化绘制示意） -->
+          <svg viewBox="0 0 640 480" width="640" height="480">
+            <g fill="#4fb8a8"><circle cx="84" cy="70" r="20"/><rect x="62" y="92" width="44" height="56" rx="10"/><rect x="70" y="150" width="10" height="12" rx="3"/><rect x="88" y="150" width="10" height="12" rx="3"/></g>
+            <g fill="#e8846b"><circle cx="225" cy="60" r="19"/><rect x="204" y="80" width="42" height="72" rx="10"/><rect x="212" y="154" width="10" height="12" rx="3"/><rect x="228" y="154" width="10" height="12" rx="3"/><rect x="246" y="86" width="6" height="52" rx="2"/></g>
+            <g fill="#5b8ee8"><circle cx="365" cy="74" r="21"/><rect x="342" y="97" width="46" height="62" rx="10"/><rect x="350" y="161" width="10" height="12" rx="3"/><rect x="368" y="161" width="10" height="12" rx="3"/><rect x="388" y="92" width="6" height="56" rx="2"/></g>
+            <g fill="#7bbf5a"><circle cx="512" cy="70" r="20"/><rect x="490" y="92" width="44" height="66" rx="10"/><rect x="498" y="160" width="10" height="12" rx="3"/><rect x="516" y="160" width="10" height="12" rx="3"/></g>
+            <g fill="#d9a441"><circle cx="80" cy="230" r="15"/><rect x="62" y="247" width="36" height="48" rx="9"/></g>
+            <g fill="#9a7be0"><circle cx="218" cy="230" r="18"/><rect x="198" y="250" width="40" height="58" rx="10"/><rect x="206" y="310" width="9" height="11" rx="3"/><rect x="221" y="310" width="9" height="11" rx="3"/></g>
+            <g fill="#d97ba6"><circle cx="360" cy="236" r="18"/><rect x="340" y="256" width="40" height="54" rx="10"/><rect x="348" y="312" width="9" height="11" rx="3"/><rect x="363" y="312" width="9" height="11" rx="3"/></g>
+            <!-- #8 主体 + 分离部件（帽子/武器断开 → 可能粘连） -->
+            <g fill="#8f6bdb"><circle cx="508" cy="248" r="18"/><rect x="488" y="268" width="40" height="52" rx="10"/><rect x="496" y="322" width="9" height="11" rx="3"/><rect x="511" y="322" width="9" height="11" rx="3"/></g>
+            <g fill="#8f6bdb"><ellipse cx="548" cy="238" rx="12" ry="7"/><rect x="530" y="272" width="5" height="42" rx="2"/></g>
+            <g fill="#a3b154"><circle cx="90" cy="402" r="16"/><rect x="72" y="420" width="36" height="38" rx="9"/></g>
+            <g fill="#5bb8c9"><circle cx="228" cy="396" r="16"/><rect x="210" y="414" width="36" height="40" rx="9"/><rect x="218" y="456" width="8" height="9" rx="3"/><rect x="230" y="456" width="8" height="9" rx="3"/></g>
+            <!-- #11 空：无内容 -->
+            <g fill="#d96b6b"><circle cx="515" cy="400" r="17"/><rect x="497" y="419" width="36" height="40" rx="9"/><rect x="505" y="461" width="8" height="9" rx="3"/><rect x="517" y="461" width="8" height="9" rx="3"/></g>
+          </svg>
+
+          <!-- 散排帧框（自动检测结果） -->
+          <div class="frame scattered" style="left:24px;top:28px;width:120px;height:140px"><span class="idx">1</span></div>
+          <div class="frame scattered" style="left:170px;top:20px;width:110px;height:150px"><span class="idx">2</span></div>
+          <div class="frame scattered selected" style="left:300px;top:30px;width:130px;height:145px">
+            <span class="idx">3</span>
+            <span class="size-label">130×145 px</span>
+            <span class="handles">
+              <span class="h nw"></span><span class="h n"></span><span class="h ne"></span><span class="h e"></span>
+              <span class="h se"></span><span class="h s"></span><span class="h sw"></span><span class="h w"></span>
+            </span>
+          </div>
+          <div class="frame scattered" style="left:452px;top:26px;width:120px;height:148px"><span class="idx">4</span></div>
+          <div class="frame scattered" style="left:30px;top:200px;width:100px;height:110px">
+            <span class="idx">5</span>
+            <span class="badges"><span class="badge outlier" data-zh="尺寸异常" data-en="Size outlier">尺寸异常</span></span>
+          </div>
+          <div class="frame scattered" style="left:160px;top:190px;width:115px;height:130px"><span class="idx">6</span></div>
+          <div class="frame scattered" style="left:300px;top:185px;width:120px;height:135px"><span class="idx">7</span></div>
+          <div class="frame scattered" style="left:445px;top:195px;width:125px;height:140px">
+            <span class="idx">8</span>
+            <span class="badges"><span class="badge multi" data-zh="可能粘连" data-en="Possible merge">可能粘连</span></span>
+          </div>
+          <div class="frame scattered" style="left:35px;top:370px;width:110px;height:95px"><span class="idx">9</span></div>
+          <div class="frame scattered" style="left:170px;top:360px;width:115px;height:100px"><span class="idx">10</span></div>
+          <div class="frame scattered empty-frame" style="left:310px;top:365px;width:115px;height:95px">
+            <span class="idx">11</span>
+            <span class="badges"><span class="badge empty" data-zh="空帧" data-en="Empty frame">空帧</span></span>
+          </div>
+          <div class="frame scattered" style="left:455px;top:365px;width:120px;height:100px"><span class="idx">12</span></div>
+
+          <!-- 降级建议网格单元（B-16 变体显示，4×3） -->
+          <div class="frame gridcell" style="left:8px;top:8px;width:152px;height:148px"><span class="idx">1</span></div>
+          <div class="frame gridcell" style="left:168px;top:8px;width:152px;height:148px"><span class="idx">2</span></div>
+          <div class="frame gridcell" style="left:328px;top:8px;width:152px;height:148px"><span class="idx">3</span></div>
+          <div class="frame gridcell" style="left:488px;top:8px;width:144px;height:148px"><span class="idx">4</span></div>
+          <div class="frame gridcell" style="left:8px;top:164px;width:152px;height:146px"><span class="idx">5</span></div>
+          <div class="frame gridcell" style="left:168px;top:164px;width:152px;height:146px"><span class="idx">6</span></div>
+          <div class="frame gridcell" style="left:328px;top:164px;width:152px;height:146px"><span class="idx">7</span></div>
+          <div class="frame gridcell" style="left:488px;top:164px;width:144px;height:146px"><span class="idx">8</span></div>
+          <div class="frame gridcell" style="left:8px;top:318px;width:152px;height:154px"><span class="idx">9</span></div>
+          <div class="frame gridcell" style="left:168px;top:318px;width:152px;height:154px"><span class="idx">10</span></div>
+          <div class="frame gridcell" style="left:328px;top:318px;width:152px;height:154px"><span class="idx">11</span></div>
+          <div class="frame gridcell" style="left:488px;top:318px;width:144px;height:154px"><span class="idx">12</span></div>
+        </div>
+      </div>
+
+      <!-- 缩放簇 -->
+      <div class="zoom-cluster">
+        <button class="zl" title="缩小 Zoom out">−</button>
+        <button class="zl" title="100%">100%</button>
+        <button class="zl" title="放大 Zoom in">＋</button>
+        <button class="zl" title="适合窗口 Fit">⛶</button>
+      </div>
+    </div>
+
+    <!-- ===== 侧栏 ===== -->
+    <div class="sidebar">
+      <div class="sgroup">
+        <h3 data-zh="检测方式" data-en="Detection method">检测方式</h3>
+        <span class="method-chip"><span class="method-val" data-zh="区域" data-en="Regions">区域</span></span>
+        <button class="btn-secondary full-btn" data-zh="重新检测" data-en="Run detection again">重新检测</button>
+        <div class="link-row">
+          <button class="link-btn" data-zh="结果不对？切到手动模式" data-en="Wrong result? Switch to manual mode">结果不对？切到手动模式</button>
+        </div>
+      </div>
+
+      <div class="sgroup detect-settings">
+        <h3><span data-zh="检测设置" data-en="Detection settings">检测设置</span><span class="pending-tag" data-zh="松开后重新检测" data-en="Release to re-run detection">松开后重新检测</span></h3>
+        <div class="slider-row">
+          <div class="slider-head"><label data-zh="容差" data-en="Tolerance">容差</label><span class="val">8</span></div>
+          <input type="range" min="0" max="254" value="8">
+          <div class="slider-help" data-zh="调高会把更多接近透明的像素算进主体。" data-en="Higher values include more near-transparent pixels in the subject.">调高会把更多接近透明的像素算进主体。</div>
+        </div>
+        <div class="slider-row">
+          <div class="slider-head"><label data-zh="最小面积" data-en="Minimum area">最小面积</label><span class="val">4 px</span></div>
+          <input type="range" min="1" max="100" value="2">
+          <div class="slider-help" data-zh="小于这个值的区域会当作噪点忽略。" data-en="Regions smaller than this are ignored as noise.">小于这个值的区域会当作噪点忽略。</div>
+        </div>
+        <div class="slider-row">
+          <div class="slider-head"><label data-zh="膨胀半径" data-en="Join radius">膨胀半径</label><span class="val" data-zh="自动 (7 px)" data-en="Auto (7 px)">自动 (7 px)</span></div>
+          <input type="range" min="0" max="128" value="7">
+          <div class="slider-help" data-zh="调高可把靠近的身体、帽子或武器并成一帧。" data-en="Higher values join nearby body parts, hats, or weapons into one frame.">调高可把靠近的身体、帽子或武器并成一帧。</div>
+        </div>
+        <div class="slider-row">
+          <div class="slider-head"><label data-zh="合并距离" data-en="Merge distance">合并距离</label><span class="val" data-zh="自动 (16 px)" data-en="Auto (16 px)">自动 (16 px)</span></div>
+          <input type="range" min="0" max="512" value="16">
+          <div class="slider-help" data-zh="距离小于这个值的区域会尝试合并。" data-en="Regions closer than this may be merged.">距离小于这个值的区域会尝试合并。</div>
+        </div>
+        <button class="btn-secondary full-btn" data-zh="恢复默认值" data-en="Reset defaults">恢复默认值</button>
+      </div>
+
+      <div class="sgroup manual-grid">
+        <h3 data-zh="手动网格" data-en="Manual grid">手动网格</h3>
+        <div class="steppers">
+          <div class="stepper">
+            <label data-zh="行数" data-en="Rows">行数</label>
+            <div class="st-in"><button>−</button><input value="3"><button>＋</button></div>
+          </div>
+          <div class="stepper">
+            <label data-zh="列数" data-en="Columns">列数</label>
+            <div class="st-in"><button>−</button><input value="4"><button>＋</button></div>
+          </div>
+        </div>
+        <button class="btn-primary full-btn" data-zh="应用网格" data-en="Apply grid">应用网格</button>
+        <button class="btn-secondary full-btn" data-zh="重置网格" data-en="Reset grid">重置网格</button>
+        <div class="hint-text" data-zh="也可以用「新增帧」直接画框。" data-en="You can also draw a frame with Add frame.">也可以用「新增帧」直接画框。</div>
+      </div>
+
+      <div class="sgroup">
+        <h3 data-zh="导出预览" data-en="Export preview">导出预览</h3>
+        <div class="norm-preview">
+          <svg class="np-sprite" viewBox="0 0 72 78">
+            <circle cx="36" cy="18" r="15" fill="#5b8ee8"/>
+            <rect x="19" y="34" width="34" height="38" rx="9" fill="#5b8ee8"/>
+            <rect x="46" y="30" width="5" height="40" rx="2" fill="#5b8ee8"/>
+          </svg>
+        </div>
+        <div class="norm-meta">128×128 · 72×78 px</div>
+        <div class="hint-text" data-zh="显示裁紧后的内容在统一透明画布中的位置。" data-en="Shows trimmed content on the shared transparent canvas.">显示裁紧后的内容在统一透明画布中的位置。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 时间轴 ===== -->
+  <div class="timeline">
+    <div class="tl-head">
+      <span class="tl-title" data-zh="动画预览" data-en="Animation preview">动画预览</span>
+      <div class="transport">
+        <button class="icon-btn" title="上一帧 (,)" data-zh="上一帧" data-en="Previous frame">⏮</button>
+        <button class="icon-btn" title="播放/暂停 (Enter)" data-zh="播放" data-en="Play">▶</button>
+        <button class="icon-btn" title="下一帧 (.)" data-zh="下一帧" data-en="Next frame">⏭</button>
+      </div>
+      <div class="fps-box">
+        <button>−</button><span class="fps-val" data-zh="12 FPS" data-en="12 FPS">12 FPS</span><button>＋</button>
+      </div>
+      <button class="toggle-chip on" title="洋葱皮 (O)"><span class="tk"></span><span data-zh="洋葱皮" data-en="Onion skin">洋葱皮</span></button>
+      <span class="spring"></span>
+      <div class="filter-group">
+        <span class="fg-label" data-zh="筛选帧" data-en="Filter frames">筛选帧</span>
+        <button class="fchip all active"><span data-zh="全部帧" data-en="All frames">全部帧</span><span class="cnt">12</span></button>
+        <button class="fchip f-attention"><span data-zh="全部待复核" data-en="All flagged">全部待复核</span><span class="cnt">3</span></button>
+        <button class="fchip f-outlier"><span data-zh="尺寸异常" data-en="Size outliers">尺寸异常</span><span class="cnt">1</span></button>
+        <button class="fchip f-multi"><span data-zh="可能粘连" data-en="Possible merges">可能粘连</span><span class="cnt">1</span></button>
+        <button class="fchip f-empty"><span data-zh="空帧" data-en="Empty frames">空帧</span><span class="cnt">1</span></button>
+      </div>
+      <span class="frame-count" data-zh="12 帧" data-en="12 frames">12 帧</span>
+    </div>
+    <div class="attention-strip">
+      <span class="at-title" data-zh="有 3 帧需要看一眼" data-en="3 frames need a look">有 3 帧需要看一眼</span>
+      <span class="at-body" data-zh="这些标记只是提醒，不会自动删除或修改帧。" data-en="These flags are just warnings. Frames won't be removed or changed automatically.">这些标记只是提醒，不会自动删除或修改帧。</span>
+      <button class="caret" title="收起">▾</button>
+    </div>
+    <div class="chips-row">
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#4fb8a8"></span></div><div class="num">1</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#e8846b"></span></div><div class="num">2</div></div>
+      <div class="chip selected"><div class="thumb"><span class="mini" style="background:#5b8ee8"></span></div><div class="num">3</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#7bbf5a"></span></div><div class="num">4</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#d9a441;width:24px;height:26px"></span><span class="dot outlier"></span></div><div class="num">5</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#9a7be0"></span></div><div class="num">6</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#d97ba6"></span></div><div class="num">7</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#8f6bdb"></span><span class="dot multi"></span></div><div class="num">8</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#a3b154;width:26px;height:24px"></span></div><div class="num">9</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#5bb8c9"></span></div><div class="num">10</div></div>
+      <div class="chip empty-chip"><div class="thumb"><span class="dot empty"></span></div><div class="num">11</div></div>
+      <div class="chip"><div class="thumb"><span class="mini" style="background:#d96b6b"></span></div><div class="num">12</div></div>
+      <div class="filter-empty-msg">
+        <span data-zh="没有符合条件的帧。" data-en="No frames match this filter.">没有符合条件的帧。</span>
+        <button class="link-btn" data-zh="全部帧" data-en="All frames">全部帧</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 状态栏 ===== -->
+  <div class="statusbar">
+    <span class="sdot"></span>
+    <span>100%</span><span class="sep"></span>
+    <span>412, 96</span><span class="sep"></span>
+    <span><span class="label" data-zh="检测方式：" data-en="Detection method: ">检测方式：</span><span class="method-val" data-zh="区域" data-en="Regions">区域</span></span><span class="sep"></span>
+    <span data-zh="12 帧 · 已选 1" data-en="12 frames · 1 selected">12 帧 · 已选 1</span>
+    <span class="spring"></span>
+    <span class="pending-txt" data-zh="还有 3 帧未确认。" data-en="3 frames still need confirmation.">还有 3 帧未确认。</span>
+  </div>
+</div>
+<div class="frame-note">注：状态栏「已选 1」的计数词条尚无 copy 条目（ui-spec 第 11 节设计发现 D-01）。确认审校前「导出」为次按钮；确认后互换主次。多选时画布仅显示联合虚线框、不显示手柄（ui-spec 6.4）。</div>
+
+<!-- 变体容器（JS 克隆主屏并打状态类） -->
+<div class="variant-label">B-16 变体 · 低置信度降级（fallback.* + manual.*）</div>
+<div id="v-fallback"></div>
+<div class="frame-note">横幅持续显示（非弹窗）；侧栏切换为手动网格并预填建议行列；画布为建议网格帧（全部待确认）。「重试自动检测」可返回自动流程；关闭横幅可折叠为细条。</div>
+
+<div class="variant-label">C-39 变体 · 检测参数重算中（settings.pending + detect.recalculating）</div>
+<div id="v-recalc"></div>
+<div class="frame-note">滑杆停手 300ms 后进入此态：帧框降至 40%、几何编辑与导出禁用（选择/平移/缩放仍可用）、侧栏出现「松开后重新检测」。preview 结果先上屏，final 完成后角标落色、横幅消失、编辑恢复；替换本身是一个可撤销事务。</div>
+
+<div class="variant-label">C-43 变体 · 筛选空状态（review.filter.none，示例：选「全部待复核」后 flags 被编辑重算清零）</div>
+<div id="v-filterempty"></div>
+<div class="frame-note">筛选只影响显示：不匹配芯片隐藏、画布帧框降至 15%；清除入口为「全部帧」。播放与导出始终按完整时间轴。</div>
+
+<div class="legend">
+  <b style="color:var(--text-1)">角标图例</b>
+  <span><span class="sw" style="background:var(--badge-outlier)"></span>尺寸异常 outlier</span>
+  <span><span class="sw" style="background:var(--badge-multi)"></span>可能粘连 multipleComponents</span>
+  <span><span class="sw" style="background:var(--badge-empty)"></span>空帧 empty</span>
+  <span style="color:var(--text-3)">同一帧可叠加多个角标；dHash 数值与重复帧折叠 M1 不暴露</span>
+</div>
+
+<script>
+  /* 变体克隆：主屏为唯一手写蓝本，变体 = 克隆 + 状态类 + 少量补丁 */
+  const main = document.getElementById('screen-main');
+  function makeVariant(containerId, className, patch){
+    const clone = main.cloneNode(true);
+    clone.classList.add(className);
+    clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
+    if (patch) patch(clone);
+    document.getElementById(containerId).appendChild(clone);
+  }
+  makeVariant('v-fallback','is-fallback',clone=>{
+    const mv = clone.querySelectorAll('.method-val');
+    mv.forEach(el=>{ el.textContent='手动'; el.setAttribute('data-zh','手动'); el.setAttribute('data-en','Manual'); });
+  });
+  makeVariant('v-recalc','is-recalc');
+  makeVariant('v-filterempty','is-filter-empty',clone=>{
+    /* 示例路径：用户选中「全部待复核」后又编辑帧，flags 被重算清零 → 计数 0、无匹配 */
+    clone.querySelector('.fchip.all').classList.remove('active');
+    const att = clone.querySelector('.fchip.f-attention');
+    att.classList.add('active');
+    att.querySelector('.cnt').textContent = '0';
+    clone.querySelectorAll('.fchip.f-outlier,.fchip.f-multi,.fchip.f-empty').forEach(c=>c.style.display='none'); /* 计数 0 的具体类不显示 */
+  });
+
+  /* 双语预览切换 */
+  let lang = 'zh';
+  function toggleLang(){
+    lang = lang === 'zh' ? 'en' : 'zh';
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.querySelectorAll('[data-en]').forEach(el=>{
+      if (el.hasAttribute('data-' + lang)) el.textContent = el.getAttribute('data-' + lang);
+    });
+    document.getElementById('langToggle').textContent = lang === 'zh' ? '预览 English' : '预览中文';
+  }
+</script>
+</body>
+</html>

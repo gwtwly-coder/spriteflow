@@ -1,0 +1,177 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "08-scatter-6-irregular",
+  "title": "间距不齐散排 6 帧",
+  "category": "scatter",
+  "inputType": "C",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 128,
+    "height": 92,
+    "sha256": "ae691e5683e85ac8c2aa802ff68d61a1c3f490ae9165f98c951fd1ac61ab3841"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 6,
+    "strategy": "components",
+    "origin": "components",
+    "layout": null,
+    "degraded": null,
+    "warningCodes": [],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 72,
+          "y": 6,
+          "width": 22,
+          "height": 26
+        },
+        "bbox": {
+          "x": 72,
+          "y": 6,
+          "width": 22,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 9,
+          "y": 11,
+          "width": 21,
+          "height": 25
+        },
+        "bbox": {
+          "x": 9,
+          "y": 11,
+          "width": 21,
+          "height": 25
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 39,
+          "y": 20,
+          "width": 23,
+          "height": 24
+        },
+        "bbox": {
+          "x": 39,
+          "y": 20,
+          "width": 23,
+          "height": 24
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 94,
+          "y": 40,
+          "width": 22,
+          "height": 25
+        },
+        "bbox": {
+          "x": 94,
+          "y": 40,
+          "width": 22,
+          "height": 25
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 4,
+        "sourceRect": {
+          "x": 57,
+          "y": 49,
+          "width": 24,
+          "height": 26
+        },
+        "bbox": {
+          "x": 57,
+          "y": 49,
+          "width": 24,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 5,
+        "sourceRect": {
+          "x": 24,
+          "y": 54,
+          "width": 22,
+          "height": 24
+        },
+        "bbox": {
+          "x": 24,
+          "y": 54,
+          "width": 22,
+          "height": 24
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "transparent-scatter",
+    "uneven-spacing"
+  ]
+}

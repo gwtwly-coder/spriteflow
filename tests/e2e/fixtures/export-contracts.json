@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "spriteflow-e2e-export-contracts/1",
+  "contracts": {
+    "phaser-json-hash": {
+      "requiredFiles": ["atlas.png", "atlas.json", "animations.json"],
+      "atlasFramesShape": "object",
+      "forbiddenExtensions": [".tres"]
+    },
+    "phaser-json-array": {
+      "requiredFiles": ["atlas.png", "atlas.json", "animations.json"],
+      "atlasFramesShape": "array",
+      "forbiddenExtensions": [".tres"]
+    },
+    "godot-frames-zip": {
+      "requiredFiles": ["sequence.json", "build_spriteframes.gd", "README.txt"],
+      "requiredPrefix": "frames/",
+      "forbiddenExtensions": [".tres"],
+      "pngCount": "included-frame-count"
+    }
+  }
+}

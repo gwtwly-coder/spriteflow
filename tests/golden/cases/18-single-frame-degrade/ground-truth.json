@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "18-single-frame-degrade",
+  "title": "单主体不足以自动分帧",
+  "category": "degradation",
+  "inputType": "E",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 96,
+    "height": 80,
+    "sha256": "334e5b7de1170e5690e8496880b95b3820760bec83d30772f001bbd1be073738"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 1,
+    "strategy": "manual-grid",
+    "origin": "manual",
+    "layout": {
+      "rows": 1,
+      "columns": 1
+    },
+    "degraded": {
+      "reason": "INSUFFICIENT_COMPONENTS",
+      "attempted": [
+        "grid",
+        "components"
+      ]
+    },
+    "warningCodes": [
+      "DETECTION_DEGRADED"
+    ],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 96,
+          "height": 80
+        },
+        "bbox": {
+          "x": 22,
+          "y": 13,
+          "width": 51,
+          "height": 54
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "explicit-degradation",
+    "insufficient-components"
+  ]
+}

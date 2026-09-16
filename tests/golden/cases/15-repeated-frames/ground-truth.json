@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "15-repeated-frames",
+  "title": "重复视觉帧（M1 不折叠）",
+  "category": "duplicates",
+  "inputType": "E",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 150,
+    "height": 90,
+    "sha256": "3ce53ab0f01226806034d22dca10ec3796ecabe65fe2484f60957f51c0d8fa12"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 5,
+    "strategy": "components",
+    "origin": "components",
+    "layout": null,
+    "degraded": null,
+    "warningCodes": [],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 78,
+          "y": 7,
+          "width": 24,
+          "height": 28
+        },
+        "bbox": {
+          "x": 78,
+          "y": 7,
+          "width": 24,
+          "height": 28
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 10,
+          "y": 10,
+          "width": 24,
+          "height": 28
+        },
+        "bbox": {
+          "x": 10,
+          "y": 10,
+          "width": 24,
+          "height": 28
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 43,
+          "y": 18,
+          "width": 24,
+          "height": 28
+        },
+        "bbox": {
+          "x": 43,
+          "y": 18,
+          "width": 24,
+          "height": 28
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 111,
+          "y": 26,
+          "width": 24,
+          "height": 28
+        },
+        "bbox": {
+          "x": 111,
+          "y": 26,
+          "width": 24,
+          "height": 28
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 4,
+        "sourceRect": {
+          "x": 59,
+          "y": 54,
+          "width": 24,
+          "height": 28
+        },
+        "bbox": {
+          "x": 59,
+          "y": 54,
+          "width": 24,
+          "height": 28
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": [
+      [
+        0,
+        1,
+        2,
+        3,
+        4
+      ]
+    ]
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "repeated-frames",
+    "dhash-metadata",
+    "no-auto-fold"
+  ]
+}

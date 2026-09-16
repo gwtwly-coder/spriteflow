@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "01-grid-2x2",
+  "title": "规整透明网格 2×2",
+  "category": "regular-grid",
+  "inputType": "A",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 96,
+    "height": 96,
+    "sha256": "c6faa0a3ffb2c153feba26d67fe3745fe73b58f041d0ad6722bd0e313f293a52"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 4,
+    "strategy": "grid",
+    "origin": "grid",
+    "layout": {
+      "rows": 2,
+      "columns": 2
+    },
+    "degraded": null,
+    "warningCodes": [],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 48,
+          "height": 48
+        },
+        "bbox": {
+          "x": 12,
+          "y": 9,
+          "width": 24,
+          "height": 30
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 48,
+          "y": 0,
+          "width": 48,
+          "height": 48
+        },
+        "bbox": {
+          "x": 60,
+          "y": 9,
+          "width": 24,
+          "height": 30
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 0,
+          "y": 48,
+          "width": 48,
+          "height": 48
+        },
+        "bbox": {
+          "x": 12,
+          "y": 57,
+          "width": 24,
+          "height": 30
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 48,
+          "y": 48,
+          "width": 48,
+          "height": 48
+        },
+        "bbox": {
+          "x": 60,
+          "y": 57,
+          "width": 24,
+          "height": 30
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "regular-transparent-grid"
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "spriteflow-golden-manifest/1",
+  "generatorVersion": "1.0.0",
+  "caseCount": 20,
+  "cases": [
+    {
+      "caseId": "01-grid-2x2",
+      "title": "规整透明网格 2×2",
+      "category": "regular-grid",
+      "inputType": "A"
+    },
+    {
+      "caseId": "02-grid-3x2",
+      "title": "规整透明网格 3×2",
+      "category": "regular-grid",
+      "inputType": "A"
+    },
+    {
+      "caseId": "03-grid-4x3",
+      "title": "规整透明网格 4×3",
+      "category": "regular-grid",
+      "inputType": "A"
+    },
+    {
+      "caseId": "04-grid-variable-silhouettes",
+      "title": "网格内轮廓轻微变化",
+      "category": "regular-grid",
+      "inputType": "A"
+    },
+    {
+      "caseId": "05-strip-6",
+      "title": "单行动画条带 6 帧",
+      "category": "strip",
+      "inputType": "D"
+    },
+    {
+      "caseId": "06-strip-8-uneven-content",
+      "title": "单行条带内容位置不齐",
+      "category": "strip",
+      "inputType": "D"
+    },
+    {
+      "caseId": "07-scatter-5",
+      "title": "透明底散排 5 帧",
+      "category": "scatter",
+      "inputType": "C"
+    },
+    {
+      "caseId": "08-scatter-6-irregular",
+      "title": "间距不齐散排 6 帧",
+      "category": "scatter",
+      "inputType": "C"
+    },
+    {
+      "caseId": "09-detached-hats",
+      "title": "帽子与身体断开",
+      "category": "detached-parts",
+      "inputType": "E"
+    },
+    {
+      "caseId": "10-detached-weapons",
+      "title": "武器与身体断开",
+      "category": "detached-parts",
+      "inputType": "E"
+    },
+    {
+      "caseId": "11-noise-speckles",
+      "title": "单像素噪点干扰",
+      "category": "noise",
+      "inputType": "C"
+    },
+    {
+      "caseId": "12-noise-clusters",
+      "title": "小簇噪点干扰",
+      "category": "noise",
+      "inputType": "C"
+    },
+    {
+      "caseId": "13-grid-multicomponent",
+      "title": "网格内多连通域",
+      "category": "multi-component-cell",
+      "inputType": "A"
+    },
+    {
+      "caseId": "14-grid-multicomponent-mixed",
+      "title": "部分网格帧多连通域",
+      "category": "multi-component-cell",
+      "inputType": "A"
+    },
+    {
+      "caseId": "15-repeated-frames",
+      "title": "重复视觉帧（M1 不折叠）",
+      "category": "duplicates",
+      "inputType": "E"
+    },
+    {
+      "caseId": "16-size-outlier",
+      "title": "尺寸突变离群帧",
+      "category": "outlier",
+      "inputType": "E"
+    },
+    {
+      "caseId": "17-narrative-irregular",
+      "title": "叙事型不规则透明排布",
+      "category": "narrative",
+      "inputType": "E"
+    },
+    {
+      "caseId": "18-single-frame-degrade",
+      "title": "单主体不足以自动分帧",
+      "category": "degradation",
+      "inputType": "E"
+    },
+    {
+      "caseId": "19-ambiguous-degrade",
+      "title": "尺寸簇歧义显式降级",
+      "category": "degradation",
+      "inputType": "E"
+    },
+    {
+      "caseId": "20-empty-transparent",
+      "title": "整图全透明",
+      "category": "empty",
+      "inputType": "E"
+    }
+  ]
+}

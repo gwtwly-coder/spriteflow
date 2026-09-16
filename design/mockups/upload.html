@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<!--
+  SpriteFlow M1 · 上传页静态稿（单文件，内联 CSS，假数据）
+  覆盖状态（ui-spec.md 第 9 节）：A-1 空状态 / A-2 拖放悬停 / A-3 预检 / A-6~A-9 四类错误 / A-11 超大图 / A-12 内存预检
+  文案全部取自 docs/copy-m1.md；右上角按钮可切换 zh/EN 预览双语。
+  设计令牌与 docs/ui-spec.md 第 4 节一致，类名即实现蓝本。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SpriteFlow · 上传页静态稿</title>
+<style>
+  :root{
+    --bg-0:#0e1116; --bg-1:#151a22; --bg-2:#1c232e; --bg-3:#242d3b;
+    --border-1:#2a3342; --border-2:#3a465a;
+    --text-1:#e8edf5; --text-2:#a7b1c4; --text-3:#6b7688;
+    --accent:#4d8dff; --accent-hover:#6ea3ff; --accent-active:#3b74e0; --accent-dim:rgba(77,141,255,.16);
+    --ok:#43d17c; --warn:#f0b13e; --danger:#f0596a;
+    --checker-a:#232a35; --checker-b:#1a202a;
+    --ui:system-ui,"Segoe UI","Microsoft YaHei",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#080a0d;color:var(--text-1);font-family:var(--ui);font-size:13px;line-height:20px;padding:24px 24px 80px}
+  /* ===== 评审脚手架（非产品 UI）===== */
+  .review-note{max-width:960px;margin:0 auto 20px;padding:10px 14px;border:1px solid var(--border-1);border-radius:8px;background:#10141b;color:var(--text-2)}
+  .review-note b{color:var(--text-1)}
+  .variant-label{max-width:960px;margin:40px auto 10px;font-family:var(--mono);font-size:12px;color:var(--warn);letter-spacing:.4px}
+  .frame-note{max-width:960px;margin:6px auto 0;color:var(--text-3);font-size:12px}
+  /* ===== 应用外壳 ===== */
+  .app{max-width:960px;margin:0 auto;border:1px solid var(--border-1);border-radius:8px;overflow:hidden;background:var(--bg-0)}
+  .topbar{height:40px;display:flex;align-items:center;gap:12px;padding:0 12px;background:var(--bg-1);border-bottom:1px solid var(--border-1)}
+  .brand{font-weight:650;font-size:14px}
+  .topbar .spacer{flex:1}
+  .stage{position:relative;height:520px;display:flex;align-items:center;justify-content:center;background:var(--bg-0)}
+  .stage::before{content:"";position:absolute;inset:0;background:
+    linear-gradient(45deg,var(--checker-a) 25%,transparent 25%,transparent 75%,var(--checker-a) 75%) 0 0/16px 16px,
+    linear-gradient(45deg,var(--checker-a) 25%,var(--checker-b) 25%,var(--checker-b) 75%,var(--checker-a) 75%) 8px 8px/16px 16px;
+    opacity:.25}
+  .upload-col{position:relative;width:560px;display:flex;flex-direction:column;align-items:center;text-align:center}
+  .tagline{font-size:28px;line-height:36px;font-weight:650;margin-bottom:8px}
+  .privacy{color:var(--text-2);display:flex;align-items:center;gap:6px;margin-bottom:28px}
+  .privacy .ic{width:14px;height:14px;border:1.5px solid var(--text-2);border-radius:3px;position:relative;flex:none}
+  .privacy .ic::after{content:"";position:absolute;inset:2px 5px 5px;border-top:1.5px solid var(--text-2)}
+  /* 拖放区 */
+  .dropzone{width:100%;height:220px;border:2px dashed var(--border-2);border-radius:8px;background:var(--bg-1);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+  .dropzone .dz-title{font-size:20px;line-height:28px;font-weight:600}
+  .dropzone .dz-hint{color:var(--text-2)}
+  .dropzone.dz-hover{border-color:var(--accent);border-style:solid;background:var(--accent-dim)}
+  .dropzone.dz-hover .dz-title{color:var(--accent)}
+  .btn-primary{height:34px;padding:0 18px;border:none;border-radius:6px;background:var(--accent);color:#0b1220;
+    font:600 13px/1 var(--ui);cursor:pointer;margin-top:20px}
+  .btn-primary:hover{background:var(--accent-hover)}
+  .btn-primary:active{background:var(--accent-active)}
+  .btn-secondary{height:34px;padding:0 16px;border:1px solid var(--border-1);border-radius:6px;background:transparent;
+    color:var(--text-1);font:13px/1 var(--ui);cursor:pointer}
+  .btn-secondary:hover{background:var(--bg-2)}
+  .fmt-row{display:flex;gap:8px;margin-top:20px}
+  .fmt-chip{padding:3px 10px;border:1px solid var(--border-1);border-radius:4px;color:var(--text-3);font-family:var(--mono);font-size:11px}
+  /* 顶栏控件 */
+  .icon-btn{width:28px;height:28px;border:none;border-radius:6px;background:transparent;color:var(--text-2);cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .icon-btn:hover{background:var(--bg-2);color:var(--text-1)}
+  .ghost-btn{height:28px;padding:0 10px;border:1px solid var(--border-1);border-radius:6px;background:transparent;color:var(--text-1);cursor:pointer;font-size:12px}
+  .ghost-btn:hover{background:var(--bg-2)}
+  .lang-select{height:28px;padding:0 8px;border:1px solid var(--border-1);border-radius:6px;background:var(--bg-2);color:var(--text-1);font-size:12px}
+  /* 文件信息卡（预检/错误共用位置） */
+  .file-card{position:absolute;top:16px;right:16px;width:280px;background:var(--bg-1);border:1px solid var(--border-1);border-radius:8px;padding:10px 12px;text-align:left}
+  .file-card .row{display:flex;justify-content:space-between;margin-top:4px}
+  .file-card .row:first-child{margin-top:0}
+  .file-card .k{color:var(--text-3);font-size:12px}
+  .file-card .v{font-family:var(--mono);font-size:12px}
+  .file-card .phase{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border-1);color:var(--text-2)}
+  .spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-2);border-top-color:var(--accent);animation:spin 1s linear infinite;flex:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .file-card .ok-ic{width:14px;height:14px;border-radius:50%;background:var(--ok);position:relative;flex:none}
+  .file-card .ok-ic::after{content:"";position:absolute;left:4px;top:2px;width:4px;height:7px;border:solid #0b1220;border-width:0 2px 2px 0;transform:rotate(42deg)}
+  .link-btn{border:none;background:none;color:var(--accent);cursor:pointer;font-size:12px;padding:0}
+  .link-btn:hover{color:var(--accent-hover);text-decoration:underline}
+  /* 错误卡片（屏内） */
+  .error-card{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);width:520px;background:var(--bg-1);
+    border:1px solid var(--border-1);border-left:3px solid var(--danger);border-radius:8px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start}
+  .error-card .e-ic{width:20px;height:20px;flex:none;border-radius:50%;background:var(--danger);position:relative;margin-top:2px}
+  .error-card .e-ic::before,.error-card .e-ic::after{content:"";position:absolute;left:9px;top:4px;width:2px;height:9px;background:#0b1220;border-radius:1px}
+  .error-card .e-ic::after{transform:rotate(90deg)} .error-card .e-ic::before{transform:rotate(90deg)}
+  .error-card .e-ic i{position:absolute;left:8px;top:15px;width:4px;height:4px;background:#0b1220;border-radius:50%}
+  .error-card h2{font-size:16px;line-height:24px;margin-bottom:2px}
+  .error-card p{color:var(--text-2)}
+  .error-card .acts{margin-top:10px;display:flex;gap:8px}
+  .btn-danger-outline{height:30px;padding:0 14px;border:1px solid var(--danger);border-radius:6px;background:transparent;color:var(--danger);cursor:pointer;font-size:13px}
+  .btn-danger-outline:hover{background:rgba(240,89,106,.12)}
+  /* 居中模态（超大图 / 内存） */
+  .modal-wrap{position:absolute;inset:0;background:rgba(4,6,10,.55);display:flex;align-items:center;justify-content:center}
+  .modal{width:440px;background:var(--bg-1);border:1px solid var(--border-2);border-radius:8px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .modal h2{font-size:20px;line-height:28px;margin-bottom:6px}
+  .modal p{color:var(--text-2)}
+  .modal .mono{font-family:var(--mono);color:var(--text-1)}
+  .modal .field{margin-top:14px}
+  .modal .field label{display:block;font-size:12px;color:var(--text-3);margin-bottom:4px}
+  .select{height:32px;width:100%;padding:0 8px;border:1px solid var(--border-1);border-radius:6px;background:var(--bg-2);color:var(--text-1);font-size:13px}
+  .modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+  .lang-toggle{position:fixed;top:12px;right:16px;z-index:99;height:30px;padding:0 12px;border:1px solid var(--warn);border-radius:6px;background:#10141b;color:var(--warn);cursor:pointer;font:600 12px var(--ui)}
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" id="langToggle" onclick="toggleLang()">预览 English</button>
+
+<div class="review-note">
+  <b>SpriteFlow 上传页静态稿</b> · 状态覆盖：A-1 空状态 / A-2 拖放悬停 / A-3 预检 / A-6 格式不支持 / A-7 多文件 / A-8 不透明 / A-9 解码失败 / A-11 超大图 / A-12 内存预检（编号对应 docs/ui-spec.md 第 9 节）。文案取自 docs/copy-m1.md，右上角可切换双语。
+</div>
+
+<!-- ============ A-1 首次空状态 ============ -->
+<div class="variant-label">A-1 · 首次空状态（upload.empty.*）</div>
+<div class="app">
+  <div class="topbar">
+    <span class="brand">SpriteFlow</span>
+    <span class="spacer"></span>
+    <button class="ghost-btn" data-zh="快捷键" data-en="Shortcuts">快捷键</button>
+    <select class="lang-select" aria-label="语言 Language">
+      <option>中文</option><option>English</option>
+    </select>
+  </div>
+  <div class="stage">
+    <div class="upload-col">
+      <div class="tagline" data-zh="把透明精灵表变成引擎素材" data-en="Turn transparent sprite sheets into engine-ready assets">把透明精灵表变成引擎素材</div>
+      <div class="privacy">
+        <span class="ic"></span>
+        <span data-zh="文件只在你的浏览器中处理，不会上传。" data-en="Your files stay in your browser. Nothing is uploaded.">文件只在你的浏览器中处理，不会上传。</span>
+      </div>
+      <div class="dropzone">
+        <div class="dz-title" data-zh="拖入透明精灵表" data-en="Drop a transparent sprite sheet">拖入透明精灵表</div>
+        <div class="dz-hint" data-zh="PNG 或 WebP，单张图片，最大 8192×8192" data-en="PNG or WebP, one image, up to 8192×8192">PNG 或 WebP，单张图片，最大 8192×8192</div>
+      </div>
+      <button class="btn-primary" data-zh="选择图片" data-en="Choose image">选择图片</button>
+      <div class="fmt-row"><span class="fmt-chip">PNG</span><span class="fmt-chip">WebP</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ A-2 拖放悬停 ============ -->
+<div class="variant-label">A-2 · 拖放悬停（upload.drop_active）</div>
+<div class="app">
+  <div class="stage">
+    <div class="upload-col">
+      <div class="tagline" data-zh="把透明精灵表变成引擎素材" data-en="Turn transparent sprite sheets into engine-ready assets">把透明精灵表变成引擎素材</div>
+      <div class="dropzone dz-hover">
+        <div class="dz-title" data-zh="松开开始处理" data-en="Drop to start">松开开始处理</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ A-3 预检中 ============ -->
+<div class="variant-label">A-3 · 预检中（upload.preflight → upload.decode → upload.ready）</div>
+<div class="app">
+  <div class="stage">
+    <div class="upload-col">
+      <div class="dropzone">
+        <div class="dz-title" data-zh="拖入透明精灵表" data-en="Drop a transparent sprite sheet">拖入透明精灵表</div>
+        <div class="dz-hint" data-zh="PNG 或 WebP，单张图片，最大 8192×8192" data-en="PNG or WebP, one image, up to 8192×8192">PNG 或 WebP，单张图片，最大 8192×8192</div>
+      </div>
+    </div>
+    <div class="file-card">
+      <div class="row"><span class="k" data-zh="文件" data-en="File">文件</span><span class="v">kenney_sheet.png</span></div>
+      <div class="row"><span class="k" data-zh="格式" data-en="Format">格式</span><span class="v">image/png</span></div>
+      <div class="row"><span class="k" data-zh="尺寸" data-en="Dimensions">尺寸</span><span class="v">1024×768</span></div>
+      <div class="phase"><span class="spinner"></span><span data-zh="正在检查图片…" data-en="Checking image…">正在检查图片…</span></div>
+    </div>
+  </div>
+</div>
+<div class="frame-note">预检通过后阶段行变为成功对勾 + 「图片可用，开始检测。」(upload.ready)，随后自动进入 S2 检测屏。</div>
+
+<!-- ============ A-6 ~ A-9 预检错误 ============ -->
+<div class="variant-label">A-6 · 格式不支持（error.unsupported_type.*）</div>
+<div class="app">
+  <div class="stage">
+    <div class="upload-col">
+      <div class="dropzone">
+        <div class="dz-title" data-zh="拖入透明精灵表" data-en="Drop a transparent sprite sheet">拖入透明精灵表</div>
+        <div class="dz-hint" data-zh="PNG 或 WebP，单张图片，最大 8192×8192" data-en="PNG or WebP, one image, up to 8192×8192">PNG 或 WebP，单张图片，最大 8192×8192</div>
+      </div>
+    </div>
+    <div class="error-card">
+      <span class="e-ic"><i></i></span>
+      <div>
+        <h2 data-zh="暂不支持这个格式" data-en="This format isn't supported yet">暂不支持这个格式</h2>
+        <p data-zh="M1 只处理透明 PNG 和 WebP。" data-en="M1 only handles transparent PNG and WebP files.">M1 只处理透明 PNG 和 WebP。</p>
+        <div class="acts"><button class="btn-danger-outline" data-zh="换一张图" data-en="Choose another image">换一张图</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="variant-label">A-7 · 多文件（error.multiple_files.*）</div>
+<div class="app">
+  <div class="stage">
+    <div class="error-card">
+      <span class="e-ic"><i></i></span>
+      <div>
+        <h2 data-zh="一次只能处理一张图" data-en="One image at a time">一次只能处理一张图</h2>
+        <p data-zh="只保留一张 PNG 或 WebP，再试一次。" data-en="Keep one PNG or WebP file and try again.">只保留一张 PNG 或 WebP，再试一次。</p>
+        <div class="acts"><button class="btn-danger-outline" data-zh="换一张图" data-en="Choose another image">换一张图</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="variant-label">A-8 · 完全不透明（error.opaque.*）——界面不出现任何去底入口</div>
+<div class="app">
+  <div class="stage">
+    <div class="error-card">
+      <span class="e-ic"><i></i></span>
+      <div>
+        <h2 data-zh="这张图基本没有透明背景" data-en="This image is effectively opaque">这张图基本没有透明背景</h2>
+        <p data-zh="M1 不做去底。请先去掉背景，再上传 PNG 或 WebP。" data-en="M1 doesn't remove backgrounds. Remove it first, then upload a PNG or WebP.">M1 不做去底。请先去掉背景，再上传 PNG 或 WebP。</p>
+        <div class="acts"><button class="btn-danger-outline" data-zh="换一张图" data-en="Choose another image">换一张图</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="variant-label">A-9 · 解码失败（error.decode.*）——清理未完成任务</div>
+<div class="app">
+  <div class="stage">
+    <div class="error-card">
+      <span class="e-ic"><i></i></span>
+      <div>
+        <h2 data-zh="无法读取这张图" data-en="Couldn't read this image">无法读取这张图</h2>
+        <p data-zh="文件可能已损坏，或实际格式与扩展名不一致。" data-en="The file may be damaged, or its contents may not match the extension.">文件可能已损坏，或实际格式与扩展名不一致。</p>
+        <div class="acts"><button class="btn-danger-outline" data-zh="换一张图" data-en="Choose another image">换一张图</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ A-11 超大图 ============ -->
+<div class="variant-label">A-11 · 超大图对话框（oversize.*）——必须决策，不允许关闭后继续</div>
+<div class="app">
+  <div class="stage">
+    <div class="upload-col"><div class="dropzone"></div></div>
+    <div class="modal-wrap">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h2 data-zh="图片超过 M1 上限" data-en="Image exceeds the M1 limit">图片超过 M1 上限</h2>
+        <p><span data-zh="当前是" data-en="This image is">当前是</span> <span class="mono">10240×7680</span>。<span data-zh="M1 最多处理 8192×8192；可以缩小后继续。" data-en="M1 handles up to 8192×8192. You can downscale it and continue.">M1 最多处理 8192×8192；可以缩小后继续。</span></p>
+        <div class="field">
+          <label data-zh="最长边" data-en="Longest side">最长边</label>
+          <select class="select"><option>8192</option><option>6144</option><option>4096</option><option>2048</option></select>
+        </div>
+        <div class="acts">
+          <button class="btn-secondary" data-zh="取消上传" data-en="Cancel upload">取消上传</button>
+          <button class="btn-primary" style="margin-top:0" data-zh="缩小后继续" data-en="Downscale and continue">缩小后继续</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ A-12 内存预检 ============ -->
+<div class="variant-label">A-12 · 预计内存不足（memory.precheck.*）</div>
+<div class="app">
+  <div class="stage">
+    <div class="upload-col"><div class="dropzone"></div></div>
+    <div class="modal-wrap">
+      <div class="modal" role="dialog" aria-modal="true">
+        <h2 data-zh="这台设备可能放不下这张图" data-en="This image may not fit in memory">这台设备可能放不下这张图</h2>
+        <p data-zh="直接处理可能让页面失去响应。缩小图片后再试更稳。" data-en="Processing it as-is may make the page unresponsive. Downscale it first.">直接处理可能让页面失去响应。缩小图片后再试更稳。</p>
+        <div class="field">
+          <label data-zh="最长边" data-en="Longest side">最长边</label>
+          <select class="select"><option>4096</option><option>2048</option></select>
+        </div>
+        <div class="acts">
+          <button class="btn-secondary" data-zh="取消" data-en="Cancel">取消</button>
+          <button class="btn-primary" style="margin-top:0" data-zh="降低尺寸后重试" data-en="Downscale and retry">降低尺寸后重试</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* 双语预览切换：仅作用于带 data-en 的节点（评审用，产品内为 i18n 字典） */
+  let lang = 'zh';
+  function toggleLang(){
+    lang = lang === 'zh' ? 'en' : 'zh';
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.querySelectorAll('[data-en]').forEach(el=>{
+      const k = 'data-' + lang;
+      if (el.hasAttribute(k)) el.textContent = el.getAttribute(k);
+    });
+    document.getElementById('langToggle').textContent = lang === 'zh' ? '预览 English' : '预览中文';
+  }
+</script>
+</body>
+</html>

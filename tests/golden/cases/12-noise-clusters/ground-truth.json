@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "12-noise-clusters",
+  "title": "小簇噪点干扰",
+  "category": "noise",
+  "inputType": "C",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 136,
+    "height": 94,
+    "sha256": "b8c3ca59426a72a74e7ffec9027065bbed8548b1b9dbadd9a9ce96ea11ab3f17"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 5,
+    "strategy": "components",
+    "origin": "components",
+    "layout": null,
+    "degraded": null,
+    "warningCodes": [],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 73,
+          "y": 8,
+          "width": 22,
+          "height": 26
+        },
+        "bbox": {
+          "x": 73,
+          "y": 8,
+          "width": 22,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 8,
+          "y": 12,
+          "width": 22,
+          "height": 26
+        },
+        "bbox": {
+          "x": 8,
+          "y": 12,
+          "width": 22,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 40,
+          "y": 20,
+          "width": 22,
+          "height": 26
+        },
+        "bbox": {
+          "x": 40,
+          "y": 20,
+          "width": 22,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 101,
+          "y": 42,
+          "width": 22,
+          "height": 26
+        },
+        "bbox": {
+          "x": 101,
+          "y": 42,
+          "width": 22,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 4,
+        "sourceRect": {
+          "x": 57,
+          "y": 53,
+          "width": 22,
+          "height": 26
+        },
+        "bbox": {
+          "x": 57,
+          "y": 53,
+          "width": 22,
+          "height": 26
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "noise-filtering",
+    "sub-threshold-clusters"
+  ]
+}

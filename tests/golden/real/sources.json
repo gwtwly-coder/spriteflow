@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "spriteflow-real-sources/1",
+  "downloadedAt": "2026-09-16",
+  "assets": [
+    {
+      "file": "kenney-1bit-platformer-transparent-packed.png",
+      "title": "1-Bit Platformer Pack / monochrome_tilemap_transparent_packed.png",
+      "author": "Kenney",
+      "sourcePage": "https://kenney.nl/assets/1-bit-platformer-pack",
+      "downloadUrl": "https://kenney.nl/media/pages/assets/1-bit-platformer-pack/7c1e5f05a4-1677693072/kenney_1-bit-platformer-pack.zip",
+      "archiveEntry": "Tilemap/monochrome_tilemap_transparent_packed.png",
+      "license": "CC0-1.0",
+      "licenseEvidence": "The official source page labels the pack Creative Commons CC0.",
+      "width": 320,
+      "height": 320,
+      "alpha": { "transparent": 72357, "translucent": 0, "opaque": 30043 },
+      "sha256": "497c68067960694c11d1d678cf04e0e8a4778cc40bcefad822fe398364e0e204",
+      "inspection": "PASS: decoded and visually sampled; transparent packed sheet, no download-page placeholder.",
+      "m1Use": "manual-real-world-smoke"
+    },
+    {
+      "file": "opengameart-8x8-character-sheet.png",
+      "title": "8x8 Character and Sprite Sheet",
+      "author": "Glacialan",
+      "sourcePage": "https://opengameart.org/content/8x8-character-and-sprite-sheet",
+      "downloadUrl": "https://opengameart.org/sites/default/files/sprite-sheet.png",
+      "license": "CC0-1.0",
+      "licenseEvidence": "The OpenGameArt source page labels the work CC0.",
+      "width": 128,
+      "height": 40,
+      "alpha": { "transparent": 2612, "translucent": 0, "opaque": 2508 },
+      "sha256": "90e4a7b72a93f4997405ade9174c6c61bb1023cff91bc8fd03b9169186ffee89",
+      "inspection": "PASS: decoded and visually sampled; 8x8 transparent character rows are intact.",
+      "m1Use": "manual-real-world-smoke"
+    },
+    {
+      "file": "opengameart-man-v14.png",
+      "title": "Spritesheet of a man CC0 / open v14.png",
+      "author": "Vander96",
+      "sourcePage": "https://opengameart.org/node/25497",
+      "downloadUrl": "https://opengameart.org/sites/default/files/open%20v14.png",
+      "license": "CC0-1.0",
+      "licenseEvidence": "The OpenGameArt source page labels the work CC0.",
+      "width": 575,
+      "height": 576,
+      "alpha": { "transparent": 0, "translucent": 0, "opaque": 331200 },
+      "sha256": "a68225bd9cb12466919b7d7fcf7977cabd857d4aef0f6c37849cb981d057bec7",
+      "inspection": "PASS with scope note: decoded and visually sampled; cyan/magenta background is fully opaque.",
+      "m1Use": "out-of-scope opaque rejection; M2 background-removal research"
+    }
+  ]
+}

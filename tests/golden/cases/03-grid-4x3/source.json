@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "spriteflow-source/1",
+  "kind": "programmatic",
+  "author": "SpriteFlow QA",
+  "license": "CC0-1.0",
+  "generator": "tests/golden/tools/generate.mjs",
+  "deterministic": true,
+  "notes": "Synthetic geometry only; no third-party artwork is embedded."
+}

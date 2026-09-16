@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "14-grid-multicomponent-mixed",
+  "title": "部分网格帧多连通域",
+  "category": "multi-component-cell",
+  "inputType": "A",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 156,
+    "height": 104,
+    "sha256": "22535a1b3168c2eda416a13e99dbc9e12143664348ac21926958f55ce8eacda0"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 6,
+    "strategy": "grid",
+    "origin": "grid",
+    "layout": {
+      "rows": 2,
+      "columns": 3
+    },
+    "degraded": null,
+    "warningCodes": [
+      "MULTIPLE_COMPONENTS"
+    ],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 52,
+          "height": 52
+        },
+        "bbox": {
+          "x": 14,
+          "y": 8,
+          "width": 23,
+          "height": 35
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 52,
+          "y": 0,
+          "width": 52,
+          "height": 52
+        },
+        "bbox": {
+          "x": 66,
+          "y": 12,
+          "width": 23,
+          "height": 27
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 104,
+          "y": 0,
+          "width": 52,
+          "height": 52
+        },
+        "bbox": {
+          "x": 118,
+          "y": 8,
+          "width": 23,
+          "height": 35
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 0,
+          "y": 52,
+          "width": 52,
+          "height": 52
+        },
+        "bbox": {
+          "x": 14,
+          "y": 64,
+          "width": 23,
+          "height": 27
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 4,
+        "sourceRect": {
+          "x": 52,
+          "y": 52,
+          "width": 52,
+          "height": 52
+        },
+        "bbox": {
+          "x": 66,
+          "y": 60,
+          "width": 23,
+          "height": 35
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 5,
+        "sourceRect": {
+          "x": 104,
+          "y": 52,
+          "width": 52,
+          "height": 52
+        },
+        "bbox": {
+          "x": 118,
+          "y": 64,
+          "width": 23,
+          "height": 27
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "grid-multiple-components",
+    "mixed-flags"
+  ]
+}

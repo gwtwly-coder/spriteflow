@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "20-empty-transparent",
+  "title": "整图全透明",
+  "category": "empty",
+  "inputType": "E",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 64,
+    "height": 48,
+    "sha256": "be4c45f9790ebf436921f591eea598032a3bdbb5778008e80202e2c23918d4f0"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 1,
+    "strategy": "manual-grid",
+    "origin": "manual",
+    "layout": {
+      "rows": 1,
+      "columns": 1
+    },
+    "degraded": {
+      "reason": "EMPTY_INPUT",
+      "attempted": []
+    },
+    "warningCodes": [
+      "DETECTION_DEGRADED",
+      "EMPTY_FRAMES"
+    ],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 48
+        },
+        "bbox": null,
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": true,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "empty-input",
+    "explicit-degradation",
+    "empty-frame"
+  ]
+}

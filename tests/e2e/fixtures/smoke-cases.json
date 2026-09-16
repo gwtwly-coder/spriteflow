@@ -1,0 +1,52 @@
+{
+  "schemaVersion": "spriteflow-e2e-smoke/1",
+  "cases": [
+    {
+      "caseId": "01-grid-2x2",
+      "upload": "drag-drop",
+      "expectedStrategy": "grid",
+      "expectedFrameCount": 4,
+      "exports": ["phaser-json-hash", "phaser-json-array"]
+    },
+    {
+      "caseId": "07-scatter-5",
+      "upload": "file-chooser",
+      "expectedStrategy": "components",
+      "expectedFrameCount": 5,
+      "exports": ["godot-frames-zip"]
+    },
+    {
+      "caseId": "13-grid-multicomponent",
+      "upload": "file-chooser",
+      "expectedStrategy": "grid",
+      "expectedFrameCount": 6,
+      "expectedReviewFlag": "multipleComponents",
+      "exports": ["phaser-json-hash"]
+    },
+    {
+      "caseId": "16-size-outlier",
+      "upload": "file-chooser",
+      "expectedStrategy": "components",
+      "expectedFrameCount": 5,
+      "expectedReviewFlag": "outlier",
+      "exports": ["godot-frames-zip"]
+    },
+    {
+      "caseId": "18-single-frame-degrade",
+      "upload": "file-chooser",
+      "expectedStrategy": "manual-grid",
+      "expectedFrameCount": 1,
+      "expectedDegradedReason": "INSUFFICIENT_COMPONENTS",
+      "exports": []
+    },
+    {
+      "caseId": "20-empty-transparent",
+      "upload": "file-chooser",
+      "expectedStrategy": "manual-grid",
+      "expectedFrameCount": 1,
+      "expectedDegradedReason": "EMPTY_INPUT",
+      "expectedReviewFlag": "empty",
+      "exports": []
+    }
+  ]
+}

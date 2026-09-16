@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<!--
+  SpriteFlow M1 · 导出面板静态稿（单文件，内联 CSS，假数据）
+  覆盖状态（ui-spec.md 第 9 节）：D-54 主态（Phaser Hash）/ D-54b Godot 选中 / D-60 尺寸冲突 /
+    D-52 未确认阻断 / D-55 处理中 / D-56 成功 / D-58 下载被阻止
+  文案全部取自 docs/copy-m1.md；右上角按钮切换 zh/EN。
+  形态：480px 右侧抽屉（ui-spec 5.4），遮罩点击不关闭，Esc / 返回编辑 关闭。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>SpriteFlow · 导出面板静态稿</title>
+<style>
+  :root{
+    --bg-0:#0e1116; --bg-1:#151a22; --bg-2:#1c232e; --bg-3:#242d3b;
+    --border-1:#2a3342; --border-2:#3a465a;
+    --text-1:#e8edf5; --text-2:#a7b1c4; --text-3:#6b7688;
+    --accent:#4d8dff; --accent-hover:#6ea3ff; --accent-active:#3b74e0; --accent-dim:rgba(77,141,255,.16);
+    --ok:#43d17c; --warn:#f0b13e; --danger:#f0596a;
+    --checker-a:#232a35; --checker-b:#1a202a;
+    --ui:system-ui,"Segoe UI","Microsoft YaHei",sans-serif;
+    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#080a0d;color:var(--text-1);font-family:var(--ui);font-size:13px;line-height:20px;padding:24px 24px 80px}
+  /* ===== 评审脚手架 ===== */
+  .review-note{max-width:1000px;margin:0 auto 20px;padding:10px 14px;border:1px solid var(--border-1);border-radius:8px;background:#10141b;color:var(--text-2)}
+  .review-note b{color:var(--text-1)}
+  .variant-label{max-width:1000px;margin:44px auto 10px;font-family:var(--mono);font-size:12px;color:var(--warn);letter-spacing:.4px}
+  .frame-note{max-width:1000px;margin:6px auto 0;color:var(--text-3);font-size:12px}
+  .lang-toggle{position:fixed;top:12px;right:16px;z-index:99;height:30px;padding:0 12px;border:1px solid var(--warn);border-radius:6px;background:#10141b;color:var(--warn);cursor:pointer;font:600 12px var(--ui)}
+  /* ===== 舞台：暗化编辑器背景 + 抽屉 ===== */
+  .stage{width:1000px;margin:0 auto;position:relative;height:700px;border:1px solid var(--border-1);border-radius:8px;overflow:hidden;background:var(--bg-0)}
+  .bg-stub{position:absolute;inset:0;filter:brightness(.55) saturate(.6)}
+  .stub-top{height:40px;background:var(--bg-1);border-bottom:1px solid var(--border-1)}
+  .stub-mid{display:flex;height:508px}
+  .stub-canvas{flex:1;position:relative;background:
+    linear-gradient(45deg,var(--checker-a) 25%,transparent 25%,transparent 75%,var(--checker-a) 75%) 0 0/16px 16px,
+    linear-gradient(45deg,var(--checker-a) 25%,var(--checker-b) 25%,var(--checker-b) 75%,var(--checker-a) 75%) 8px 8px/16px 16px;opacity:.4}
+  .stub-side{width:292px;background:var(--bg-1);border-left:1px solid var(--border-1)}
+  .stub-tl{height:152px;background:var(--bg-1);border-top:1px solid var(--border-1)}
+  .veil{position:absolute;inset:0;background:rgba(4,6,10,.5)}
+  /* 抽屉 */
+  .drawer{position:absolute;top:0;right:0;bottom:0;width:480px;background:var(--bg-1);border-left:1px solid var(--border-2);
+    display:flex;flex-direction:column;box-shadow:-8px 0 24px rgba(0,0,0,.45)}
+  .dw-head{height:56px;flex:none;display:flex;align-items:center;gap:8px;padding:0 16px;border-bottom:1px solid var(--border-1)}
+  .dw-head h1{font-size:20px;line-height:28px;flex:1}
+  .icon-btn{width:28px;height:28px;border:none;border-radius:6px;background:transparent;color:var(--text-2);cursor:pointer;font-size:14px}
+  .icon-btn:hover{background:var(--bg-2);color:var(--text-1)}
+  .dw-body{flex:1;overflow-y:auto;padding:14px 16px}
+  .dw-foot{flex:none;display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:1px solid var(--border-1)}
+  .summary{color:var(--text-2);margin-bottom:16px}
+  .summary .mono{font-family:var(--mono);color:var(--text-1)}
+  .grp{margin-bottom:20px}
+  .grp>h3{font-size:14px;line-height:22px;margin-bottom:8px;color:var(--text-1)}
+  .fld-label{display:block;font-size:12px;color:var(--text-3);margin-bottom:6px}
+  /* 格式单选卡 */
+  .fmt-card{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--border-1);border-radius:8px;
+    background:var(--bg-0);cursor:pointer;margin-bottom:6px}
+  .fmt-card:hover{border-color:var(--border-2)}
+  .fmt-card.on{border-color:var(--accent);background:var(--accent-dim)}
+  .radio{width:16px;height:16px;border-radius:50%;border:2px solid var(--border-2);flex:none;position:relative}
+  .fmt-card.on .radio{border-color:var(--accent)}
+  .fmt-card.on .radio::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+  .fmt-card .fc-t{font-weight:600;display:block}
+  .fmt-card .fc-s{font-size:11px;line-height:16px;color:var(--text-3);font-family:var(--mono)}
+  /* 尺寸单选 chips */
+  .sz-row{display:flex;gap:6px;flex-wrap:wrap}
+  .szchip{height:28px;padding:0 10px;border:1px solid var(--border-1);border-radius:14px;background:var(--bg-2);color:var(--text-2);cursor:pointer;font-size:12px}
+  .szchip:hover{background:var(--bg-3)}
+  .szchip.on{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+  .field{margin-top:14px}
+  /* 步进器 */
+  .stepper{display:inline-flex;align-items:center;border:1px solid var(--border-1);border-radius:6px;background:var(--bg-2);overflow:hidden}
+  .stepper button{width:28px;height:32px;border:none;background:transparent;color:var(--text-2);cursor:pointer;font-size:14px}
+  .stepper button:hover{background:var(--bg-3);color:var(--text-1)}
+  .stepper input{width:64px;border:none;background:transparent;color:var(--text-1);text-align:center;font:400 13px var(--mono);outline:none}
+  .stepper .unit{color:var(--text-3);padding-right:8px;font-size:12px}
+  /* 开关 */
+  .switch-row{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+  .switch-row .sr-label{font-size:13px}
+  .switch{width:36px;height:20px;border-radius:10px;background:var(--bg-3);border:none;cursor:pointer;position:relative}
+  .switch::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:var(--text-3);transition:all .15s}
+  .switch.on{background:var(--accent)}
+  .switch.on::after{left:18px;background:#fff}
+  /* 只读行 */
+  .ro-row{display:flex;gap:16px;margin-top:14px;color:var(--text-3);font-size:12px}
+  .ro-row .ro{display:flex;align-items:center;gap:6px}
+  .ro-row .ro b{color:var(--text-2);font-weight:500;font-family:var(--mono)}
+  .locked-ic{width:11px;height:9px;border:1.5px solid var(--text-3);border-radius:2px;position:relative}
+  .locked-ic::after{content:"";position:absolute;left:2px;top:-4px;width:5px;height:5px;border:1.5px solid var(--text-3);border-bottom:none;border-radius:3px 3px 0 0}
+  .godot-note{padding:8px 12px;border:1px dashed var(--border-1);border-radius:6px;color:var(--text-3);font-size:12px}
+  /* 按钮 */
+  .btn-primary{height:34px;padding:0 18px;border:none;border-radius:6px;background:var(--accent);color:#0b1220;font:600 13px/1 var(--ui);cursor:pointer}
+  .btn-primary:hover{background:var(--accent-hover)}
+  .btn-primary:active{background:var(--accent-active)}
+  .btn-secondary{height:34px;padding:0 16px;border:1px solid var(--border-1);border-radius:6px;background:transparent;color:var(--text-1);font:13px/1 var(--ui);cursor:pointer}
+  .btn-secondary:hover{background:var(--bg-2)}
+  /* 内联错误（尺寸冲突） */
+  .inline-error{display:flex;gap:8px;align-items:flex-start;margin-top:14px;padding:10px 12px;border:1px solid rgba(240,89,106,.4);
+    border-left:3px solid var(--danger);border-radius:6px;background:rgba(240,89,106,.08);color:#ffb9bf;font-size:12px;line-height:18px}
+  .inline-error .e-ic{width:14px;height:14px;flex:none;border-radius:50%;background:var(--danger);position:relative;margin-top:2px}
+  .inline-error .e-ic::before,.inline-error .e-ic::after{content:"";position:absolute;left:6px;top:3px;width:2px;height:8px;background:#0b1220;border-radius:1px;transform:rotate(90deg)}
+  .inline-error .e-ic::after{transform:none}
+  /* 处理中 */
+  .stg-list{margin:8px 0 20px}
+  .stg{display:flex;align-items:center;gap:10px;padding:7px 0;color:var(--text-2)}
+  .stg.done{color:var(--text-2)}
+  .stg.cur{color:var(--text-1)}
+  .stg .ic{width:16px;height:16px;flex:none;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
+  .stg.done .ic{color:var(--ok)}
+  .stg .pend{width:10px;height:10px;border:1.5px solid var(--text-2);border-radius:50%;display:inline-block}
+  .spinner{width:14px;height:14px;border-radius:50%;border:2px solid var(--border-2);border-top-color:var(--accent);animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .pbar{height:6px;border-radius:3px;background:var(--bg-3);overflow:hidden;position:relative}
+  .pbar .fill{position:absolute;left:0;top:0;bottom:0;width:62%;background:var(--accent);border-radius:3px}
+  .pbar.indet .fill{width:30%;animation:slide 1.2s ease-in-out infinite alternate}
+  @keyframes slide{from{left:0}to{left:70%}}
+  .pct-row{display:flex;justify-content:space-between;margin-top:6px;font:400 12px var(--mono);color:var(--text-2)}
+  /* 成功 */
+  .success-box{text-align:center;padding:28px 0 8px}
+  .ok-mark{width:48px;height:48px;border-radius:50%;background:var(--ok);margin:0 auto 14px;position:relative}
+  .ok-mark::after{content:"";position:absolute;left:15px;top:13px;width:14px;height:24px;border:solid #0b1220;border-width:0 3px 3px 0;transform:rotate(42deg)}
+  .success-box h2{font-size:20px;line-height:28px;margin-bottom:4px}
+  .file-card{margin:18px auto 0;width:100%;display:flex;align-items:center;gap:10px;padding:12px;border:1px solid var(--border-1);border-radius:8px;background:var(--bg-0);text-align:left}
+  .zip-ic{width:28px;height:34px;border-radius:4px;background:var(--accent-dim);border:1px solid var(--accent);position:relative;flex:none}
+  .zip-ic::after{content:"";position:absolute;left:50%;top:6px;transform:translateX(-50%);width:8px;height:6px;background:var(--accent);border-radius:1px}
+  .file-card .fn{font-family:var(--mono);font-size:12px;color:var(--text-1)}
+  .file-card .fs{font-size:11px;color:var(--text-3)}
+  /* 模态（未确认） */
+  .modal-wrap{position:absolute;inset:0;background:rgba(4,6,10,.55);display:flex;align-items:center;justify-content:center}
+  .modal{width:420px;background:var(--bg-1);border:1px solid var(--border-2);border-radius:8px;padding:18px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .modal h2{font-size:20px;line-height:28px;margin-bottom:6px}
+  .modal p{color:var(--text-2)}
+  .modal .acts{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+  .warn-ic{width:20px;height:20px;border-radius:50%;background:var(--warn);position:relative;margin-bottom:10px}
+  .warn-ic::after{content:"!";position:absolute;inset:0;text-align:center;line-height:20px;color:#0e1116;font-weight:700;font-size:14px}
+</style>
+</head>
+<body>
+
+<button class="lang-toggle" id="langToggle" onclick="toggleLang()">预览 English</button>
+
+<div class="review-note">
+  <b>SpriteFlow 导出面板静态稿</b> · 形态：480px 右侧抽屉，遮罩点击不关闭（防误触）。状态覆盖：D-54 主态 / D-54b Godot（图集设置隐藏）/ D-60 尺寸冲突 / D-52 未确认阻断 / D-55 处理中 / D-56 成功 / D-58 下载被阻止。文案取自 docs/copy-m1.md，右上角可切换双语。
+</div>
+
+<!-- ============ D-54 主态：Phaser JSON Hash ============ -->
+<div class="variant-label">D-54 · 主态：Phaser 3 · JSON Hash（export.*）</div>
+<div class="stage">
+  <div class="bg-stub"><div class="stub-top"></div><div class="stub-mid"><div class="stub-canvas"></div><div class="stub-side"></div></div><div class="stub-tl"></div></div>
+  <div class="veil"></div>
+  <div class="drawer">
+    <div class="dw-head">
+      <h1 data-zh="导出引擎素材" data-en="Export engine assets">导出引擎素材</h1>
+      <button class="icon-btn" title="返回编辑 Back to editor">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="summary"><span data-zh="将导出" data-en="">将导出</span> <span class="mono">12</span> <span data-zh="帧" data-en="">帧</span></div>
+      <div class="grp">
+        <span class="fld-label" data-zh="格式" data-en="Format">格式</span>
+        <label class="fmt-card on">
+          <span class="radio"></span>
+          <span><span class="fc-t" data-zh="Phaser 3 · JSON Hash" data-en="Phaser 3 · JSON Hash">Phaser 3 · JSON Hash</span>
+          <span class="fc-s">atlas.png · atlas.json · animations.json</span></span>
+        </label>
+        <label class="fmt-card">
+          <span class="radio"></span>
+          <span><span class="fc-t" data-zh="Phaser 3 · JSON Array" data-en="Phaser 3 · JSON Array">Phaser 3 · JSON Array</span>
+          <span class="fc-s">atlas.png · atlas.json · animations.json</span></span>
+        </label>
+        <label class="fmt-card">
+          <span class="radio"></span>
+          <span><span class="fc-t" data-zh="Godot 4 · 帧序列 + 构建脚本" data-en="Godot 4 · Frames + build script">Godot 4 · 帧序列 + 构建脚本</span>
+          <span class="fc-s">frames/ · sequence.json · build_spriteframes.gd · README.txt</span></span>
+        </label>
+      </div>
+      <div class="grp">
+        <h3 data-zh="图集设置" data-en="Atlas settings">图集设置</h3>
+        <span class="fld-label" data-zh="图集尺寸" data-en="Atlas size">图集尺寸</span>
+        <div class="sz-row">
+          <button class="szchip on" data-zh="自动" data-en="Auto">自动</button>
+          <button class="szchip">2048×2048（POT）</button>
+          <button class="szchip">4096×4096（POT）</button>
+          <button class="szchip">8192×8192（POT）</button>
+        </div>
+        <div class="field">
+          <span class="fld-label" data-zh="最大尺寸" data-en="Maximum size">最大尺寸</span>
+          <div class="stepper"><button>−</button><input value="2048"><span class="unit">px</span><button>＋</button></div>
+        </div>
+        <div class="switch-row">
+          <span class="sr-label" data-zh="允许旋转 90°" data-en="Allow 90° rotation">允许旋转 90°</span>
+          <button class="switch" aria-label="允许旋转 90°"></button>
+        </div>
+        <div class="ro-row">
+          <span class="ro"><span class="locked-ic"></span><span data-zh="间距" data-en="Padding">间距</span><b>2 px</b></span>
+          <span class="ro"><span class="locked-ic"></span><span data-zh="出血边" data-en="Extrude">出血边</span><b>1 px</b></span>
+        </div>
+      </div>
+    </div>
+    <div class="dw-foot">
+      <button class="btn-secondary" data-zh="返回编辑" data-en="Back to editor">返回编辑</button>
+      <button class="btn-primary" data-zh="生成并下载" data-en="Build and download">生成并下载</button>
+    </div>
+  </div>
+</div>
+<div class="frame-note">「将导出 12 帧」= export.summary（{count} 以真实值替换）。间距/出血边为 M1 固定默认值（F-09），只读锁定展示。</div>
+
+<!-- ============ D-54b Godot 选中 ============ -->
+<div class="variant-label">D-54b · Godot 4 选中（图集设置组隐藏）</div>
+<div class="stage">
+  <div class="bg-stub"><div class="stub-top"></div><div class="stub-mid"><div class="stub-canvas"></div><div class="stub-side"></div></div><div class="stub-tl"></div></div>
+  <div class="veil"></div>
+  <div class="drawer">
+    <div class="dw-head">
+      <h1 data-zh="导出引擎素材" data-en="Export engine assets">导出引擎素材</h1>
+      <button class="icon-btn" title="返回编辑 Back to editor">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="summary"><span>将导出</span> <span class="mono">12</span> <span>帧</span></div>
+      <div class="grp">
+        <span class="fld-label" data-zh="格式" data-en="Format">格式</span>
+        <label class="fmt-card">
+          <span class="radio"></span>
+          <span><span class="fc-t" data-zh="Phaser 3 · JSON Hash" data-en="Phaser 3 · JSON Hash">Phaser 3 · JSON Hash</span>
+          <span class="fc-s">atlas.png · atlas.json · animations.json</span></span>
+        </label>
+        <label class="fmt-card">
+          <span class="radio"></span>
+          <span><span class="fc-t" data-zh="Phaser 3 · JSON Array" data-en="Phaser 3 · JSON Array">Phaser 3 · JSON Array</span>
+          <span class="fc-s">atlas.png · atlas.json · animations.json</span></span>
+        </label>
+        <label class="fmt-card on">
+          <span class="radio"></span>
+          <span><span class="fc-t" data-zh="Godot 4 · 帧序列 + 构建脚本" data-en="Godot 4 · Frames + build script">Godot 4 · 帧序列 + 构建脚本</span>
+          <span class="fc-s">frames/ · sequence.json · build_spriteframes.gd · README.txt</span></span>
+        </label>
+      </div>
+      <div class="grp">
+        <div class="godot-note" data-zh="Godot 导出为 PNG 帧序列（完整逻辑画布）+ 构建脚本，不打包图集。" data-en="Godot exports a PNG frame sequence (full logical canvas) plus a build script—no atlas packing.">Godot 导出为 PNG 帧序列（完整逻辑画布）+ 构建脚本，不打包图集。</div>
+      </div>
+    </div>
+    <div class="dw-foot">
+      <button class="btn-secondary" data-zh="返回编辑" data-en="Back to editor">返回编辑</button>
+      <button class="btn-primary" data-zh="生成并下载" data-en="Build and download">生成并下载</button>
+    </div>
+  </div>
+</div>
+<div class="frame-note">说明行文字复用 export.godot 词条语义（ui-spec 设计发现 D-03）。</div>
+
+<!-- ============ D-60 尺寸冲突 ============ -->
+<div class="variant-label">D-60 · 尺寸冲突（export.size_too_small，PACK_OVERFLOW / FRAME_TOO_LARGE）</div>
+<div class="stage">
+  <div class="bg-stub"><div class="stub-top"></div><div class="stub-mid"><div class="stub-canvas"></div><div class="stub-side"></div></div><div class="stub-tl"></div></div>
+  <div class="veil"></div>
+  <div class="drawer">
+    <div class="dw-head">
+      <h1 data-zh="导出引擎素材" data-en="Export engine assets">导出引擎素材</h1>
+      <button class="icon-btn" title="返回编辑 Back to editor">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="summary"><span>将导出</span> <span class="mono">12</span> <span>帧</span></div>
+      <div class="grp">
+        <span class="fld-label" data-zh="格式" data-en="Format">格式</span>
+        <label class="fmt-card on">
+          <span class="radio"></span>
+          <span><span class="fc-t">Phaser 3 · JSON Hash</span><span class="fc-s">atlas.png · atlas.json · animations.json</span></span>
+        </label>
+      </div>
+      <div class="grp">
+        <h3 data-zh="图集设置" data-en="Atlas settings">图集设置</h3>
+        <span class="fld-label" data-zh="图集尺寸" data-en="Atlas size">图集尺寸</span>
+        <div class="sz-row">
+          <button class="szchip" data-zh="自动" data-en="Auto">自动</button>
+          <button class="szchip on">2048×2048（POT）</button>
+          <button class="szchip">4096×4096（POT）</button>
+          <button class="szchip">8192×8192（POT）</button>
+        </div>
+        <div class="inline-error">
+          <span class="e-ic"></span>
+          <span data-zh="这些帧放不进所选尺寸。请选择更大尺寸或自动。" data-en="These frames don't fit the selected size. Choose a larger size or Auto.">这些帧放不进所选尺寸。请选择更大尺寸或自动。</span>
+        </div>
+      </div>
+    </div>
+    <div class="dw-foot">
+      <button class="btn-secondary" data-zh="返回编辑" data-en="Back to editor">返回编辑</button>
+      <button class="btn-primary" style="opacity:.4;pointer-events:none" data-zh="生成并下载" data-en="Build and download">生成并下载</button>
+    </div>
+  </div>
+</div>
+<div class="frame-note">冲突未解决前「生成并下载」禁用；改选更大 POT 或「自动」后内联错误消失、按钮恢复。不自动缩小帧、不静默丢帧。</div>
+
+<!-- ============ D-52 未确认阻断 ============ -->
+<div class="variant-label">D-52 · 未确认审校（export.review_required.*，REVIEW_REQUIRED）</div>
+<div class="stage">
+  <div class="bg-stub"><div class="stub-top"></div><div class="stub-mid"><div class="stub-canvas"></div><div class="stub-side"></div></div><div class="stub-tl"></div></div>
+  <div class="veil"></div>
+  <div class="modal-wrap">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="warn-ic"></div>
+      <h2 data-zh="先确认审校结果" data-en="Confirm the review first">先确认审校结果</h2>
+      <p data-zh="检查待复核帧，然后点“确认审校”。" data-en="Check the flagged frames, then select Confirm review.">检查待复核帧，然后点“确认审校”。</p>
+      <div class="acts">
+        <button class="btn-primary" data-zh="返回审校" data-en="Back to review">返回审校</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="frame-note">仅在未完成「确认审校」时点「导出」出现；带角标帧确认后仍可导出（flags 保留，不自动处理）。</div>
+
+<!-- ============ D-55 处理中 ============ -->
+<div class="variant-label">D-55 · 处理中（export.preparing → packing → writing_phaser → zipping）</div>
+<div class="stage">
+  <div class="bg-stub"><div class="stub-top"></div><div class="stub-mid"><div class="stub-canvas"></div><div class="stub-side"></div></div><div class="stub-tl"></div></div>
+  <div class="veil"></div>
+  <div class="drawer">
+    <div class="dw-head">
+      <h1 data-zh="导出引擎素材" data-en="Export engine assets">导出引擎素材</h1>
+      <button class="icon-btn" title="返回编辑 Back to editor">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="summary"><span>将导出</span> <span class="mono">12</span> <span>帧</span> · <span style="color:var(--text-1)" data-zh="Phaser 3 · JSON Hash" data-en="Phaser 3 · JSON Hash">Phaser 3 · JSON Hash</span></div>
+      <div class="grp">
+        <div class="stg-list">
+          <div class="stg done"><span class="ic">✔</span><span data-zh="正在准备帧…" data-en="Preparing frames…">正在准备帧…</span></div>
+          <div class="stg done"><span class="ic">✔</span><span data-zh="正在打包图集…" data-en="Packing atlas…">正在打包图集…</span></div>
+          <div class="stg cur"><span class="ic"><span class="spinner"></span></span><span data-zh="正在生成 Phaser 文件…" data-en="Building Phaser files…">正在生成 Phaser 文件…</span></div>
+          <div class="stg"><span class="ic"><span class="pend"></span></span><span data-zh="正在创建 ZIP…" data-en="Creating ZIP…">正在创建 ZIP…</span></div>
+        </div>
+        <div class="pbar"><span class="fill"></span></div>
+        <div class="pct-row">
+          <span aria-hidden="true"></span>
+          <span data-zh="导出已完成 62%" data-en="Export 62% complete">导出已完成 62%</span>
+        </div>
+      </div>
+    </div>
+    <div class="dw-foot">
+      <button class="btn-secondary" data-zh="停止导出" data-en="Stop export">停止导出</button>
+    </div>
+  </div>
+</div>
+<div class="frame-note">阶段与权重来自管线 ProgressEvent；无细粒度计数的阶段（如原生 PNG 编码）该段进度条显示不定态条纹、百分比保持上一段末值，不做定时器假进度。取消经终态结算后才允许新任务。</div>
+
+<!-- ============ D-56 成功 ============ -->
+<div class="variant-label">D-56 · 成功（export.success.*）</div>
+<div class="stage">
+  <div class="bg-stub"><div class="stub-top"></div><div class="stub-mid"><div class="stub-canvas"></div><div class="stub-side"></div></div><div class="stub-tl"></div></div>
+  <div class="veil"></div>
+  <div class="drawer">
+    <div class="dw-head">
+      <h1 data-zh="导出引擎素材" data-en="Export engine assets">导出引擎素材</h1>
+      <button class="icon-btn" title="返回编辑 Back to editor">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="success-box">
+        <div class="ok-mark"></div>
+        <h2 data-zh="导出完成" data-en="Export ready">导出完成</h2>
+        <p style="color:var(--text-2)"><span class="mono">atlas-phaser-json-hash.zip</span> <span data-zh="已生成。" data-en="is ready.">已生成。</span></p>
+        <div class="file-card">
+          <span class="zip-ic"></span>
+          <span><span class="fn">atlas-phaser-json-hash.zip</span><br><span class="fs" data-zh="12 帧 · atlas.png · atlas.json · animations.json" data-en="12 frames · atlas.png · atlas.json · animations.json">12 帧 · atlas.png · atlas.json · animations.json</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="dw-foot" style="justify-content:space-between">
+      <button class="btn-secondary" data-zh="继续编辑" data-en="Keep editing">继续编辑</button>
+      <span style="display:flex;gap:8px">
+        <button class="btn-secondary" data-zh="用其他格式再导出" data-en="Export another format">用其他格式再导出</button>
+        <button class="btn-primary" data-zh="下载 ZIP" data-en="Download ZIP">下载 ZIP</button>
+      </span>
+    </div>
+  </div>
+</div>
+<div class="frame-note">点「生成并下载」即尝试自动下载；成功后保留全部审校数据，可换格式重导出或继续编辑（不要求重新上传/检测）。</div>
+
+<!-- ============ D-58 下载被阻止 ============ -->
+<div class="variant-label">D-58 · 下载被浏览器阻止（export.download_blocked.*，成功态内嵌）</div>
+<div class="stage">
+  <div class="bg-stub"><div class="stub-top"></div><div class="stub-mid"><div class="stub-canvas"></div><div class="stub-side"></div></div><div class="stub-tl"></div></div>
+  <div class="veil"></div>
+  <div class="drawer">
+    <div class="dw-head">
+      <h1 data-zh="导出引擎素材" data-en="Export engine assets">导出引擎素材</h1>
+      <button class="icon-btn" title="返回编辑 Back to editor">✕</button>
+    </div>
+    <div class="dw-body">
+      <div class="success-box">
+        <div class="ok-mark"></div>
+        <h2 data-zh="导出完成" data-en="Export ready">导出完成</h2>
+        <p style="color:var(--text-2)"><span class="mono">atlas-phaser-json-hash.zip</span> <span>已生成。</span></p>
+      </div>
+      <div class="inline-error">
+        <span class="e-ic"></span>
+        <span><b data-zh="浏览器拦住了下载" data-en="Your browser blocked the download">浏览器拦住了下载</b><br>
+        <span data-zh="允许本站下载文件，然后再试一次。" data-en="Allow downloads from this site, then try again.">允许本站下载文件，然后再试一次。</span></span>
+      </div>
+    </div>
+    <div class="dw-foot" style="justify-content:space-between">
+      <button class="btn-secondary" data-zh="继续编辑" data-en="Keep editing">继续编辑</button>
+      <button class="btn-primary" data-zh="下载 ZIP" data-en="Download ZIP">下载 ZIP</button>
+    </div>
+  </div>
+</div>
+<div class="frame-note">ZIP 已在本地生成并保留；用户在浏览器允许下载后点「下载 ZIP」重试即可，不需要重新打包。</div>
+
+<script>
+  /* 双语预览切换：仅作用于带 data-en 的节点（评审用，产品内为 i18n 字典） */
+  let lang = 'zh';
+  function toggleLang(){
+    lang = lang === 'zh' ? 'en' : 'zh';
+    document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+    document.querySelectorAll('[data-en]').forEach(el=>{
+      if (el.hasAttribute('data-' + lang)) el.textContent = el.getAttribute('data-' + lang);
+    });
+    document.getElementById('langToggle').textContent = lang === 'zh' ? '预览 English' : '预览中文';
+  }
+</script>
+</body>
+</html>

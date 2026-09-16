@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "07-scatter-5",
+  "title": "透明底散排 5 帧",
+  "category": "scatter",
+  "inputType": "C",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 128,
+    "height": 92,
+    "sha256": "c3ca5779acf366a1fe5514df2d3b5094d0f4269a51aa3b780bc03f226d4d581a"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 5,
+    "strategy": "components",
+    "origin": "components",
+    "layout": null,
+    "degraded": null,
+    "warningCodes": [],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 70,
+          "y": 5,
+          "width": 24,
+          "height": 24
+        },
+        "bbox": {
+          "x": 70,
+          "y": 5,
+          "width": 24,
+          "height": 24
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 10,
+          "y": 10,
+          "width": 24,
+          "height": 24
+        },
+        "bbox": {
+          "x": 10,
+          "y": 10,
+          "width": 24,
+          "height": 24
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 40,
+          "y": 18,
+          "width": 24,
+          "height": 24
+        },
+        "bbox": {
+          "x": 40,
+          "y": 18,
+          "width": 24,
+          "height": 24
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 90,
+          "y": 38,
+          "width": 24,
+          "height": 24
+        },
+        "bbox": {
+          "x": 90,
+          "y": 38,
+          "width": 24,
+          "height": 24
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 4,
+        "sourceRect": {
+          "x": 58,
+          "y": 47,
+          "width": 24,
+          "height": 24
+        },
+        "bbox": {
+          "x": 58,
+          "y": 47,
+          "width": 24,
+          "height": 24
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "transparent-scatter",
+    "uneven-spacing"
+  ]
+}

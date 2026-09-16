@@ -1,0 +1,178 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "17-narrative-irregular",
+  "title": "叙事型不规则透明排布",
+  "category": "narrative",
+  "inputType": "E",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 164,
+    "height": 108,
+    "sha256": "15134826cfb3f9a8e2dc982340d92f2ed6e6cd09647b2aa8e61ad5390996c9e5"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 6,
+    "strategy": "components",
+    "origin": "components",
+    "layout": null,
+    "degraded": null,
+    "warningCodes": [],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 43,
+          "y": 7,
+          "width": 29,
+          "height": 31
+        },
+        "bbox": {
+          "x": 43,
+          "y": 7,
+          "width": 29,
+          "height": 31
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 119,
+          "y": 10,
+          "width": 30,
+          "height": 33
+        },
+        "bbox": {
+          "x": 119,
+          "y": 10,
+          "width": 30,
+          "height": 33
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 8,
+          "y": 18,
+          "width": 26,
+          "height": 34
+        },
+        "bbox": {
+          "x": 8,
+          "y": 18,
+          "width": 26,
+          "height": 34
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 82,
+          "y": 24,
+          "width": 25,
+          "height": 36
+        },
+        "bbox": {
+          "x": 82,
+          "y": 24,
+          "width": 25,
+          "height": 36
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 4,
+        "sourceRect": {
+          "x": 57,
+          "y": 68,
+          "width": 27,
+          "height": 32
+        },
+        "bbox": {
+          "x": 57,
+          "y": 68,
+          "width": 27,
+          "height": 32
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 5,
+        "sourceRect": {
+          "x": 103,
+          "y": 69,
+          "width": 28,
+          "height": 35
+        },
+        "bbox": {
+          "x": 103,
+          "y": 69,
+          "width": 28,
+          "height": 35
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "narrative-ai-layout",
+    "size-clustering",
+    "uneven-spacing"
+  ]
+}

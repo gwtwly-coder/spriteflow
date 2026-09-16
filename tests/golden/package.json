@@ -4,6 +4,12 @@
   "private": true,
   "description": "Golden regression workspace: fixtures + deterministic runner over the pure pipeline API. Node-only via pngjs; no app imports, no network at runtime.",
   "type": "module",
+  "scripts": {
+    "generate": "node tools/generate.mjs",
+    "golden": "node tools/run.mjs",
+    "golden:fixtures": "node tools/run.mjs --fixtures-only",
+    "gen:real": "node tools/gen-real.mjs"
+  },
   "dependencies": {
     "@spriteflow/pipeline": "workspace:*"
   },

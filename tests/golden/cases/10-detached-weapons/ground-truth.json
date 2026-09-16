@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "10-detached-weapons",
+  "title": "武器与身体断开",
+  "category": "detached-parts",
+  "inputType": "E",
+  "input": {
+    "file": "input.png",
+    "mimeType": "image/png",
+    "width": 168,
+    "height": 96,
+    "sha256": "677922e667946c6a60352ad77324f856ec53bc7061d7a143bad2733a10a6877c"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 4,
+    "strategy": "components",
+    "origin": "components",
+    "layout": null,
+    "degraded": null,
+    "warningCodes": [
+      "MULTIPLE_COMPONENTS"
+    ],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 12,
+          "y": 35,
+          "width": 24,
+          "height": 29
+        },
+        "bbox": {
+          "x": 12,
+          "y": 35,
+          "width": 24,
+          "height": 29
+        },
+        "flags": {
+          "outlier": false,
+          "merged": true,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 92,
+          "y": 35,
+          "width": 24,
+          "height": 29
+        },
+        "bbox": {
+          "x": 92,
+          "y": 35,
+          "width": 24,
+          "height": 29
+        },
+        "flags": {
+          "outlier": false,
+          "merged": true,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 52,
+          "y": 38,
+          "width": 24,
+          "height": 29
+        },
+        "bbox": {
+          "x": 52,
+          "y": 38,
+          "width": 24,
+          "height": 29
+        },
+        "flags": {
+          "outlier": false,
+          "merged": true,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 132,
+          "y": 38,
+          "width": 24,
+          "height": 29
+        },
+        "bbox": {
+          "x": 132,
+          "y": 38,
+          "width": 24,
+          "height": 29
+        },
+        "flags": {
+          "outlier": false,
+          "merged": true,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "detached-parts",
+    "dilation-merge",
+    "weapon"
+  ]
+}
