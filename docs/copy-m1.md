@@ -56,12 +56,10 @@
 | error.unsupported_type.body | 非 PNG/WebP | M1 只处理透明 PNG 和 WebP。 | M1 only handles transparent PNG and WebP files. |
 | error.multiple_files.title | 拖入多文件 | 一次只能处理一张图 | One image at a time |
 | error.multiple_files.body | 拖入多文件 | 只保留一张 PNG 或 WebP，再试一次。 | Keep one PNG or WebP file and try again. |
-| error.opaque.title | 不透明输入 | 这张图没有透明背景 | This image has no transparent background |
-| error.opaque.body | 不透明输入 | M1 不做去底。请先去掉背景，再上传 PNG 或 WebP。 | M1 doesn't remove backgrounds. Remove it first, then upload a PNG or WebP. |
+| error.opaque.title | 完全不透明像素占比 >99% | 这张图基本没有透明背景 | This image is effectively opaque |
+| error.opaque.body | 完全不透明像素占比 >99% | M1 不做去底。请先去掉背景，再上传 PNG 或 WebP。 | M1 doesn't remove backgrounds. Remove it first, then upload a PNG or WebP. |
 | error.decode.title | 文件损坏/解码失败 | 无法读取这张图 | Couldn't read this image |
 | error.decode.body | 文件损坏/解码失败 | 文件可能已损坏，或实际格式与扩展名不一致。 | The file may be damaged, or its contents may not match the extension. |
-| error.empty_image.title | 全透明图 | 没找到可见像素 | No visible pixels found |
-| error.empty_image.body | 全透明图 | 这张图是空的。请换一张，或进入手动模式自己画框。 | This image is empty. Choose another one, or draw frames in manual mode. |
 | error.choose_another | 错误动作 | 换一张图 | Choose another image |
 | error.open_manual | 可恢复错误动作 | 进入手动模式 | Open manual mode |
 
@@ -114,6 +112,8 @@
 | fallback.bad_result | 用户发现结果不对 | 结果不对？切到手动模式 | Wrong result? Switch to manual mode |
 | fallback.use_manual | 主按钮 | 使用手动网格 | Use manual grid |
 | fallback.retry_auto | 次按钮 | 重试自动检测 | Retry auto detection |
+| fallback.empty_input.title | 全透明检测降级 | 没找到可见像素，已切到手动模式 | No visible pixels found. Switched to manual mode |
+| fallback.empty_input.body | 全透明检测降级 | 已放入一个待确认空帧。你可以保留、删除，或直接画新的帧框。 | We added one empty frame for review. Keep it, delete it, or draw new frames. |
 | manual.title | 侧栏标题 | 手动网格 | Manual grid |
 | manual.rows | 输入标签 | 行数 | Rows |
 | manual.columns | 输入标签 | 列数 | Columns |
@@ -130,6 +130,8 @@
 | editor.summary | 工作区摘要 | {count} 帧 | {count} frames |
 | editor.frame_index | 选中帧 | 第 {index} 帧，共 {count} 帧 | Frame {index} of {count} |
 | editor.frame_size | 尺寸标注 | {width}×{height} px | {width}×{height} px |
+| editor.normalized_preview | 规范化预览标签 | 导出预览 | Export preview |
+| editor.normalized_preview_help | 规范化预览说明 | 显示裁紧后的内容在统一透明画布中的位置。 | Shows trimmed content on the shared transparent canvas. |
 | tool.select | 工具 | 选择 | Select |
 | tool.pan | 工具 | 平移 | Pan |
 | tool.zoom_in | 工具 | 放大 | Zoom in |
@@ -141,6 +143,7 @@
 | tool.split_frame | 工具 | 拆分帧 | Split frame |
 | tool.undo | 工具 | 撤销 | Undo |
 | tool.redo | 工具 | 重做 | Redo |
+| tool.confirm_review | 审校主按钮 | 确认审校 | Confirm review |
 | tool.export | 主按钮 | 导出 | Export |
 | editor.select_to_merge | 合并不可用提示 | 至少选择两个帧才能合并。 | Select at least two frames to merge. |
 | editor.select_one_to_split | 拆分不可用提示 | 选择一个帧后再拆分。 | Select one frame to split. |
@@ -154,6 +157,20 @@
 | editor.order_updated | Toast | 帧顺序已更新。 | Frame order updated. |
 | editor.nothing_to_undo | 禁用说明 | 没有可撤销的操作 | Nothing to undo |
 | editor.nothing_to_redo | 禁用说明 | 没有可重做的操作 | Nothing to redo |
+| review.attention.title | 待复核摘要 | 有 {count} 帧需要看一眼 | {count} frames need a look |
+| review.attention.body | 待复核说明 | 这些标记只是提醒，不会自动删除或修改帧。 | These flags are just warnings. Frames won't be removed or changed automatically. |
+| review.badge.outlier | 帧角标 | 尺寸异常 | Size outlier |
+| review.badge.multiple_components | 帧角标 | 可能粘连 | Possible merge |
+| review.badge.empty | 帧角标 | 空帧 | Empty frame |
+| review.filter.label | 筛选组标签 | 筛选帧 | Filter frames |
+| review.filter.all | 筛选项 | 全部帧 | All frames |
+| review.filter.attention | 筛选项 | 全部待复核 | All flagged |
+| review.filter.outlier | 筛选项 | 尺寸异常 | Size outliers |
+| review.filter.multiple_components | 筛选项 | 可能粘连 | Possible merges |
+| review.filter.empty | 筛选项 | 空帧 | Empty frames |
+| review.filter.none | 筛选空状态 | 没有符合条件的帧。 | No frames match this filter. |
+| review.pending | 确认前状态 | 还有 {count} 帧未确认。 | {count} frames still need confirmation. |
+| review.confirmed | 确认后 Toast | 审校已确认，可以导出。 | Review confirmed. Ready to export. |
 
 ## 9. 检测参数侧栏
 
@@ -224,6 +241,9 @@
 | export.start | 主按钮 | 生成并下载 | Build and download |
 | export.back | 次按钮 | 返回编辑 | Back to editor |
 | export.disabled_no_frames | 零帧禁用说明 | 至少添加一帧才能导出。 | Add at least one frame before exporting. |
+| export.review_required.title | 尚未确认审校 | 先确认审校结果 | Confirm the review first |
+| export.review_required.body | 尚未确认审校 | 检查待复核帧，然后点“确认审校”。 | Check the flagged frames, then select Confirm review. |
+| export.review_required.action | 恢复按钮 | 返回审校 | Back to review |
 | export.size_too_small | 尺寸冲突 | 这些帧放不进所选尺寸。请选择更大尺寸或自动。 | These frames don't fit the selected size. Choose a larger size or Auto. |
 
 ## 13. 导出过程、成功与失败
@@ -286,15 +306,15 @@
 |---|---|
 | 首次空状态 | 第 3 节 |
 | 拖放悬停、文件预检、解码 | 第 3 节 |
-| 不支持格式、多文件、不透明、损坏、全透明 | 第 4 节 |
+| 不支持格式、多文件、不透明、损坏 | 第 4 节 |
 | 超大图、处理前内存风险、运行时内存不足 | 第 5 节 |
 | 检测各阶段、取消、成功、重算、异常 | 第 6 节 |
-| 低置信度降级、手动网格、零帧 | 第 7 节 |
-| 审校工具、不可用原因、编辑反馈、撤销/重做空状态 | 第 8 节 |
+| 低置信度降级、全透明降级、手动网格、零帧 | 第 7 节 |
+| 审校工具、规范化预览、待复核角标/筛选、确认审校、编辑反馈、撤销/重做空状态 | 第 8 节 |
 | 检测参数与 300ms 重算等待状态 | 第 9 节 |
 | 预览播放、洋葱皮、预览空状态 | 第 10 节 |
 | 删除、重跑检测、更换文件确认 | 第 11 节 |
-| 导出格式、设置、零帧禁用、尺寸冲突 | 第 12 节 |
+| 导出格式、设置、零帧禁用、未确认审校、尺寸冲突 | 第 12 节 |
 | 导出各阶段、取消、成功、重试、下载拦截、无效帧 | 第 13 节 |
 | 后台任务异常、未知错误、通用可访问状态 | 第 14 节 |
 | 快捷键帮助 | 第 15 节 |

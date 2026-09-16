@@ -2,6 +2,7 @@ node_modules/
 dist/
 build/
 coverage/
+tests/golden/reports/
 *.log
 .env
 .env.*

@@ -35,6 +35,8 @@ Wave 4（上线后） 增长运营(R8)
 
 并行度：三波 sequential gates，波内全并行。前端必须等 UI 规范 + 契约 + 管线包三者齐备才开工，是唯一强串行点。
 
+R7 的根级工程初始化前置到 Wave 2 开工前：先建立共享 workspace/配置/锁文件，再允许 R4、R6 基于该骨架独立开发；完整 CI 与部署工作仍在 Wave 3。根配置始终由 R7 单人集成，各包负责人不得并行改写根锁文件。
+
 ### 文件所有权表（多 agent 防冲突的核心机制）
 
 比"开几个 agent"更决定成败的是：**每个角色只能写自己的目录**。越界修改一律打回。
@@ -47,9 +49,12 @@ Wave 4（上线后） 增长运营(R8)
 | 管线工程师 (R4) | `packages/pipeline/**` | 契约、PRD |
 | 前端工程师 (R5) | `apps/web/**` | 契约、UI 规范、管线包 |
 | QA 工程师 (R6) | `tests/golden/**`, `tests/e2e/**` | 全部 |
-| DevOps (R7) | `.github/**`, 部署配置 | 全部 |
+| DevOps / 唯一集成人 (R7) | `.github/**`, 部署配置；根 `package.json`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `tsconfig.base.json`, `biome.json`, `.npmrc`, `README.md`, `.gitignore`；`docs/devops.md` | 全部 |
 | 验收官 (R9) | `docs/acceptance/**` | 全部 |
 | 增长 (R8) | `docs/launch/**` | 全部 |
+| 产品主 | `docs/technical-design.md`, `docs/agent-roles.md` | 全部 |
+
+根级文件只授权上述明确列出的路径，不授权 R7 修改各角色业务目录。其他角色通过变更说明向 R7 提交共享配置与依赖需求；技术方案和角色权限由产品主修订或明确委托。2026-09-16 架构整改按产品主“逐条修复后重新交付”的指示补齐本表与根 `.gitignore`，不改变 R3 后续仅维护两份架构文档的常规权限。
 
 契约变更规则：任何一方发现契约缺口，**不自行变通**，在裁决文档或对话中上报，由架构师修订契约、你确认后同步双方。
 
@@ -117,6 +122,7 @@ Wave 4（上线后） 增长运营(R8)
 2. design/mockups/：关键屏（上传页、审校编辑器、导出面板）各做一个单文件 HTML 静态稿（内联 CSS、可用假数据），浏览器直接打开即可评审——HTML 稿比图片更可实施，前端工程师照抄结构与样式
 
 【完成标准】每个界面有布局描述 + HTML 稿；快捷键表和状态清单完整无遗漏；文案使用 copy-m1.md 的双语词条。
+【Gate 1 r2 交接】按最新 PRD F-18 / AC-F18，在 ui-spec 状态清单承接“尺寸异常/可能粘连/空帧”三个角标、全部/全部待复核/各类筛选、筛选空状态、未确认/确认后可导出；复用 copy-m1.md 的 review.* 与 export.review_required.* 词条。筛选只影响显示，确认不自动删帧或清除 flags；dHash 数值与重复帧折叠在 M1 不暴露。此条为已有 PRD 的设计交接，不另增功能。
 【禁止】增删功能（发现 PRD 缺失的界面状态→记录到规范末尾的「设计发现」章节上报，不擅自决定）；指定算法实现细节。
 ```
 
@@ -241,6 +247,7 @@ Wave 4（上线后） 增长运营(R8)
 2. Cloudflare Pages 部署：main 自动部署生产、PR 生成 preview 链接（配置文件 + 文档说明，实际绑定账号由产品主执行）
 3. PR 模板（含：改了什么/自测清单/是否触碰契约）与 CHANGELOG 规范
 4. docs/devops.md：从 clone 到本地跑通全部命令的十分钟指南
+5. 唯一维护根 manifest/workspace/lock/共享 TS 与 Biome 配置/.npmrc/README/.gitignore；在 Wave 2 开工前完成根级初始化，按架构审计集成各包依赖。保留 `.gitignore` 中的 `tests/golden/reports/`，报告仅作为 CI 产物。
 
 【完成标准】模拟一个故意失败的提交，CI 正确拦截；构建产物体积报告（首屏 JS <300KB gzip 预算对照）。
 【禁止】改任何业务代码；引入需要服务器/数据库的基础设施。
@@ -267,7 +274,7 @@ Wave 4（上线后） 增长运营(R8)
 ### R9 验收官（贯穿全程，每 Gate 启动一次）
 
 ```text
-【项目背景】SpriteFlow：「AI 生图 → 引擎就绪素材」纯前端工具，M1 阶段。本阶段验收对象见下方【本次验收阶段】。
+【项目背景】SpriteFlow：「AI 生图 → 引擎就绪素材」纯前端工具，M1 阶段。本阶段验收对象见下方PRD 验收。
 【必读】D:\projects\new_project1\docs\technical-design.md、docs\prd-m1.md、docs\architecture-m1.md、docs\ui-spec.md（按涉及阶段选读）、docs\interface-contract.md
 【工作目录】D:\projects\new_project1
 【你的角色】验收官。铁律：你只裁决、只出问题清单，绝不亲自修改任何文件——自己改自己查等于没查。你与生产者必须是不同会话。
