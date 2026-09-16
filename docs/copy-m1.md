@@ -128,6 +128,7 @@
 |---|---|---|---|
 | editor.title | 工作区标题 | 审校帧 | Review frames |
 | editor.summary | 工作区摘要 | {count} 帧 | {count} frames |
+| editor.selection_count | 多选计数 | 已选 {count} 帧 | {count} selected |
 | editor.frame_index | 选中帧 | 第 {index} 帧，共 {count} 帧 | Frame {index} of {count} |
 | editor.frame_size | 尺寸标注 | {width}×{height} px | {width}×{height} px |
 | editor.normalized_preview | 规范化预览标签 | 导出预览 | Export preview |

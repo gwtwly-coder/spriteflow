@@ -1,11 +1,15 @@
 # SpriteFlow M1 管线公共接口契约
 
-> 目标契约版本：`1.0.0`（尚未发布）；协议版本：`1`；文档修订：`r2`；状态：第 1 轮问题修复，提交 Gate 1 第 2 轮复审，尚未冻结。日期：2026-09-16。  
+> 生效基线：`1.0.0 / r2`（Gate 1 已通过，产品主已确认冻结）。
+>
+> 本文候选契约版本：`2.0.0`；协议版本：`1`；文档修订：`r3`；状态：**待产品主确认，尚未生效，不作为恢复实现的依据**。日期：2026-09-16。
 > 包名：`@spriteflow/pipeline`。本文自包含，类型、默认值、坐标、错误、生命周期和导出格式均为规范性要求。代码块是接口声明或调用示例，不是功能实现。
+
+本轮仅处理`SF-CONTRACT-001`与`SF-CONTRACT-002`。下文是拟生效的完整候选文本；修订依据、差异、回归矩阵及生效条件见第13节。确认前，生效基线为Git提交`2817208830f276469e5dad89daf05d30f6b1b23b`中的本文件（1.0.0/r2），其旧文件头的“尚未冻结”已被产品主后续Gate 1拍板覆盖；该提交保留首轮冻结全文以供追溯。候选文本不解除R4对这两项冲突的暂停状态，不授权同步修改实现、PRD、黄金标注或其他角色文档。
 
 ## 1. 产品范围与调用入口
 
-SpriteFlow 是完全在浏览器处理本地素材的工具。M1 接受**静态、已有透明背景的 PNG / WebP**，执行网格/连通域检测、审校后的规范化、图集打包、Phaser 3 / Godot 4 / 通用导出。静态不透明图返回明确错误，不自动去底；全透明图返回可编辑的降级结果。JPEG、BMP、GIF、APNG、动画 WebP、视频、输入 ZIP、模型、网络 URL 均不属于此输入协议。以文件签名和容器动画标记为准，不能仅凭扩展名接受 APNG 的第一帧。
+SpriteFlow 是完全在浏览器处理本地素材的工具。M1 接受**静态、已有透明背景的 PNG / WebP**，执行网格/连通域检测、审校后的规范化、图集打包、Phaser 3 / Godot 4 / 通用导出。静态不透明图返回明确错误，不自动去底；全透明图在自动检测模式下返回可编辑的降级结果，显式manual-grid则执行用户给定网格而不降级。JPEG、BMP、GIF、APNG、动画 WebP、视频、输入 ZIP、模型、网络 URL 均不属于此输入协议。以文件签名和容器动画标记为准，不能仅凭扩展名接受 APNG 的第一帧。
 
 公共入口分为：
 
@@ -22,7 +26,7 @@ SpriteFlow 是完全在浏览器处理本地素材的工具。M1 接受**静态�
 下面各节的 `ts` 声明块按顺序组成公共类型声明；所有标识符均导出。没有注明可选的字段必须存在；无值用 `null`，数组用空数组，不用 `undefined`。函数输入的 options 整体可省略；传入时必须为完整对象，推荐从默认常量展开。未知字段、非有限数和不合法组合在边界验证时返回 `INVALID_ARGUMENT`。
 
 ```ts
-export declare const CONTRACT_VERSION: "1.0.0";
+export declare const CONTRACT_VERSION: "2.0.0";
 export declare const PROTOCOL_VERSION: 1;
 export type AssetId = string;
 export type FrameId = string;
@@ -272,6 +276,8 @@ export declare const DEFAULT_DETECT_OPTIONS: Readonly<DetectOptions>;
 
 ManualGrid.rows/columns 为 1…100 的整数，乘积不得超过 maxFrames；region=null 表示整张工作图。region 非空时需在图内；每个格子的整数宽高至少 1。用户手动模式通常 keepEmptyCells=true，但它是必填项，没有隐含值。对宽 W、高 H 的区域，各切点固定 `x_i = region.x + floor(i*W/columns)`、`y_j = region.y + floor(j*H/rows)`，最后一个边界刚好覆盖完整区域，不用反复累加浮点 cell 尺寸。
 
+显式manual-grid的keepEmptyCells=true保留所有cell，包括空cell；false仅跳过其中原始mask没有前景像素的cell，其他cell维持行优先顺序。整图全透明时，true返回rows×columns个空帧，false成功返回frames=[]；两者都不触发检测降级、不补造1×1网格。空结果在后续pack/export按NO_FRAMES处理，detect本身不因此返回错误。用户提供的region与整数切点规则不因全透明而改变。
+
 参数间的单位、优先级与检测规则：
 
 1. 有效面积阈值 `max(minAreaPx, ceil(W*H*minAreaRatio))`，与**原始前景像素数**比较，不是膨胀后的面积或 bbox 面积。
@@ -288,6 +294,13 @@ diagnostics.foregroundPixels为工作图原始前景数；componentCount为膨�
 
 置信度是可复现的几何评分，不是“正确概率”。所有评分截断到 [0,1]；舍入仅用于显示，决策使用未舍入值。
 
+**模式与全透明判定的固定优先级：**
+
+1. 先执行既有输入/资源/参数校验，包括manualGrid合法组合、范围、格子尺寸及帧数上限；非法请求返回原有错误，不以全透明降级掩盖参数错误。M1不透明输入拒绝规则仍适用于所有模式。
+2. mode=manual-grid时，执行合法的显式网格并立即返回该路径结果；不执行自动策略或EMPTY_INPUT提前降级。其confidence=1、degraded=null，无DETECTION_DEGRADED warning，所有保留帧仍需人工确认。
+3. 仅mode∈{auto,grid,components}属于此处的自动检测模式。若整张工作图所有原始alpha均为0，直接返回下述EMPTY_INPUT特例，attempted=[]，不运行网格探测或CCL。该判定使用工作图原始alpha统计，不能因preview缩小丢失微小前景就将非全透明图判为EMPTY_INPUT。
+4. 非全透明的自动检测输入才进入下面的级联。非零alpha全部低于检测阈值的输入不等同于PRD定义的“整图全透明”，继续按既有候选/置信度规则决定结果。
+
 网格候选来自行/列透明槽与占用信号自相关周期；有多候选时依次按评分高、cell 总数少、行数少、列数少选取。每轴以正的相邻切点间距的中位数为周期；周期一致性为 `max(0, 1 - median(abs(gap-medianGap))/max(1,medianGap))`；只有一个 cell 的轴记 1。至少一个轴必须存在内部切点，否则 gridConfidence=0。`periodTolerance` 为相邻 gap 相对周期偏差的允许上限，超过它的 gap 不算有效周期匹配。每轴周期得分还要乘其有效 gap 比例。
 
 设 R 为两轴周期得分平均，G 为所有内部切线像素的透明比例（alpha≤threshold；交点只计一次），O 为网格非空 cell 数/cell 总数，gridConfidence=`0.45R+0.35G+0.20O`。final 在原图验证切线和 cell 内容后重新算分。切割线坐标取槽中心 floor；首尾是图像边界。网格格内有两个以上面积≥normalize.componentMinAreaPx的原始连通域时 multipleComponents=true，保留一个 cell 帧交人工审校，不擅自拆分。自动网格非空cell原始前景总面积低于有效面积阈值时作为噪声丢弃；空cell是否保留按keepEmptyCells处理。显式手动网格不使用自动最小面积过滤。
@@ -295,15 +308,20 @@ diagnostics.foregroundPixels为工作图原始前景数；componentCount为膨�
 CCL 有效帧数至少 2 时，令 S 为最大尺寸簇成员数/有效帧数，C 为保留组的原始前景像素数/原图前景总像素数，componentConfidence=`0.7S+0.3C`；前景数为零或帧数不足 2 时评分为 0。尺寸簇按第 3 节确定。
 
 - auto：gridConfidence 严格大于 grid.confidenceThreshold 则选 grid；否则计算 CCL，帧数≥2 且 componentConfidence≥阈值选 components；否则显式降级。
-- grid：只尝试网格，低于门槛降级，attempted=[grid]。
-- components：只尝试 CCL，低于门槛降级，attempted=[components]。
-- manual-grid：完全按给定网格切，无自动信心门槛，confidence=1、degraded=null；此处 1 表示严格执行用户配置，不表示检测质量。
+- grid：通过上述全透明分流后只尝试网格，低于门槛降级，attempted=[grid]。
+- components：通过上述全透明分流后只尝试CCL，低于门槛降级，attempted=[components]。
+- manual-grid：优先完全按给定网格切，即使整图全透明也不进入自动降级；confidence=1、degraded=null。keepEmptyCells决定保留或跳过空格；此处1表示严格执行用户配置，不表示检测质量。
 
-失败原因优先级：全透明→EMPTY_INPUT；超过上限→FRAME_LIMIT_EXCEEDED；有效连通域少于 2→INSUFFICIENT_COMPONENTS；已有至少 2 个但尺寸置信不足→AMBIGUOUS_COMPONENTS；仅网格未通过→LOW_CONFIDENCE。grid 候选超过上限也不能静默截断；auto 可继续尝试 CCL，只有没有可用策略时才按上述优先级降级。
+自动检测降级原因优先级（不适用于显式manual-grid）：整图全透明→EMPTY_INPUT；超过上限→FRAME_LIMIT_EXCEEDED；有效连通域少于2→INSUFFICIENT_COMPONENTS；已有至少2个但尺寸置信不足→AMBIGUOUS_COMPONENTS；仅网格未通过→LOW_CONFIDENCE。grid候选超过上限也不能静默截断；auto可继续尝试CCL，只有没有可用策略时才按上述优先级降级。
 
-降级是成功返回 `DetectResult`，strategy=manual-grid，confidence=0，degraded 非 null，warnings 含唯一 `DETECTION_DEGRADED`。建议帧数 N 取未超过上限的有效候选数，若无候选取 1；columns=`ceil(sqrt(N*W/H))`、rows=`ceil(N/columns)`，随后把 columns 限于 1…min(100,W,maxFrames)，rows 限于 1…min(100,H,floor(maxFrames/columns))。region=null、keepEmptyCells=true。**立即返回这个建议网格实际生成的 frames**，每帧 reviewStatus=pending；不返回错误自动切出的候选作为最终帧。全透明图因此返回 1 个 empty 的待确认帧，用户可新增/删除/确认。正常自动检测也为 pending；导出前统一“确认审校”将 included 帧设为 accepted。
+降级是成功返回DetectResult，strategy=manual-grid，confidence=0，degraded非null，warnings含恰好一条DETECTION_DEGRADED；这不排除按帧flags聚合的其他warning。建议网格按以下两个互斥分支产生：
 
-所有自动/建议网格返回帧初始included=true。grid/manual-grid的sourceRect为完整cell，components的sourceRect为最终合并组的原始内容紧框；bbox再按normalize.trim计算。clusterId按第3节簇编号生成`cluster_<index>`，仅在本次结果内有意义。EMPTY_INPUT在alpha检查后直接触发、attempted=[]；其他降级attempted只列实际执行的策略，auto的顺序始终grid在components之前。WARNING列表按枚举声明顺序排列，同一code聚合为一条，frameIds按帧数组顺序；DETECTION_DEGRADED的reason为实际DegradedReason且frameIds=[]，其他warning的reason=null并列出对应flags为true的帧。没有对应异常帧时不生成空warning。
+- **EMPTY_INPUT特例：**suggestedGrid固定为`{rows:1, columns:1, region:null, keepEmptyCells:true}`，完全跳过下面的通用估算公式与宽高比推算。不论工作图为方图、横图、竖图或极端长宽比，返回整图恰好一个空帧：sourceRect={x:0,y:0,width:W,height:H}、bbox=null、flags.empty=true、included=true、reviewStatus=pending、origin=manual；degraded.reason=EMPTY_INPUT、degraded.attempted=[]。帧canvas继续按第3节由整图sourceRect与normalize选项生成，offset=(0,0)，pHash=null、clusterId=null。warnings按既有顺序为DETECTION_DEGRADED（reason=EMPTY_INPUT、frameIds=[]）与EMPTY_FRAMES（reason=null、frameIds=[该帧id]）。即使grid.keepEmptyCells=false，也必须保留这个降级默认帧。
+- **其他降级：**仍使用原通用公式：建议帧数N取未超过上限的有效候选数，若无候选取1；columns=`ceil(sqrt(N*W/H))`、rows=`ceil(N/columns)`，随后把columns限于1…min(100,W,maxFrames)，rows限于1…min(100,H,floor(maxFrames/columns))。region=null、keepEmptyCells=true；该分支不要求N=1时一定只有一个格子。
+
+**立即返回所选suggestedGrid实际生成的frames**，每帧reviewStatus=pending；不返回错误自动切出的候选作为最终帧。用户可新增/删除/确认降级帧，或用显式manual-grid重新应用自己指定的网格。DetectResult.options保持实际请求的options，不把原mode或manualGrid偷偷改成建议网格；建议网格只放在degraded.suggestedGrid。正常自动检测也为pending；导出前统一“确认审校”将included帧设为accepted。
+
+所有自动/建议网格及显式手动网格的返回帧初始included=true。grid/manual-grid的sourceRect为完整cell，components的sourceRect为最终合并组的原始内容紧框；bbox再按normalize.trim计算。clusterId按第3节簇编号生成`cluster_<index>`，仅在本次结果内有意义。EMPTY_INPUT只在上述三个自动检测模式的全透明分流中触发、attempted=[]；其他降级attempted只列实际执行的策略，auto的顺序始终grid在components之前。显式manual-grid的degraded=null，没有degraded.attempted字段；保留空格时只有EMPTY_FRAMES等对应flags的warning，跳过全部空格时warnings=[]。WARNING列表按枚举声明顺序排列，同一code聚合为一条，frameIds按帧数组顺序；DETECTION_DEGRADED的reason为实际DegradedReason且frameIds=[]，其他warning的reason=null并列出对应flags为true的帧。没有对应异常帧时不生成空warning。
 
 ## 5. 打包协议
 
@@ -463,7 +481,7 @@ JSONHash 顶层 `frames` 是以 Frame.name 为键的对象；JSONArray 顶层 `f
   },
   "meta": {
     "app": "SpriteFlow",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "image": "sprites.png",
     "format": "RGBA8888",
     "size": { "w": 64, "h": 64 },
@@ -649,7 +667,7 @@ messageKey 固定为 `pipeline.error.<code>` 或 `pipeline.warning.<code>`，cod
 
 除 CANCELLED（recoverable=true，动作空）及能力/协议不匹配（recoverable=false）外，上表错误 recoverable=true；INTERNAL_ERROR 可重启但不保证同一坏输入能成功。阶段为出错时实际阶段，传输/初始化问题为 validate。DETECTION_DEGRADED 属 warning，禁止同时抛出“低置信度异常”导致前端丢失手动候选。
 
-输入 alpha 统计以原始像素计：完全透明 alpha=0、半透明 1…254、完全不透明 255。opaque/总像素 **严格大于 0.99** 返回 OPAQUE_INPUT；等于 0.99 允许。对已解码纯函数输入也做相同校验，不能绕过；纯手动裁图模式亦遵守 M1 透明输入边界。全透明走降级，不走 OPAQUE_INPUT。
+输入alpha统计以原始像素计：完全透明alpha=0、半透明1…254、完全不透明255。opaque/总像素**严格大于0.99**返回OPAQUE_INPUT；等于0.99允许。对已解码纯函数输入也做相同校验，不能绕过；纯手动裁图模式亦遵守M1透明输入边界。整图全透明不走OPAQUE_INPUT：detect在auto/grid/components模式按第4.2节固定返回EMPTY_INPUT的1×1建议网格；显式manual-grid优先执行用户配置，不降级。load只完成加载与alpha统计，不产生DetectResult或代替用户执行模式选择。
 
 ## 9. Worker 消息、进度、取消和内存所有权
 
@@ -691,7 +709,7 @@ export interface InitOptions {
 
 export interface WorkerCapabilities {
   protocolVersion: 1;
-  contractVersion: "1.0.0";
+  contractVersion: "2.0.0";
   decode: ("image/png" | "image/webp")[];
   encode: ["image/png"];
   offscreenCanvas: true;
@@ -969,13 +987,56 @@ Godot 调用沿用 load/detect/审校/normalize；省略 pack，export.payload.p
 - 实现必须公开本文全部类型、常量和函数，不添加未记录的跨包 API。包本身 ESM；类型声明可在 `lib: ["ES2022"]` 的纯算法消费者下编译，browser 子入口才需要 DOM lib。
 - 文档示例要作为 typecheck fixture 编译；枚举值、默认参数、坐标/旋转/trim/空帧/取消/BUSY/旧结果都是契约测试对象。
 - 新增非必需能力须升级契约 minor；改变必填字段、默认输出、像素语义或错误语义须 major。协议版本用于消息兼容，不与 npm patch 号混淆。未声明的新枚举不能由实现者单方面加上。
-- 工程师发现无法实现或缺口时报告架构师，由架构师更新本文并按仓库 Gate 流程同步双方。M1 当前文档不代表运行时、性能或引擎测试已经通过。
+- 工程师发现无法实现或缺口时报告架构师；冻结后的变更须依次经过“架构师拟修订并升版本/修订号→产品主确认→同步受影响方”。候选修订在确认前不生效，不作为恢复冲突项实现或修改黄金标注的依据。M1 当前文档不代表运行时、性能或引擎测试已经通过。
 
-## 12. Gate 1 第 2 轮修订记录
+## 12. Gate 1 第 2 轮修订记录（r2历史）
 
-本轮r2修正尚未发布、尚未冻结的1.0.0候选文档，完整替代首轮草案；不是对已发布1.0.0作兼容性patch。协议结构仍为1，目标CONTRACT_VERSION仍为1.0.0。双方必须同步使用本轮全文，已有草稿实现应删除fill-width、接入release-asset恢复动作，并遵守最新离群UI规则。正式冻结/发布后继续执行第11节的版本规则。
+r2形成时修正的是尚未发布、尚未冻结的1.0.0候选文档，完整替代首轮草案。随后产品主明确确认Gate 1通过并冻结1.0.0/r2，因此r2现为生效基线；不能再套用“未冻结草稿可直接改”的处理方式。本节保留历史整改记录，不是当前r3的生效授权。后续变更严格按第11节与产品主明确的“架构师修订→产品主确认→同步受影响方”流程执行。
 
 - 问题2：根据最新PRD/copy采取方案（b），第8节独立列明离群UI及全部状态，hash仍不展示。UI设计师在Wave2按角色交接要求落入ui-spec，本轮不声称尚不存在的ui-spec已完成。
 - 问题3：PackOptions仅保留两个真实库枚举映射，补齐各自确定性排序，非法第三值返回INVALID_ARGUMENT。
 - 问题4：BUSY区分task/asset，旧资产场景明确release-asset→retry，并处理旧ref及buffer重建。
 - 问题1/5：所有权与ignore规则在agent-roles.md、根.gitignore落盘；完整逐项整改索引见architecture-m1.md第10节。首轮裁决文件保留原样，是否通过由独立复审决定。
+
+## 13. SF-CONTRACT-001 / 002 变更提案（r3，待确认）
+
+### 13.1 申请、依据与版本决定
+
+申请来源为[packages/pipeline/CONTRACT-ISSUES.md](../packages/pipeline/CONTRACT-ISSUES.md)。独立核验确认：200×100全透明输入令旧通用公式得到columns=ceil(sqrt(2))=2、rows=1，与“一个空帧”冲突；同一资产显式2行3列网格时，旧条文又同时要求6帧不降级与提前EMPTY_INPUT降级，不能同时实现。
+
+对照[PRD v1.1](./prd-m1.md)：AC-F05场景D与AC-F13场景A后的澄清段（本次核对时第334行）明确整图全透明自动检测返回一个待确认空帧；AC-F05场景C允许降级后应用用户网格继续工作。故拟将场景D/黄金澄清的“一帧”限定为自动检测初次降级，将后续显式手动网格交还用户配置，两者共同成立，不把手动重新应用网格再次强制重置为1×1。
+
+本修订改变冻结条文中通用公式可产生的默认帧数，并明确返回confidence/degraded/warnings的分支优先级，按第11节“改变默认输出或错误语义须major”保守升级为**候选契约2.0.0 / 文档r3**，不以文字澄清为由绕过冻结规则。数据结构、枚举成员和消息负载形状不变，PROTOCOL_VERSION仍为1；CONTRACT_VERSION与WorkerCapabilities.contractVersion同步拟升为2.0.0，Phaser导出meta.version示例随契约版本更新。major是接口行为版本，不表示产品进入M2或新增产品范围；generic/sequence文件schema版本不变。
+
+### 13.2 两项决定及边界
+
+- **SF-CONTRACT-001：采纳特例。**仅EMPTY_INPUT绕过通用估算，固定`{rows:1, columns:1, region:null, keepEmptyCells:true}`，返回整张工作图一个空帧；其他降级的公式保持原样。
+- **SF-CONTRACT-002：采纳显式手动优先。**在输入/资源/参数校验后，manual-grid先执行并不降级；仅auto/grid/components对整图全透明提前EMPTY_INPUT。手动keepEmptyCells=true保留用户指定的全部空cell，false可成功返回零帧，随后打包/导出才按既有NO_FRAMES处理。显式region同样被尊重。
+- auto/grid/components与manual-grid以上规则均适用于quality=preview/final；options保留请求原值，返回quality保留请求值，preview仍不得用作最终导出结果。整图全透明按原始工作图alpha全为0判定，不能由缩略图或alphaThreshold替代。
+- 不更改OPAQUE_INPUT阈值、检测参数默认值、几何坐标/画布语义、空帧哈希、ID命名、审校确认、导出格式、依赖或黄金集20例总配额。
+
+### 13.3 结果断言矩阵与测试交接
+
+下面是需在确认后由R4/R6落地的回归要求，不是已运行的管线测试。公共前提：输入/参数/资源限制合法、整图原始alpha均为0；options.mode与quality均保留请求值，所有保留帧included=true、reviewStatus=pending、bbox=null、pHash=null、flags.empty=true。未运行网格/CCL时对应diagnostics评分和组件计数均为0。
+
+| 输入/请求 | frames / sourceRect | strategy / confidence / degraded | warnings |
+|---|---|---|---|
+| 100×100、200×100、100×200、8192×1、1×8192；分别auto/grid/components | 恰好1帧，sourceRect={x:0,y:0,width:W,height:H} | manual-grid / 0 / EMPTY_INPUT，attempted=[]，suggestedGrid精确等于固定1×1配置 | 恰好DETECTION_DEGRADED、EMPTY_FRAMES各一条，顺序固定 |
+| 200×100；manual-grid 2×3，region=null，keepEmptyCells=true | 6个空帧，x切点[0,66,133,200]、y切点[0,50,100]，按行优先 | manual-grid / 1 / null；无suggestedGrid、无attempted字段 | 恰好一条EMPTY_FRAMES，列出6个frameId |
+| 同上，keepEmptyCells=false | frames=[]，不额外补帧 | manual-grid / 1 / null | []；detect成功，pack/export对零帧返回NO_FRAMES |
+| 200×100；manual-grid 2×3，region={x:20,y:10,width:120,height:60}，keepEmptyCells=true | 6个40×30空帧，覆盖用户region；不扩为整图 | manual-grid / 1 / null | 恰好一条EMPTY_FRAMES |
+| 同上，keepEmptyCells=false | frames=[] | manual-grid / 1 / null | [] |
+| 全透明但manualGrid缺失、region越界、rows=0或rows×columns超有效上限 | 无成功DetectResult；INVALID_ARGUMENT | 参数校验优先，不进入EMPTY_INPUT | 不发成功结果warning |
+| auto先产生EMPTY_INPUT，随后同一AssetRef应用合法manual-grid 2×3 | 第一次1帧，第二次按keepEmptyCells为6帧或0帧，无需重新上传 | 第二次degraded=null，不继承第一次降级对象 | 第二次无DETECTION_DEGRADED；UI清除旧任务降级状态 |
+
+补充反例：非全透明但无有效候选时仍走原通用公式，不受1×1特例影响；稀疏非零alpha即使在preview分析图中消失，也不得误报EMPTY_INPUT。对表内前三种模式分别覆盖preview/final，手动模式同时覆盖两种keepEmptyCells与quality；检验完整suggestedGrid、帧数、sourceRect、flags、pending、confidence、reason、attempted及warnings，而非只断言frames.length。
+
+R6的AC-F13黄金集仍只占“整图全透明1例”（对应AC-F05场景D），不新增“局部空帧”类别或把变体算作新配额。方图/横图/竖图/极端比例、显式网格及keepEmptyCells变体作为R4单测和同一夹具的参数化回归，不增加20例计数；该黄金用例的基准请求为auto/final。
+
+本次文档核验已完成：独立算术复现001的旧公式2帧结果，并核对002的2×3网格整数切点；TypeScript5.9.3严格编译8个无DOM根声明块、browser声明及完整调用示例通过，候选版本常量与能力字面量一致；JSON示例与git diff --check通过。检查材料只在临时目录生成，未实现管线、未运行或声称通过上述单测/黄金回归。
+
+### 13.4 生效与同步门禁
+
+当前状态：**架构师已提交候选修订，等待本窗口产品主确认；尚未生效、尚未通知R4恢复实现。** 本次申请不构成对候选内容的预先批准。确认前仍以冻结的1.0.0/r2为基线，冲突项继续暂停，不把Git工作区中的候选字面量当作已批准版本。
+
+产品主确认后，按顺序记录确认结果与生效版本，再同步：R4（detect分流、常量/能力版本与单测）、R6（同一全透明黄金用例及参数化断言）、R5（手动结果替换旧降级状态、零帧导出阻断、客户端版本核对）、R2（承接手动空结果/降级提示状态）、R1（核对AC-F05场景D的自动检测上下文）、R9（变更验收依据）。由各文件owner修改对应实现/文档；架构师不直接改写其文件。若产品主要求调整，继续修订候选并重新提交，不能把未确认稿当作迁移指令。

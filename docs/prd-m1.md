@@ -25,6 +25,7 @@ M1 要验证的不是“所有图片都能全自动切好”，而是这条最�
 - 审校框 `sourceRect` 是用户在源图上编辑的候选区域；管线在框内按 alpha 阈值得到非透明内容紧框 `bbox`。默认图集只存 `bbox` 内容，不缩放像素；统一逻辑画布通过 `sourceSize` 与 `spriteSourceSize`/offset 保留透明留边和帧内位置。Godot 帧序列输出完整逻辑画布，预览必须按同一逻辑画布呈现。
 - Godot M1 采用第 5 节优先方案：帧序列 ZIP 与 `build_spriteframes.gd`；不包含实验性 `.tres` 直出。
 - M1 UI 只暴露 Phaser JSON Hash、Phaser JSON Array 与 Godot 4 三个导出入口。管线公共 API 可提供 PNG 序列 ZIP 与通用 JSON，供内部复用和契约完整性使用，但它们不是 M1 用户功能或 UI 验收对象。
+- M1 仅提供暗色主题；浅色主题不属于 M1 范围。
 - M3 所称“中英双语打磨”不阻止 M1 提供基础中英双语界面；M1 文案以可用、完整为标准，后续再做语气与本地化打磨。
 
 ### 1.2 M1 范围追踪
