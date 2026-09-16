@@ -1,0 +1,26 @@
+{
+  "name": "@spriteflow/pipeline",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pure TypeScript sprite pipeline: input validation, detection, normalization, packing, export. Root entry is DOM-free; ./browser hosts worker/RPC adapters only.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "default": "./dist/browser/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "comlink": "4.4.2",
+    "fflate": "0.8.3",
+    "maxrects-packer": "2.7.3"
+  }
+}

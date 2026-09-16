@@ -4,6 +4,8 @@ build/
 coverage/
 tests/golden/reports/
 *.log
+*.tsbuildinfo
+.vite/
 .env
 .env.*
 .DS_Store

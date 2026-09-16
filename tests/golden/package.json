@@ -1,0 +1,14 @@
+{
+  "name": "@spriteflow/golden",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Golden regression workspace: fixtures + deterministic runner over the pure pipeline API. Node-only via pngjs; no app imports, no network at runtime.",
+  "type": "module",
+  "dependencies": {
+    "@spriteflow/pipeline": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/pngjs": "6.0.5",
+    "pngjs": "7.0.0"
+  }
+}

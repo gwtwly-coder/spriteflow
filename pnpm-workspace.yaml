@@ -1,0 +1,22 @@
+# Workspace layout is fixed by docs/architecture-m1.md section 2.
+# tests/e2e intentionally has no manifest (QA plans/fixtures only, no runtime dependency).
+packages:
+  - "packages/*"
+  - "apps/*"
+  - "tests/golden"
+
+# Dependency policy per docs/architecture-m1.md sections 3/7/8.
+# pnpm 11 reads settings from this file (project .npmrc is no longer parsed by pnpm).
+autoInstallPeers: false
+saveExact: true
+# Node is pinned to 24.12.0 via "engines" in package.json; fail loudly on drift.
+engineStrict: true
+
+# Reviewed per docs/architecture-m1.md sections 7/8: no dependency build script is needed.
+# esbuild resolves its platform binary from optionalDependencies at runtime (works with
+# CI's --ignore-scripts install); fsevents is a macOS-only optional that never runs on
+# Windows dev machines or the Linux CI runner. Explicit false = audited decision recorded;
+# keep this list exhaustive so CI never hits an undecided-build error.
+allowBuilds:
+  esbuild: false
+  fsevents: false
