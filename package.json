@@ -9,11 +9,11 @@
     "node": "=24.12.0"
   },
   "scripts": {
-    "lint": "biome check . && node scripts/check-boundaries.mjs && pnpm --filter @spriteflow/pipeline run check:contract",
+    "lint": "biome check . && node scripts/check-boundaries.mjs && pnpm --filter @spriteflow/pipeline --if-present run build && pnpm --filter @spriteflow/pipeline run check:contract",
     "format": "biome check --write .",
     "typecheck": "pnpm -r --if-present run typecheck",
     "test:unit": "pnpm -r --if-present run test",
-    "golden": "pnpm --filter @spriteflow/golden --if-present run golden",
+    "golden": "pnpm --filter @spriteflow/pipeline --if-present run build && pnpm --filter @spriteflow/golden --if-present run golden",
     "build": "pnpm -r --if-present run build && node scripts/check-licenses.mjs && node scripts/check-bundle-budget.mjs",
     "check:licenses": "node scripts/check-licenses.mjs",
     "check:budget": "node scripts/check-bundle-budget.mjs",

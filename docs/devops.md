@@ -43,10 +43,10 @@ pnpm golden
 
 | 命令 | 内容 | 常见失败原因 |
 |---|---|---|
-| `pnpm lint` | Biome（lint+format+import 排序）+ `scripts/check-boundaries.mjs`（包依赖边界）+ `check:contract`（docs 契约代码块 vs 公共类型） | 格式漂移（`pnpm format` 修复）；core 引 react/zustand/comlink；绕过 exports 的跨包相对导入 |
+| `pnpm lint` | Biome（lint+format+import 排序；`design/` 静态设计稿排除在外）+ `scripts/check-boundaries.mjs`（包依赖边界）+ `check:contract`（docs 契约代码块 vs 公共类型；运行前自动构建 pipeline 以解析其类型导出） | 格式漂移（`pnpm format` 修复）；core 引 react/zustand/comlink；绕过 exports 的跨包相对导入 |
 | `pnpm typecheck` | 各包 `tsc --noEmit`（strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes；core 无 DOM lib） | 类型与契约 exports 不符 |
 | `pnpm test:unit` | pipeline vitest + web vitest（组件测试 mock client）；取消/transfer 测试**不允许 skip** | 用例失败或零测试 |
-| `pnpm golden` | 20 例全量枚举（禁止 skip）；JSON 报告写入 `tests/golden/reports/`（gitignore，仅作 CI 产物） | 帧数/IoU/降级/授权/manifest 断言失败；SHA 不匹配 |
+| `pnpm golden` | 先自动构建 pipeline（干净 clone 可直接跑），再 20 例全量枚举（禁止 skip）；JSON 报告写入 `tests/golden/reports/`（gitignore，仅作 CI 产物） | 帧数/IoU/降级/授权/manifest 断言失败；SHA 不匹配 |
 | `pnpm build` | 各包构建（pipeline tsc、web vite）+ `scripts/check-licenses.mjs`（许可闭包）+ `scripts/check-bundle-budget.mjs`（首屏体积 + 静态产物） | 构建告警、首屏 ≥300 KiB gzip、锁文件与审计清单不一致、dist 缺 `THIRD_PARTY_NOTICES.txt` |
 
 单项重跑：`pnpm check:boundaries` / `pnpm check:licenses` / `pnpm check:budget`。

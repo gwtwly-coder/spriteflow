@@ -38,6 +38,22 @@
   },
   "overrides": [
     {
+      "includes": ["design/**"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "assist": {
+        "actions": {
+          "source": {
+            "organizeImports": "off"
+          }
+        }
+      }
+    },
+    {
       "includes": ["tests/golden/cases/**", "tests/golden/reports/**"],
       "linter": {
         "enabled": false

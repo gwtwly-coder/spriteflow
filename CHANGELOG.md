@@ -23,6 +23,7 @@ All notable changes to SpriteFlow are documented here.
 ## [Unreleased]
 
 - Root engineering infrastructure landed for Wave 3: five-job GitHub Actions CI (lint / typecheck / unit / golden / build, Node 24.12.0, pnpm 11.9.0), Cloudflare Pages config (production on main, preview per PR), PR template, license-closure + boundary + bundle-budget gates, devops guide. (DevOps / R7)
+- Tooling: `.gitattributes` enforces LF checkouts (Windows clones no longer fail `pnpm lint`); `design/` mockups excluded from the Biome lint surface; `pnpm golden` now builds the pipeline first so it runs on a clean clone. (DevOps / R7)
 
 ## [0.1.0] - 2026-09-16
 
