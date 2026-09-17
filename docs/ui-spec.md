@@ -1,9 +1,10 @@
 # SpriteFlow M1 UI 规范
 
-> 版本：1.1；日期：2026-09-17；角色：UI/UX 设计师（R2）。
+> 版本：1.2；日期：2026-09-17；角色：UI/UX 设计师（R2）。
 > 事实来源：`docs/prd-m1.md`（功能与流程）、`docs/copy-m1.md`（全部界面文案，本文直接引用其 Key）、`docs/interface-contract.md` **2.0.0 / r3**（数据字段、检测降级语义、进度阶段、错误与恢复动作）、`docs/architecture-m1.md` 第 9 节（UI 状态交接表）。
 > 本规范是可直接实施的规格：前端工程师（R5）照此实现，不自行发挥。HTML 静态稿见 `design/mockups/`（结构与样式以稿为准，本文给出尺寸原则与状态语义）。
 > 修订记录：v1.1（2026-09-17）按 [ui-verdict-1](./acceptance/ui-verdict-1.md) 修复 UI-01～UI-05：新增契约 r3 显式手动网格三项状态迁移与 C-68～C-71 状态项（§2/§5.3.6/§7.4/§9）；快捷键移除 Ctrl+D 冲突并补三浏览器核对说明（§6.1/§8）；C-22 绑定 `editor.selection_count`、撤销 D-01（§9/§11）；`--text-3` 提亮至 #808a9b 并记录对比度矩阵（§4.1）。
+> 修订记录：v1.2（2026-09-17）按 [ui-verdict-2](./acceptance/ui-verdict-2.md) 修复 UI2-01/UI2-02：C-71 与 D-07 绑定已录入的正式词条 `manual.grid_too_large`（copy-m1.md 第 7 节），全仓占位标注清零（§5.3.6/§9/§11）；C-70/C-71/C-39 的禁用与错误可访问语义定稿——真实 `disabled`、`aria-invalid` + `aria-describedby` → `role=alert`、零帧导出挂 `export.disabled_no_frames` 可访问描述（§5.3.6/§9/§10）。
 
 ---
 
@@ -335,7 +336,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 - 防抖/重算期整组锁定，组头部右侧显示 `settings.pending`（见 6.8）。
 
 **组 2b · 手动网格**（手动模式显示；`manual.title` 标题）
-- 两个步进器：`manual.rows` / `manual.columns`（1–100；**乘积超过有效 maxFrames（M1 默认 500）时**：越界步进器红框、值文字变 `--danger`、下方内联错误行（C-71），`manual.apply` 禁用；错误行含当前乘积与上限，`role=alert` + `aria-invalid` 可读）。
+- 两个步进器：`manual.rows` / `manual.columns`（1–100；**乘积超过有效 maxFrames（M1 默认 500）时**：越界 input 红框、值文字变 `--danger`、置 `aria-invalid="true"` 且 `aria-describedby` 指向下方错误行；错误行 `role="alert"`，文案 `manual.grid_too_large`（`{count}` 以真实乘积替换）；`manual.apply` 使用真实 `disabled` 属性禁用，键盘 Tab/Enter 同样不可激活）。
 - `manual.apply` 主按钮（整宽）→ 弹 `confirm.reset_detection.*` 确认 → 以 mode=manual-grid 提交检测。
   **调用值约定（UI-01）**：M1 UI 不提供 keepEmptyCells 开关，显式手动网格固定传 `keepEmptyCells=true`（与降级建议网格一致）；region 固定 null（见设计发现 D-05）。因此 M1 常规不会得到空结果，但 UI 仍须承接 `frames=[]` 的防御性呈现（契约 r3 允许 false 与空结果，C-70）。
 - **应用成功后的状态迁移**（原子替换整组帧，一个撤销事务；契约 r3 §13.2/§13.3）：
@@ -622,7 +623,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 | C-36 | 撤销耗尽 | 按钮 disabled + tooltip | `editor.nothing_to_undo` | — |
 | C-37 | 重做耗尽 | 按钮 disabled + tooltip | `editor.nothing_to_redo` | — |
 | C-38 | 滑杆防抖中 | 侧栏组头 + 轨道变色 | `settings.pending` | 继续拖/停手 |
-| C-39 | 重算中 | 画布横幅 + 帧框 40% + 编辑禁用 | `detect.recalculating` | `detect.cancel` |
+| C-39 | 重算中 | 画布横幅 + 帧框 40% + 编辑禁用（真实 `disabled`：增删/合并/拆分/撤销重做/确认审校/导出/新增帧/拆分工具/滑杆；选择、平移、缩放仍可用） | `detect.recalculating` | `detect.cancel` |
 | C-40 | 角标显示 | 画布芯片 + 时间轴色点 | `review.badge.outlier/multiple_components/empty` | tooltip |
 | C-41 | 待复核摘要条 | 时间轴头部下方 | `review.attention.title/body` | 展开/收起 |
 | C-42 | 筛选 | 芯片组 | `review.filter.label/all/attention/outlier/multiple_components/empty` | 切换筛选 |
@@ -637,8 +638,8 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 | C-51 | 快捷键面板 | 模态 | `shortcuts.*`（第 8 节全表） | `shortcuts.close` |
 | C-68 | 显式手动模式（非降级，v1.1/UI-01） | **无降级横幅**；侧栏手动网格面板；状态栏 `detect.method.manual`；帧为用户网格/手画结果（全部待确认） | `manual.*`（契约 r3：confidence=1、degraded=null、无 DETECTION_DEGRADED） | 行列调整/应用网格/画框/正常确认导出 |
 | C-69 | 应用网格成功（替换 + 清除降级，v1.1/UI-01） | 原子替换整组帧；**清除降级横幅与 DETECTION_DEGRADED 呈现**；自动降级（含 EMPTY_INPUT）后二次应用不继承第一次降级对象 | 无新增文案（复用 C-68 呈现；契约 r3 §13.3 断言矩阵末行） | 继续编辑/确认审校 |
-| C-70 | 手动空结果（frames=[]，v1.1/UI-01） | 检测**成功**态：无降级横幅；时间轴空态 + 画布提示；隐藏「导出预览」组；预览控件禁用；确认审校/导出禁用（后续 pack/export 按 NO_FRAMES 阻断） | `manual.no_frames`、`preview.empty`、`export.disabled_no_frames`（导出 tooltip） | 应用网格 / 新增帧 |
-| C-71 | 手动网格超限（rows×columns > 有效 maxFrames=500，v1.1/UI-04） | 越界步进器红框 + `--danger` 值文字 + 内联错误行（`role=alert`、`aria-invalid`，含当前乘积与上限）；`manual.apply` 禁用 | 建议词条 `manual.grid_too_large`（**待 PM 录入**，建议文案见 §11 D-07） | 调低行列后自动恢复 |
+| C-70 | 手动空结果（frames=[]，v1.1/UI-01） | 检测**成功**态：无降级横幅；时间轴空态 + 画布提示；隐藏「导出预览」组；确认审校/导出/预览控件真实 `disabled`（后续 pack/export 按 NO_FRAMES 阻断）；导出按钮 `aria-describedby` 指向 `export.disabled_no_frames` 可访问描述（实现侧同步作 tooltip） | `manual.no_frames`、`preview.empty`、`export.disabled_no_frames` | 应用网格 / 新增帧 |
+| C-71 | 手动网格超限（rows×columns > 有效 maxFrames=500，v1.1/UI-04） | 越界 input 红框 + `--danger` 值文字 + `aria-invalid="true"` + `aria-describedby`→错误行；错误行 `role="alert"`（含当前乘积与上限真实值）；`manual.apply` 真实 `disabled` | `manual.grid_too_large`（copy-m1.md 第 7 节，已录入） | 调低行列后自动恢复 |
 
 ### D. 导出（S4 + 全局）
 
@@ -677,6 +678,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 - 画布提供文本替代摘要（帧数、选中帧尺寸——复用 `editor.summary/frame_index/frame_size`，`role=status`）。
 - 中英切换即时、不丢数据、不中断任务；同一界面不中英混排；占位符（`{count}` 等）用真实值。
 - 文案渲染为文本节点（React），无 `innerHTML` 拼接（错误 details 仅数值）。
+- **禁用语义（UI2-02）**：一切禁用控件使用原生 `disabled`（自定义控件用 `aria-disabled="true"` + 显式键盘拦截），禁止只做 `pointer-events:none` 的视觉禁用——键盘 Tab/Enter/空格必须同样不可触发禁用动作；越界输入置 `aria-invalid="true"`，并用 `aria-describedby` 引用 `role="alert"` 的错误行；禁用原因必须可被辅助技术读取（如零帧导出的 `export.disabled_no_frames` 可访问描述）。
 
 ---
 
@@ -690,7 +692,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 | D-04 | 待 PM 确认 | PRD 未提及主题切换；本规范按暗色单主题实施（目标人群默认暗色，验收 3.4 已确认 PRD 规定 M1 仅暗色） | 维持暗色单主题 | 无（已对齐 PRD） |
 | D-05 | 备案 | 契约 ManualGrid 支持 `region`（局部区域网格），但 PRD/copy 无区域选择交互与文案；M1 UI 仅提供整图行列（region=null，5.3.6 已写明调用值） | 维持整图；局部网格留给后续里程碑 | 契约能力暂不暴露，无功能缺失 |
 | D-06 | 备案 | 导出文件名（baseName）无 UI 词条与字段，M1 固定默认 `atlas`（架构 §9 结论） | 请 PM 确认 M1 不提供导出重命名 | 与 PRD 一致，仅备案 |
-| D-07 | 部分解决（词条待 PM 录入） | 手动网格 rows×columns 超上限需可读错误文案，copy 无专属词条 | 状态项 C-71 已加入（v1.1）；建议词条 `manual.grid_too_large`：zh「行数×列数是 {count}，超过了 500 帧上限。调小后再应用。」/ en「Rows × columns is {count}, over the 500-frame limit. Lower them before applying.」（占位符沿用既有 `{count}`，不新增占位符类型） | 词条录入前实现与 HTML 稿按建议文案占位并注明待录入，录入后原位替换 |
+| D-07 | 已解决（v1.2） | （v1.0/v1.1）手动网格超限需可读错误文案，copy 当时无词条 | `manual.grid_too_large` 已由 PM 录入 copy-m1.md 第 7 节（zh「行数×列数是 {count}，超过了 500 帧上限。调小后再应用。」/ en「Rows × columns is {count}, over the 500-frame limit. Lower them before applying.」）；C-71 与 HTML 稿均已绑定正式词条，无占位残留 | 无 |
 | D-08 | 备案 | 拖动/缩放钳制到图内是静默行为（无提示）。符合工具惯例，但若 PM 希望显式提示需补词条 | 维持静默钳制 | 低 |
 
 ---

@@ -94,6 +94,7 @@
   .btn-primary{height:34px;padding:0 18px;border:none;border-radius:6px;background:var(--accent);color:#0b1220;font:600 13px/1 var(--ui);cursor:pointer}
   .btn-primary:hover{background:var(--accent-hover)}
   .btn-primary:active{background:var(--accent-active)}
+  .btn-primary:disabled{opacity:.4;cursor:not-allowed}
   .btn-secondary{height:34px;padding:0 16px;border:1px solid var(--border-1);border-radius:6px;background:transparent;color:var(--text-1);font:13px/1 var(--ui);cursor:pointer}
   .btn-secondary:hover{background:var(--bg-2)}
   /* 内联错误（尺寸冲突） */
@@ -284,11 +285,11 @@
     </div>
     <div class="dw-foot">
       <button class="btn-secondary" data-zh="返回编辑" data-en="Back to editor">返回编辑</button>
-      <button class="btn-primary" style="opacity:.4;pointer-events:none" data-zh="生成并下载" data-en="Build and download">生成并下载</button>
+      <button class="btn-primary" disabled data-zh="生成并下载" data-en="Build and download">生成并下载</button>
     </div>
   </div>
 </div>
-<div class="frame-note">冲突未解决前「生成并下载」禁用；改选更大 POT 或「自动」后内联错误消失、按钮恢复。不自动缩小帧、不静默丢帧。</div>
+<div class="frame-note">冲突未解决前「生成并下载」真实 disabled（键盘不可触发）；改选更大 POT 或「自动」后内联错误消失、按钮恢复。不自动缩小帧、不静默丢帧。</div>
 
 <!-- ============ D-52 未确认阻断 ============ -->
 <div class="variant-label">D-52 · 未确认审校（export.review_required.*，REVIEW_REQUIRED）</div>

@@ -220,10 +220,10 @@
   .is-recalc .banner.recalc-banner{display:flex}
   .is-recalc .frame{opacity:.4}
   .is-recalc .chip{opacity:.6}
-  .is-recalc .edit-action{opacity:.35;pointer-events:none}
-  .is-recalc .btn-export{opacity:.4;pointer-events:none}
+  .is-recalc .edit-action:disabled{opacity:.35}
+  .is-recalc .btn-export:disabled,.is-recalc .btn-confirm:disabled,.is-recalc .tool-add:disabled,.is-recalc .tool-split:disabled{opacity:.4}
   .is-recalc .pending-tag{display:inline-flex}
-  .is-recalc input[type=range]{opacity:.5;pointer-events:none}
+  .is-recalc input[type=range]:disabled{opacity:.5}
   .is-recalc .statusbar .sdot{background:var(--warn);animation:pulse 1.6s ease-in-out infinite}
   .is-filter-empty .frame{opacity:.15}
   .is-filter-empty .chips-row .chip{display:none}
@@ -249,7 +249,7 @@
   .is-manual .attention-strip{display:none}
   .is-manual .handles,.is-manual .size-label{display:none}
   .is-manual .st-err{display:flex}
-  .is-manual .apply-btn{opacity:.4;pointer-events:none}
+  .apply-btn:disabled{opacity:.4;cursor:not-allowed}
   .is-manual .chip .mini{background:var(--frame)}
   .is-manual .chip .dot{display:none}
   .is-manual .chip.empty-chip{border-style:solid}
@@ -269,10 +269,11 @@
   .is-manual-empty .chips-row .chip{display:none}
   .is-manual-empty .tl-empty{display:flex}
   .is-manual-empty .sgroup.norm-preview{display:none}
-  .is-manual-empty .btn-export,.is-manual-empty .btn-confirm{opacity:.4;pointer-events:none}
+  .is-manual-empty .btn-export:disabled,.is-manual-empty .btn-confirm:disabled{opacity:.4}
   .is-manual-empty .filter-group,.is-manual-empty .frame-count{display:none}
   .is-manual-empty .attention-strip{display:none}
-  .is-manual-empty .transport,.is-manual-empty .fps-box,.is-manual-empty .toggle-chip{opacity:.4;pointer-events:none}
+  .is-manual-empty .transport button:disabled,.is-manual-empty .fps-box button:disabled,.is-manual-empty .toggle-chip:disabled{opacity:.4}
+  .vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 </style>
 </head>
 <body>
@@ -280,7 +281,7 @@
 <button class="lang-toggle" id="langToggle" onclick="toggleLang()">预览 English</button>
 
 <div class="review-note">
-  <b>SpriteFlow 审校编辑器静态稿（v1.1）</b> · 主屏为「自动检测成功（区域策略）」态；下方六个变体由状态类切换：B-16 低置信度降级 / C-39 参数重算中 / C-43 筛选空 / <b>C-68+C-71 显式手动非降级+超限错误 / C-70 手动空结果 / C-69 降级后应用网格清除横幅</b>（后三个承接契约 2.0.0/r3）。文案取自 docs/copy-m1.md，右上角可切换双语。假数据：1024×768 透明 WebP、12 帧（#5 尺寸异常、#8 可能粘连、#11 空帧）。
+  <b>SpriteFlow 审校编辑器静态稿（v1.2）</b> · 主屏为「自动检测成功（区域策略）」态；下方六个变体由状态类切换：B-16 低置信度降级 / C-39 参数重算中 / C-43 筛选空 / <b>C-68+C-71 显式手动非降级+超限错误 / C-70 手动空结果 / C-69 降级后应用网格清除横幅</b>（后三个承接契约 2.0.0/r3）。文案取自 docs/copy-m1.md，右上角可切换双语；禁用态均为真实 disabled（键盘同步不可触发）。假数据：1024×768 透明 WebP、12 帧（#5 尺寸异常、#8 可能粘连、#11 空帧）。
 </div>
 
 <!-- ================= 主屏 ================= -->
@@ -298,8 +299,8 @@
   <div class="toolbar">
     <button class="icon-btn key active-tool" title="选择 (V) Select" data-zh="选择" data-en="Select">V</button>
     <button class="icon-btn key" title="平移 (H) Pan" data-zh="平移" data-en="Pan">H</button>
-    <button class="icon-btn key" title="新增帧 (A) Add frame" data-zh="新增帧" data-en="Add frame">A</button>
-    <button class="icon-btn key" title="拆分帧 (S) Split" data-zh="拆分帧" data-en="Split">S</button>
+    <button class="icon-btn key tool-add" title="新增帧 (A) Add frame" data-zh="新增帧" data-en="Add frame">A</button>
+    <button class="icon-btn key tool-split" title="拆分帧 (S) Split" data-zh="拆分帧" data-en="Split">S</button>
     <span class="tb-sep"></span>
     <button class="icon-btn edit-action" title="删除帧 (Del)" data-zh="删除帧" data-en="Delete frame">⌫</button>
     <button class="icon-btn edit-action" title="合并帧 (M)" data-zh="合并帧" data-en="Merge frames">⊞</button>
@@ -310,6 +311,7 @@
     <button class="btn-primary btn-confirm" style="margin-right:8px" data-zh="确认审校" data-en="Confirm review">确认审校</button>
     <button class="btn-secondary btn-export" data-zh="导出" data-en="Export">导出</button>
   </div>
+  <span id="export-no-frames-desc" class="vh export-desc" data-zh="至少添加一帧才能导出。" data-en="Add at least one frame before exporting.">至少添加一帧才能导出。</span>
 
   <div class="main">
     <div class="canvas-wrap">
@@ -552,7 +554,7 @@
 
 <div class="variant-label">C-39 变体 · 检测参数重算中（settings.pending + detect.recalculating）</div>
 <div id="v-recalc"></div>
-<div class="frame-note">滑杆停手 300ms 后进入此态：帧框降至 40%、几何编辑与导出禁用（选择/平移/缩放仍可用）、侧栏出现「松开后重新检测」。preview 结果先上屏，final 完成后角标落色、横幅消失、编辑恢复；替换本身是一个可撤销事务。</div>
+<div class="frame-note">滑杆停手 300ms 后进入此态：帧框降至 40%、几何编辑与导出禁用（真实 disabled，键盘同步不可触发；选择/平移/缩放仍可用）、侧栏出现「松开后重新检测」。preview 结果先上屏，final 完成后角标落色、横幅消失、编辑恢复；替换本身是一个可撤销事务。</div>
 
 <div class="variant-label">C-43 变体 · 筛选空状态（review.filter.none，示例：选「全部待复核」后 flags 被编辑重算清零）</div>
 <div id="v-filterempty"></div>
@@ -560,11 +562,11 @@
 
 <div class="variant-label">C-68 + C-71 变体 · 显式手动网格（非降级）+ 行列超限错误（契约 r3：confidence=1、degraded=null）</div>
 <div id="v-manual"></div>
-<div class="frame-note">无降级横幅、无 DETECTION_DEGRADED 呈现；侧栏为手动网格，状态栏「手动」。示例 12×50=600 超过 500 帧上限：越界步进器红框 + 内联错误（role=alert / aria-invalid），「应用网格」禁用（C-71）。错误文案为建议词条 manual.grid_too_large（<b>待 PM 录入</b>，ui-spec §11 D-07）。M1 显式手动固定传 keepEmptyCells=true、region=null。</div>
+<div class="frame-note">无降级横幅、无 DETECTION_DEGRADED 呈现；侧栏为手动网格，状态栏「手动」。示例 12×50=600 超过 500 帧上限（C-71）：越界 input 红框 + aria-invalid="true" + aria-describedby 指向 role="alert" 错误行，错误文案使用正式词条 manual.grid_too_large（copy-m1.md 已录入，{count} 以 600 替换）；「应用网格」真实 disabled。M1 显式手动固定传 keepEmptyCells=true、region=null。</div>
 
 <div class="variant-label">C-70 变体 · 手动空结果（frames=[]，检测成功而非错误）</div>
 <div id="v-manual-empty"></div>
-<div class="frame-note">无降级横幅；时间轴空态（manual.no_frames + preview.empty）；「导出预览」组隐藏；确认审校/导出禁用，后续 pack/export 按 NO_FRAMES 阻断。M1 固定 keepEmptyCells=true 通常不会出现该结果，此为防御性承接（契约 r3 §13.2）。</div>
+<div class="frame-note">无降级横幅；时间轴空态（manual.no_frames + preview.empty）；「导出预览」组隐藏；确认审校/导出/播放控件为真实 disabled（键盘不可触发），导出按钮以 aria-describedby 挂 export.disabled_no_frames 可访问描述，后续 pack/export 按 NO_FRAMES 阻断。M1 固定 keepEmptyCells=true 通常不会出现该结果，此为防御性承接（契约 r3 §13.2）。</div>
 
 <div class="variant-label">C-69 变体 · 自动降级后应用网格成功（清除横幅，不继承第一次降级）</div>
 <div id="v-cleared"></div>
@@ -594,7 +596,11 @@
     document.getElementById(containerId).appendChild(clone);
   }
   makeVariant('v-fallback','is-fallback',clone=>setMethod(clone,'手动','Manual'));
-  makeVariant('v-recalc','is-recalc');
+  makeVariant('v-recalc','is-recalc',clone=>{
+    /* v1.2/UI2-02：重算期编辑禁用用真实 disabled，键盘同步不可触发（选择/平移/缩放保留） */
+    clone.querySelectorAll('.edit-action,.btn-export,.btn-confirm,.tool-add,.tool-split').forEach(b=>{ b.disabled = true; });
+    clone.querySelectorAll('input[type=range]').forEach(r=>{ r.disabled = true; });
+  });
   makeVariant('v-filterempty','is-filter-empty',clone=>{
     /* 示例路径：用户选中「全部待复核」后又编辑帧，flags 被重算清零 → 计数 0、无匹配 */
     clone.querySelector('.fchip.all').classList.remove('active');
@@ -603,13 +609,17 @@
     att.querySelector('.cnt').textContent = '0';
     clone.querySelectorAll('.fchip.f-outlier,.fchip.f-multi,.fchip.f-empty').forEach(c=>c.style.display='none'); /* 计数 0 的具体类不显示 */
   });
-  /* v1.1：契约 r3 三项手动网格承接（UI-01）+ 超限错误（UI-04） */
+  /* v1.1：契约 r3 三项手动网格承接（UI-01）+ 超限错误（UI-04）；v1.2：可访问语义（UI2-02） */
   makeVariant('v-manual','is-manual',clone=>{
     setMethod(clone,'手动','Manual');
     const inputs = clone.querySelectorAll('.manual-grid .stepper input');
     inputs[0].value = '12';
     inputs[1].value = '50';
     clone.querySelector('.manual-grid .st-cols').classList.add('err');
+    const err = clone.querySelector('.st-err');
+    err.id = 'grid-err-' + Math.random().toString(36).slice(2, 8);
+    inputs.forEach(i=>{ i.setAttribute('aria-invalid','true'); i.setAttribute('aria-describedby', err.id); });
+    clone.querySelector('.apply-btn').disabled = true; /* 真实 disabled：Tab/Enter 均不可激活 */
   });
   makeVariant('v-manual-empty','is-manual-cleared is-manual-empty',clone=>{
     setMethod(clone,'手动','Manual');
@@ -617,6 +627,14 @@
     sc.textContent = '0 帧'; sc.setAttribute('data-zh','0 帧'); sc.setAttribute('data-en','0 frames');
     clone.querySelector('.sum-sel').style.display = 'none';
     clone.querySelector('.pending-txt').style.display = 'none';
+    /* 真实 disabled：确认/导出/播放控件键盘不可触发；导出原因挂 export.disabled_no_frames 可访问描述 */
+    clone.querySelector('.btn-confirm').disabled = true;
+    const exp = clone.querySelector('.btn-export');
+    exp.disabled = true;
+    const desc = clone.querySelector('.export-desc');
+    desc.id = 'exp-desc-' + Math.random().toString(36).slice(2, 8);
+    exp.setAttribute('aria-describedby', desc.id);
+    clone.querySelectorAll('.transport button,.fps-box button,.toggle-chip').forEach(b=>{ b.disabled = true; });
   });
   makeVariant('v-cleared','is-manual-cleared',clone=>setMethod(clone,'手动','Manual'));
 
