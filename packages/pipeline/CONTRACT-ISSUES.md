@@ -1,4 +1,47 @@
-# 管线实现交付说明：等待契约修订
+# 管线契约问题与实现状态
+
+## 2026-09-17 当前状态：001/002/003 均已按生效契约解决
+
+产品主已批准3.0.0/r4，SF-CONTRACT-003采用公开源几何快照方案。R4实现PackedFrame必填sourceRect/bbox独立复制、跨克隆逐字段校验、缺失字段STALE_RESULT、非法字段INVALID_ARGUMENT、Worker快照响应与精确版本门禁。实现条款见契约§5（341–381行）、§6.0（471–483行）、§9.2（874行）、§14.3（1088–1103行）。
+
+`tools/repro-stale-result.mjs` 已转为正向回归：删除“两次pack深相等”的旧断言，验证快照不同、fresh路径绿色像素、旧pack被拒绝且codec调用为零。当前测试覆盖两种几何独立变化、空帧、克隆/JSON/新模块实例、快照双向独立性、原有布局及审校优先级、Worker失效ID及版本不兼容。最终验证、性能与Gate 3交接见[DELIVERY.md](./DELIVERY.md)。
+
+本轮没有发现仍需架构师裁定的契约缺口，没有修改契约、apps/web或tests/golden。以下为当时的申请与暂停记录，不代表当前仍阻塞；旧脚本行为与旧测试数量仅属于历史快照。
+
+## 2026-09-17 历史申请：001/002 已解决，003 当时待裁定
+
+产品主已批准契约 2.0.0/r3，001/002 按 §13.2 生效决议恢复实现。§13.3 的54项参数化回归现已通过。以下保留原申请历史，不再以001/002阻塞。
+
+### SF-CONTRACT-003：纯导出 API 无法验证原始 bbox 是否属于该 PackResult
+
+契约位置：第6节“图集格式要求 source.pack 非 null，且与 source.frames 的资产、顺序、name、canvas、bbox 完全一致；pure API 逐项验证几何一致性；任何 mismatch 返回 STALE_RESULT”；第5节 PackedFrame/PackResult 类型；第7节纯函数 API 与“函数不依赖 this，不缓存调用者数组”；第9节“小对象 structured clone”。
+
+合法复现：同一200×100资产中有两个8×8主体，位置分别为(10,10)和(110,10)。先对同一帧ID/name审校规范化左侧50×50框并pack；随后移动草稿至右侧50×50框、edited=true，重新normalize并接受审校，资产像素和revision不变。两次bbox分别为 `{x:10,y:10,width:8,height:8}` 与 `{x:110,y:10,width:8,height:8}`。
+
+两次pack结果的所有契约字段完全相同：同一AssetRef、frameId/name、frameOrder、页面、allocation/rect、rotated、sourceSize、spriteSourceSize、empty、options和warnings。PackedFrame没有源bbox/sourceRect；PackResult没有normalizationId或包含源位置的签名。不同原始bbox无法从这些字段还原。
+
+因此，对相同新frames，传入旧pack或新pack的序列化数据逐字段相同，但契约要求前者STALE_RESULT、后者成功。纯API在接收structured clone后的DTO时无法区分。依赖JS对象身份或模块级私有缓存不能解决跨克隆/跨实例调用，也不能作为未经契约声明的新输入限制。Worker已有normalizationId/packId可以拒绝旧缓存，但它不能替代根入口exportAssets的此项要求。
+
+复现脚本：`pnpm -F pipeline build` 后运行 `node packages/pipeline/tools/repro-stale-result.mjs`。脚本仅调用公共API，并使用黄金集已审计pngjs编码器；验证两个PackResult深相等、两个源bbox不同，并对旧pack应返回STALE_RESULT做失败断言。当前应明确退出1，不能将它描述为通过。
+
+请架构师二选一并经产品主确认后同步：
+
+- 在公开打包结果中增加可校验的源几何/规范化版本信息，使pure API可比较原始bbox；同时同步类型、版本、Worker及测试。
+- 明确pure API只验证PackResult现有字段所能表达的布局一致性；源位置变化的历史过期拒绝由Worker结果ID承担。此方案需要修订当前“bbox完全一致”的纯API承诺，R4无权自行解释为例外。
+
+本次没有选择任一方案、没有修改接口契约、没有增加未声明的公开字段。按用户“发现契约缺口或错误即停下”要求停止实现，等待修订。
+
+### 已完成与未完成边界
+
+- 已实现根入口类型、校验/归一化、双策略检测、规范化/hash、打包、五种导出、browser Worker/client及对应测试；仍为待完成验收的工作区代码，不能宣称已完全满足契约。
+- 已通过黄金20/20；经产品主例外授权修正的标注已单独提交为 `6172e32`，详见 `tests/golden/R3-CORRECTIONS.md`。R6保留目录所有权并须在Gate 3复核。
+- 4K连通域代表输入预热5轮、测量30轮，p95=376.83ms；硬件、原始测量、范围见BENCH.md。
+- Chrome真实模块Worker/原生PNG编解码/Comlink transfer/五种ZIP导出已冒烟通过；WebP能力探测的假阴性已修复。真实Phaser/Godot运行时、Firefox/WebKit尚未验收。
+- 完整README、最后一轮全量检查、管线完成提交尚未交付；不把003失败复现隐藏成通过。下面的旧“当前交付状态”仅属于2026-09-16历史。
+
+---
+
+## 2026-09-16 历史申请（001/002）
 
 日期：2026-09-16。核对版本：`docs/interface-contract.md`，目标版本 1.0.0、文档修订 r2。
 

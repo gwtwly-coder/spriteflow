@@ -5,6 +5,15 @@
   "description": "Pure TypeScript sprite pipeline: input validation, detection, normalization, packing, export. Root entry is DOM-free; ./browser hosts worker/RPC adapters only.",
   "type": "module",
   "sideEffects": false,
+  "scripts": {
+    "test": "vitest run",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.browser.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.browser.json --noEmit && tsc -p tsconfig.tests.json --noEmit",
+    "bench": "node tools/bench.mjs",
+    "check:contract": "node tools/check-contract.mjs",
+    "test:stale": "node tools/repro-stale-result.mjs",
+    "test:browser": "node tools/browser-smoke.mjs"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
