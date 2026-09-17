@@ -1,11 +1,11 @@
 # SpriteFlow M1 管线公共接口契约
 
-> 生效基线：`2.0.0 / r3`（产品主已确认，2026-09-17 起生效）。
+> 生效基线：`3.0.0 / r4`（产品主已确认，2026-09-17 起生效）。
 >
-> 本文契约版本：`2.0.0`；协议版本：`1`；文档修订：`r3`；状态：**已确认生效，后续变更遵循第11节版本规则**。生效日期：2026-09-17。
+> 本文契约版本：`3.0.0`；协议版本：`1`；文档修订：`r4`；状态：**已确认生效，后续变更遵循第11节版本规则**。生效日期：2026-09-17。
 > 包名：`@spriteflow/pipeline`。本文自包含，类型、默认值、坐标、错误、生命周期和导出格式均为规范性要求。代码块是接口声明或调用示例，不是功能实现。
 
-本轮仅处理`SF-CONTRACT-001`与`SF-CONTRACT-002`。下文是产品主已批准的完整生效文本；修订依据、差异、回归矩阵及确认记录见第13节。历史基线为Git提交`2817208830f276469e5dad89daf05d30f6b1b23b`中的本文件（1.0.0/r2），其旧文件头的“尚未冻结”已被产品主后续Gate 1拍板覆盖；该提交保留首轮冻结全文以供追溯。两项冲突已获契约裁定，各角色的实现、测试与文档同步由协调会话分发，按文件所有权执行。
+本轮仅处理`SF-CONTRACT-003`，下文为产品主已批准的完整生效文本；新增字段、迁移、回归要求与确认记录见第14节。历史基线2.0.0/r3见Git提交`6aff8272fdefb3b28ac075b8595880acb45f7a6c`中的本文件，第13节保留001/002已批准的历史记录。更早的1.0.0/r2冻结全文见提交`2817208830f276469e5dad89daf05d30f6b1b23b`。本轮仅修改接口契约，各角色同步由协调会话分发，按文件所有权执行。
 
 ## 1. 产品范围与调用入口
 
@@ -26,7 +26,7 @@ SpriteFlow 是完全在浏览器处理本地素材的工具。M1 接受**静态�
 下面各节的 `ts` 声明块按顺序组成公共类型声明；所有标识符均导出。没有注明可选的字段必须存在；无值用 `null`，数组用空数组，不用 `undefined`。函数输入的 options 整体可省略；传入时必须为完整对象，推荐从默认常量展开。未知字段、非有限数和不合法组合在边界验证时返回 `INVALID_ARGUMENT`。
 
 ```ts
-export declare const CONTRACT_VERSION: "2.0.0";
+export declare const CONTRACT_VERSION: "3.0.0";
 export declare const PROTOCOL_VERSION: 1;
 export type AssetId = string;
 export type FrameId = string;
@@ -341,6 +341,8 @@ export interface PackOptions {
 export interface PackedFrame {
   frameId: FrameId;
   name: string;
+  sourceRect: Rect;
+  bbox: Rect | null;
   pageIndex: number;
   allocation: Rect;
   rect: Rect;
@@ -373,6 +375,10 @@ width/height 上限为 64…8192 的整数，且受资源限制；pot 时上限�
 pack 仅消费 included=true 且 reviewStatus=accepted 的规范化帧；未审校返回 REVIEW_REQUIRED，空数组返回 NO_FRAMES。每帧 name 必须唯一（ASCII 不区分大小写），匹配 `[A-Za-z0-9][A-Za-z0-9_-]{0,63}`，禁止 Windows 设备保留名（CON、PRN、AUX、NUL、COM1…9、LPT1…9），以及constructor、prototype、hasOwnProperty（均不区分大小写，避免JSONHash消费端对象属性冲突）。UI 改名后必须 normalize。重复名不静默加后缀。
 
 默认图集只存 bbox 内容；sourceSize 为逻辑 canvas 宽高，spriteSourceSize=(canvas.offset.x,canvas.offset.y,bbox.width,bbox.height)。空帧以透明 1×1 占位，sourceSize 仍为原 canvas，spriteSourceSize=(0,0,1,1)，保留时间轴时长。
+
+`PackedFrame.sourceRect`与`PackedFrame.bbox`是打包时对应规范化Frame的源几何快照，均为必填字段；前者逐字段复制Frame.sourceRect，后者为null或逐字段复制Frame.bbox。两者都使用第2节的工作图像坐标，与图集rect/allocation、逻辑画布spriteSourceSize不同；旋转、出血、页面位置不能改变它们。非空bbox必须在sourceRect内，空帧bbox=null、empty=true，sourceRect仍保留原框，不能用透明1×1占位替代。
+
+快照必须为独立小对象，不与输入Frame的sourceRect/bbox共享引用，也不保存像素、哈希或隐式缓存键。packFrames不增加参数；只对included帧生成快照，并保持PackResult.frames与frameOrder的时间轴顺序。调用者将PackResult视为只读DTO；structured clone、JSON往返或转交另一实例不影响其校验能力。此快照用于值一致性检查，不是防篡改签名。
 
 分配给 packer 的矩形为内容宽高各加 `2*extrude`，packer 间距为 padding、外边界为 border。`allocation` **含出血、不含间距**；rect 是其内实际内容区域，x/y 各加 extrude，rect 不含出血；相邻 allocation 的空隙至少 padding。extrude 复制最近边缘像素（包括 alpha），四角复制最近角像素，不新增半透明采样、不缩放。`rotated=true` 表示内容顺时针旋转 90° 存放，rect.width/height 交换，spriteSourceSize 与 sourceSize 保持未旋转方向；出血随旋转后像素生成。
 
@@ -460,7 +466,21 @@ export interface SequenceDocument {
 
 baseName 使用与 frame.name 相同规则。动画名同样遵守此规则且 ASCII 不区分大小写唯一；fps 为有限数 1…120，frameIds 非空且每个都引用 included 帧，**允许重复 ID 表示重复播放**，一个帧可用于多动画。animations=[] 表示自动生成一个 name=default、fps=12、loop=true、按完整 frameOrder 播放的动画。有显式动画时，未被引用的 included 帧仍导出，动画仅控制播放列表。M1 每帧等时长，未提供逐帧 duration 字段。
 
-图集格式要求 source.pack 非 null，且与 source.frames 的资产、顺序、name、canvas、bbox 完全一致；序列格式要求 pack=null。pure API 逐项验证几何一致性；Worker 使用不可变 result ID 更早检查。任何 mismatch 返回 STALE_RESULT，不允许旧图集搭配新审校帧。
+图集格式要求 source.pack 非 null，且与 source.frames 中included=true帧的资产、顺序、name、sourceRect、canvas、bbox完全一致；序列格式要求pack=null。pure API按下述规则逐项验证，Worker使用不可变result ID更早检查。任何合法值之间的mismatch返回STALE_RESULT，不允许旧图集搭配新审校帧。
+
+### 6.0 打包结果一致性校验
+
+先执行既有输入、资源、格式参数和审校校验，再在validate阶段校验pack；校验完成前不渲染、不调用PngCodec.encode、不生成ZIP。`source.frames`先按原顺序筛选included帧，excluded帧不与pack逐项对应；零帧与未确认帧分别沿用NO_FRAMES、REVIEW_REQUIRED。
+
+1. PackResult.asset和每个included Frame.asset均须等于InputAsset.ref（assetId与revision逐项相等）；pack.frames、frameOrder与筛选后帧数、ID和顺序一致，name精确相等。不能只按名称查找后忽略重排。
+2. 每个PackedFrame.sourceRect与Frame.sourceRect的x/y/width/height逐项精确相等。bbox两边同为null才匹配；否则必须都是Rect且四个分量逐项精确相等。不能只比较宽高，也不能从sourceSize、spriteSourceSize或图集rect反推源图位置。比较不依赖对象身份、属性插入顺序、JSON字符串字节、模块级缓存或先前调用历史。
+3. sourceSize宽高须等于Frame.canvas宽高；非空spriteSourceSize须等于`{x:canvas.offset.x,y:canvas.offset.y,width:bbox.width,height:bbox.height}`。空帧则要求Frame.canvas.offset=(0,0)、spriteSourceSize=(0,0,1,1)、empty=true；非空empty=false。继续校验页面归属、页内frameIds、旋转、rect/allocation、出血、边界、间距与PackOptions的一致性，不以源快照替代既有布局校验。
+4. 旧DTO缺少sourceRect或bbox字段时无法证明一致性，必须返回STALE_RESULT；不得从当前Frame回填字段后放行。此处“缺字段”专用于旧pack兼容诊断，是第2节必填字段校验的明确例外。字段存在但为undefined、非法Rect、越界或非空bbox超出sourceRect时返回INVALID_ARGUMENT；bbox=null合法，sourceRect=null非法。其他未知字段仍按第2节处理。对结构合法且资源允许的输入，先检查缺字段，再检查新增字段合法性，最后比较几何值。
+5. 上述STALE_RESULT使用stage=validate、recoverable=true、recoveryActions=["retry"]与既有messageKey。逐帧问题在details.field记录`source.pack.frames.<index>.<field>`，index为pack.frames索引，field为首个不匹配或缺失的字段（新增字段固定先sourceRect后bbox），details.frameIds列出对应Frame.id；资产/顺序等整体问题保留既有诊断规则。UI废弃旧pack、重新normalize/pack后重试，不能下载或自动补快照。
+
+这里校验的是当前输入的可观察几何与布局一致性。对相同AssetRef和相同上述值重新normalize/pack，pure API允许复用值相等的pack；它不承担Worker调用历史ID的验证。Worker仍须按第9.2节拒绝失效normalizationId/packId，即使两次几何相等也不放行旧ID。源像素修改必须按第2节递增revision；保留同一ref而改像素属于调用方违反输入约定。
+
+sourceRect/bbox仅属于公共PackResult DTO，不加入Phaser、GenericAtlasDocument、SequenceDocument或Godot下载文件；通用图集必须按第6.2节显式映射既有字段，不直接序列化PackedFrame。
 
 ### 6.1 Phaser JSONHash / JSONArray
 
@@ -481,7 +501,7 @@ JSONHash 顶层 `frames` 是以 Frame.name 为键的对象；JSONArray 顶层 `f
   },
   "meta": {
     "app": "SpriteFlow",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "image": "sprites.png",
     "format": "RGBA8888",
     "size": { "w": 64, "h": 64 },
@@ -709,7 +729,7 @@ export interface InitOptions {
 
 export interface WorkerCapabilities {
   protocolVersion: 1;
-  contractVersion: "2.0.0";
+  contractVersion: "3.0.0";
   decode: ("image/png" | "image/webp")[];
   encode: ["image/png"];
   offscreenCanvas: true;
@@ -851,6 +871,8 @@ preview输出保持裁取区域的宽高比，scale=min(1,maxDimension/max(crop.
 
 normalize 成功生成 normalizationId，原子替换旧规范化缓存并清除所有 packId；失败或取消保留旧缓存。pack 成功生成 packId 并替换旧打包缓存；失败/取消保留旧缓存。detect 是无副作用候选检测，不自动成为可导出规范化结果，也不替 UI 接受草稿。release/dispose 清除所有缓存/预览/结果并关闭 ImageBitmap。所有结果只绑定一个 AssetRef，不允许跨资产引用。
 
+StoredPackResult继承第5节的源几何快照，Worker缓存及成功pack响应均须完整保留，跨线程按第9.3节structured clone，无新增transfer buffer。Worker先检查结果ID，再对缓存Frame与PackResult执行第6.0节校验；不能只在纯入口补字段而让Worker响应缺失。客户端ready按CONTRACT_VERSION精确核对WorkerCapabilities.contractVersion，2.0.0与3.0.0混用返回PROTOCOL_MISMATCH并阻断任务，刷新加载配套版本；协议1的RPC封装、命令和transfer规则不变，载荷类型变更由契约版本门禁拦截。
+
 ### 9.3 Transfer 所有权
 
 | 数据 | 传送方式 | 发送后谁可使用 |
@@ -991,14 +1013,16 @@ Godot 调用沿用 load/detect/审校/normalize；省略 pack，export.payload.p
 
 ## 12. Gate 1 第 2 轮修订记录（r2历史）
 
-r2形成时修正的是尚未发布、尚未冻结的1.0.0候选文档，完整替代首轮草案。随后产品主明确确认Gate 1通过并冻结1.0.0/r2，该历史基线现由2.0.0/r3替代（确认记录见第13.4节）；不能再套用“未冻结草稿可直接改”的处理方式。本节保留历史整改记录，不是当前r3的生效授权。后续变更严格按第11节与产品主明确的“架构师修订→产品主确认→同步受影响方”流程执行。
+r2形成时修正的是尚未发布、尚未冻结的1.0.0候选文档，完整替代首轮草案。随后产品主明确确认Gate 1通过并冻结1.0.0/r2，该历史基线先由2.0.0/r3替代（第13.4节），再由3.0.0/r4替代（第14.4节）；不能再套用“未冻结草稿可直接改”的处理方式。本节保留历史整改记录，不是后续修订的生效授权。后续变更严格按第11节与产品主明确的“架构师修订→产品主确认→同步受影响方”流程执行。
 
 - 问题2：根据最新PRD/copy采取方案（b），第8节独立列明离群UI及全部状态，hash仍不展示。UI设计师在Wave2按角色交接要求落入ui-spec，本轮不声称尚不存在的ui-spec已完成。
 - 问题3：PackOptions仅保留两个真实库枚举映射，补齐各自确定性排序，非法第三值返回INVALID_ARGUMENT。
 - 问题4：BUSY区分task/asset，旧资产场景明确release-asset→retry，并处理旧ref及buffer重建。
 - 问题1/5：所有权与ignore规则在agent-roles.md、根.gitignore落盘；完整逐项整改索引见architecture-m1.md第10节。首轮裁决文件保留原样，是否通过由独立复审决定。
 
-## 13. SF-CONTRACT-001 / 002 变更记录（r3，已生效）
+## 13. SF-CONTRACT-001 / 002 变更记录（r3，已生效历史）
+
+本节记录2026-09-17对2.0.0/r3的批准，文中版本与“本文头部”等表述均指当时的r3快照；本轮r4的生效记录见第14节。
 
 ### 13.1 申请、依据与版本决定
 
@@ -1040,3 +1064,48 @@ R6的AC-F13黄金集仍只占“整图全透明1例”（对应AC-F05场景D）�
 确认记录：**产品主已确认（2026-09-17），候选成为生效基线**。依据本窗口产品主明确批准，契约**2.0.0 / 文档r3即刻生效**，替代1.0.0/r2；协议版本仍为1。本文头部、CONTRACT_VERSION与WorkerCapabilities.contractVersion已统一至该基线。SF-CONTRACT-001与SF-CONTRACT-002不再等待契约批准，后续实现与验收以本修订为依据；本次生效不代表各角色实现或测试已经完成。
 
 同步由协调会话分发：R4（detect分流、常量/能力版本与单测）、R6（同一全透明黄金用例及参数化断言）、R5（手动结果替换旧降级状态、零帧导出阻断、客户端版本核对）、R2（承接手动空结果/降级提示状态）、R1（核对AC-F05场景D的自动检测上下文）、R9（变更验收依据）。各文件owner修改对应实现/文档；架构师本次仅更新并提交本文件，不代写其他角色文件，也不将本记录视为同步已完成。此后的契约变更仍须依第11节重新提出修订、经产品主确认后同步受影响方。
+
+## 14. SF-CONTRACT-003变更记录（r4，已生效）
+
+### 14.1 独立核验与裁定
+
+申请见[CONTRACT-ISSUES.md的SF-CONTRACT-003](../packages/pipeline/CONTRACT-ISSUES.md)，复现见[repro-stale-result.mjs](../packages/pipeline/tools/repro-stale-result.mjs)。2026-09-17在当前工作区执行`pnpm --filter @spriteflow/pipeline build`成功，再运行`node packages/pipeline/tools/repro-stale-result.mjs`，得到两次bbox分别为(10,10,8,8)与(110,10,8,8)，publicPackDataIdentical=true，currentOutcome=ok、staleOutcome=ok；脚本最后断言失败，退出码为1。这是对缺口的成功复现，不是管线验收通过。
+
+纯函数收到相同公开输入时无法按未传入的历史判定不同结果。旧PackedFrame保存了输出画布与局部布局，丢失源bbox位置；对象身份、WeakMap或Worker私有normalizationId均不能补足跨克隆根入口的输入。因此003成立，不能作为普通实现遗漏要求R4自行绕过。
+
+本修订采纳“公开源几何、纯API自校验”方向：在PackedFrame新增必填`sourceRect: Rect`与`bbox: Rect | null`，分别保存审校框和实际内容框。仅sourceRect不足以覆盖同一审校框内规范化阈值变化造成的bbox变化；仅bbox又不能区分紧内容相同但审校框变化或空帧移位。现有sourceSize/spriteSourceSize已表达canvas，因此不重复增加canvas快照。逐项几何比对无摘要碰撞与序列化规范依赖，便于指出具体过期字段；不引入pack级指纹、随机规范化token或新依赖。
+
+### 14.2 版本与兼容边界
+
+已升级为**契约3.0.0 / 文档r4（已生效）**，本文CONTRACT_VERSION、WorkerCapabilities.contractVersion及Phaser meta.version示例均为3.0.0；替代2.0.0/r3生效基线。产品主明确确认必填字段变更按第11节升major，采用本修订的版本判定。
+
+协调意见中的2.1.0仅适用于非必需能力。这里PackResult既是输出也是exportAssets输入：两个字段必须生成、必须保留，旧DTO及手写fixture缺字段会被拒绝，严格字段校验的2.0.0消费者也不能直接消费新增字段。依第11节“改变必填字段、默认输出……须major”，采用方案一也应升major。可选字段缺省时若放行，003依旧存在；若拒绝，则仍改变旧输入的可接受性，不能以`?`形式声称兼容。本修订不修改版本规则以迁就minor编号。
+
+不采纳收窄纯API承诺的方案二。3.0.0是必填DTO迁移的版本选择，仍保留并落实旧契约要求的源bbox过期保护；新增sourceRect比对覆盖审校框本身的变更。完全相同几何的重复调用按第6.0节值语义处理，Worker历史ID失效规则保留。
+
+PROTOCOL_VERSION保持1：RPC封装、命令、回调、取消与transfer方式未变；StoredPackResult随继承增加两个字段，混合契约版本由ready精确匹配阻断，不宣称旧Worker载荷兼容。五种导出格式、generic/sequence/animations文件schema版本、检测/规范化/打包默认参数、像素布局、M1范围与依赖集均不变。
+
+### 14.3 迁移、预算与回归交接
+
+由协调会话按所有权分发：R4更新公共类型/常量、pack快照深拷贝、纯导出校验、Worker响应/能力与测试；R5核对客户端版本、更新手写PackedFrame/PackResult fixture与持久化读取，旧pack必须重新normalize/pack；R6更新相关契约/导出回归；R9按本修订验收。旧快照不能用当前Frame补字段“升级”，也不允许混用新旧包实例。仅透传新packFrames返回值的消费者不增加调用参数。R3不改写上述角色文件；原003复现脚本由R4按生效契约改为新行为的回归，不能继续保留“两次pack深相等”的旧缺口断言。本记录不代表同步或实现已经完成。
+
+新增成本为每个非空帧最多8个几何数值、2个Rect小对象（空帧4个数值、1个Rect与null），快照复制及源几何比对均为O(F)，不扫描像素、不重跑normalize/packer；500帧几何数值本体为32,000字节，实际对象和克隆开销额外计入第7节预算，此数不是堆内存上界。已有页面重叠/间距校验成本保持原约定。4K检测与500帧打包性能预算不放宽，R4更新后实测，本文不提前宣称达标。
+
+必须覆盖下列回归；涉及非法值的用例先满足其余输入/资源/审校前提。以下是待实现的验收要求：
+
+1. **003原例：**两次normalize/pack后sourceRect及bbox快照分别等于各自Frame，pack公开数据不再深相等；对after.frames，structuredClone(packAfter)成功、structuredClone(packBefore)返回STALE_RESULT，stage=validate、recoverable=true、recoveryActions=["retry"]，且未调用codec。fresh路径解码后的图集像素对应右侧绿色主体。
+2. **两种几何独立覆盖：**同一sourceRect内用不同合法alphaThreshold得到不同bbox，旧pack必须拒绝；相同bbox/canvas下仅改变sourceRect也必须拒绝。前者定位bbox，后者定位sourceRect，均核对details.field与frameIds；原例覆盖同尺寸bbox平移。
+3. **空帧与像素几何：**空帧移至不同源位置但canvas相同时拒绝旧pack；同一空帧当前pack成功，bbox=null且仍使用1×1图集占位。覆盖空/非空切换、trim=false、非零canvas.offset、旋转、padding/extrude与generic多页，合法当前pack通过。
+4. **旧格式与非法值：**删除sourceRect或bbox返回STALE_RESULT，不能按当前frames补值；显式undefined、sourceRect=null、非整数/越界矩形、非空bbox超出sourceRect返回INVALID_ARGUMENT。合法且相等的bbox=null通过。保留未知字段拒绝规则。
+5. **持久化与纯函数：**分别用structured clone、JSON序列化往返和新模块实例验证新pack通过、过期pack失败；改变Rect属性插入顺序不改变结论。同ref、相同几何及布局的重复normalize/pack允许值相等结果；不依赖先调用某实例的pack函数。
+6. **快照独立性：**所有新增Rect不得与输入Frame对象共享引用。测试中在pack完成后修改原Frame的源几何，已生成pack快照保持原值，再与新帧导出时拒绝；调用后修改pack快照也不得反向修改Frame。
+7. **既有校验：**资产revision、ID/数量/顺序/name、canvas、empty、页面布局或旋转发生不匹配仍拒绝；excluded帧不影响有效时间轴匹配；NO_FRAMES与REVIEW_REQUIRED优先于pack校验。Phaser hash/array与generic图集均执行源校验，Godot/PNG序列维持pack=null。
+8. **Worker与下载产物：**pack响应携带完整快照，几何相等也不能复用旧normalizationId/packId；混用2.0.0与3.0.0时ready返回PROTOCOL_MISMATCH。下载JSON不泄漏新sourceRect/bbox字段，schema版本不变；所有STALE_RESULT路径禁止生成下载结果。现有20例黄金集不新增配额，此缺口纳入导出契约回归。
+
+### 14.4 验证记录与生效门禁
+
+候选阶段已运行第14.1节的原缺口复现；本轮仅修改本文，不包含管线功能实现。TypeScript5.9.3严格编译8个无DOM根声明块、browser声明及完整调用示例通过（按第10节前提提供File输入），新增字段必填/null约束的正反类型断言通过；JSON示例、候选常量/能力版本、当时的2.0.0/r3生效基线标记与git diff --check通过，第11节版本规则与该基线逐字核对未变。检查材料仅在系统临时目录生成。第14.3节新行为测试由各owner按已批准契约实现并运行，不能把原复现的预期失败或声明编译成功当作修复通过。
+
+确认记录：**产品主已确认（2026-09-17），候选成为生效基线**。依据本窗口产品主明确批准，契约**3.0.0 / 文档r4即刻生效**，替代2.0.0/r3；协议版本保持1。本文头部、CONTRACT_VERSION与WorkerCapabilities.contractVersion已统一至该基线。SF-CONTRACT-003不再等待契约批准，后续实现与验收以本修订为依据；本次生效不代表修复或回归已完成。
+
+各角色同步由协调会话分发，架构师仅更新并提交本文件，不代写其他角色文件，也不声称同步已完成。此后的契约变更仍须依第11节重新提出修订、经产品主确认后同步受影响方。
