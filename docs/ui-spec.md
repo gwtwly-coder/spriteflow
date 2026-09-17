@@ -1,8 +1,9 @@
 # SpriteFlow M1 UI 规范
 
-> 版本：1.0；日期：2026-09-16；角色：UI/UX 设计师（R2）。
-> 事实来源：`docs/prd-m1.md`（功能与流程）、`docs/copy-m1.md`（全部界面文案，本文直接引用其 Key）、`docs/interface-contract.md`（数据字段、进度阶段、错误与恢复动作）、`docs/architecture-m1.md` 第 9 节（UI 状态交接表）。
+> 版本：1.1；日期：2026-09-17；角色：UI/UX 设计师（R2）。
+> 事实来源：`docs/prd-m1.md`（功能与流程）、`docs/copy-m1.md`（全部界面文案，本文直接引用其 Key）、`docs/interface-contract.md` **2.0.0 / r3**（数据字段、检测降级语义、进度阶段、错误与恢复动作）、`docs/architecture-m1.md` 第 9 节（UI 状态交接表）。
 > 本规范是可直接实施的规格：前端工程师（R5）照此实现，不自行发挥。HTML 静态稿见 `design/mockups/`（结构与样式以稿为准，本文给出尺寸原则与状态语义）。
+> 修订记录：v1.1（2026-09-17）按 [ui-verdict-1](./acceptance/ui-verdict-1.md) 修复 UI-01～UI-05：新增契约 r3 显式手动网格三项状态迁移与 C-68～C-71 状态项（§2/§5.3.6/§7.4/§9）；快捷键移除 Ctrl+D 冲突并补三浏览器核对说明（§6.1/§8）；C-22 绑定 `editor.selection_count`、撤销 D-01（§9/§11）；`--text-3` 提亮至 #808a9b 并记录对比度矩阵（§4.1）。
 
 ---
 
@@ -57,6 +58,15 @@ M1 只做**暗色单主题**（目标人群默认暗色，PRD 未要求主题切
 | S4 | S3 | `export.back` / `export.continue_editing` | 全部审校数据保留 |
 | S3 | S1 | `action.new_file`（经 `confirm.new_file.*` 确认） | 清空帧与历史 |
 | S4 | S4 | `export.again` | 保留面板，改格式再导出 |
+| S3（任意子态） | S3（显式手动） | 用户经侧栏切手动并成功应用网格（`manual.apply` 确认后） | **原子替换整组帧**；strategy=manual-grid、confidence=1、**degraded=null** → 清除降级横幅与 DETECTION_DEGRADED 呈现（契约 r3 §13.2/§13.3） |
+| S3（显式手动） | S3（手动空结果） | 应用网格成功但返回 `frames=[]` | 检测**成功**而非错误；进入零帧态（C-70）；导出由 pack/export 按 NO_FRAMES 阻断 |
+
+**手动模式两态（UI-01，契约 r3）**：
+
+- **降级手动**：当前 `DetectResult.degraded ≠ null`（自动检测低置信度或 EMPTY_INPUT）——持续降级横幅 + 侧栏预填建议网格，帧全部待确认。
+- **显式手动**：`degraded = null`（用户主动应用 manual-grid，confidence=1 仅表示严格执行用户配置，不表示检测质量）——**无降级横幅、无 DETECTION_DEGRADED 呈现**。
+- 降级横幅的**唯一显示条件**是当前 DetectResult.degraded ≠ null。自动降级（含 EMPTY_INPUT）后应用显式网格成功时，第二次结果**不继承**第一次降级对象，UI 必须原子清除旧横幅、DETECTION_DEGRADED 呈现与降级状态（契约 r3 §13.3 断言矩阵末行）。
+- 手动空结果（`frames=[]`）是检测成功，不显示任何降级横幅（C-70）。
 
 任何时候语言切换（顶栏）只改变文案层，不重置状态、不中断进行中的任务（AC-F01 场景 B）。
 
@@ -130,7 +140,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
   /* 文字 */
   --text-1: #e8edf5;    /* 主文字 */
   --text-2: #a7b1c4;    /* 次要文字、标签 */
-  --text-3: #6b7688;    /* 禁用、占位 */
+    --text-3: #808a9b;    /* 禁用、占位、帮助文案（v1.1 提亮，见 4.1.1） */
   /* 主色（选中/主按钮） */
   --accent: #4d8dff;
   --accent-hover: #6ea3ff;
@@ -155,8 +165,20 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 规则：
 
 - 主色蓝只表达「选中/主操作」，警告琥珀只表达「降级与待复核摘要/尺寸异常」，紫只表达「可能粘连」。同一含义只用一个色。
-- 文本对比度 ≥ 4.5:1（`--text-2` 对 `--bg-1` 为 7.2:1；角标色作为 11px 文字底时配 `#0e1116` 深字）。
+- 文本对比度要求见 4.1.1 矩阵；角标色作为 11px 文字底时配 `#0e1116` 深字。
 - 语义色不做渐变、不加发光。
+
+#### 4.1.1 文本对比度矩阵（WCAG 2.1 实算值，UI-05）
+
+| 前景 \ 背景 | --bg-0 `#0e1116` | --bg-1 `#151a22` | --bg-2 `#1c232e` | --bg-3 `#242d3b` |
+|---|---|---|---|---|
+| --text-1 `#e8edf5` | 16.1 | 14.9 | 13.4 | 11.8 |
+| --text-2 `#a7b1c4` | 8.8 | 8.1 | 7.3 | 6.4 |
+| --text-3 `#808a9b` | 5.4 | 5.0 | 4.5 | 4.0 |
+
+- 所有非禁用文本（正文、帮助文案、摘要、caption、状态栏）在其实际所在的 bg-0/1/2 表面上对比度 ≥ 4.5:1。
+- `--bg-3` 只用于按压态与禁用表面：禁用控件文字按 WCAG 1.4.3 豁免（inactive component），表中 4.0 仅作记录，不作为可读文本底色使用。
+- v1.0 的 `--text-3 #6b7688` 对 `--bg-1` 实算仅 3.8:1，v1.1 起提亮为 `#808a9b`，三份 HTML 稿同步；数值按 WCAG 相对亮度公式计算，实现侧以同公式回归。
 
 ### 4.2 字体与字号阶梯
 
@@ -288,7 +310,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 
 #### 5.3.5 状态栏（28px）
 
-左→右：任务状态点（空闲=灰点；处理中=`--accent` 呼吸点 + `status.busy` aria）│ 缩放百分比（mono，点击回到 100%）│ 指针坐标 `x, y`（mono，图像像素坐标）│ `detect.method.label`: `detect.method.grid/components/manual` │ `editor.summary` │ （多选时）已选计数（见设计发现 D-01）。
+左→右：任务状态点（空闲=灰点；处理中=`--accent` 呼吸点 + `status.busy` aria）│ 缩放百分比（mono，点击回到 100%）│ 指针坐标 `x, y`（mono，图像像素坐标）│ `detect.method.label`: `detect.method.grid/components/manual` │ `editor.summary` │ （多选时）`editor.selection_count`。
 
 #### 5.3.6 侧栏（292px，可折叠）
 
@@ -313,16 +335,20 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 - 防抖/重算期整组锁定，组头部右侧显示 `settings.pending`（见 6.8）。
 
 **组 2b · 手动网格**（手动模式显示；`manual.title` 标题）
-- 两个步进器：`manual.rows` / `manual.columns`（1–100；乘积超 500 时步进器红框内联报错）。
-- `manual.apply` 主按钮（整宽）→ 弹 `confirm.reset_detection.*` → 提交 manual-grid 检测。
-- `manual.reset` 次按钮：行列回到当前建议值。
+- 两个步进器：`manual.rows` / `manual.columns`（1–100；**乘积超过有效 maxFrames（M1 默认 500）时**：越界步进器红框、值文字变 `--danger`、下方内联错误行（C-71），`manual.apply` 禁用；错误行含当前乘积与上限，`role=alert` + `aria-invalid` 可读）。
+- `manual.apply` 主按钮（整宽）→ 弹 `confirm.reset_detection.*` 确认 → 以 mode=manual-grid 提交检测。
+  **调用值约定（UI-01）**：M1 UI 不提供 keepEmptyCells 开关，显式手动网格固定传 `keepEmptyCells=true`（与降级建议网格一致）；region 固定 null（见设计发现 D-05）。因此 M1 常规不会得到空结果，但 UI 仍须承接 `frames=[]` 的防御性呈现（契约 r3 允许 false 与空结果，C-70）。
+- **应用成功后的状态迁移**（原子替换整组帧，一个撤销事务；契约 r3 §13.2/§13.3）：
+  - frames 非空 → strategy=manual-grid、confidence=1、degraded=null：**清除降级横幅与 DETECTION_DEGRADED 呈现**。若上一状态是自动降级或 EMPTY_INPUT，第二次结果不继承第一次降级对象（横幅、警告、降级状态一并原子清除）；侧栏保持手动网格面板；状态栏 `detect.method.manual`。
+  - frames=[] → 检测成功而非错误：进入手动空结果态（C-70）。
+- `manual.reset` 次按钮：行列回到当前基准值（降级来源 = suggestedGrid 建议；显式手动来源 = 上次应用的值）。
 - `manual.draw_hint`（caption）。
 
 **组 3 · 导出预览**（`editor.normalized_preview` 标题）
 - 当前选中帧的规范化画布预览：正方形棋盘格区域（约 248×186，等比缩放显示），内容按 `canvas.offset` 摆放；下方一行 mono：画布尺寸 + `editor.frame_size`。多选或未选中时显示提示（复用 `editor.frame_index` 的空态说明——未选中时显示「—」）。
 - help：`editor.normalized_preview_help`（caption）。
 - 预览数据随草稿变更后台自动重算（轻量 normalize 任务）；重算中预览区显示细进度线，不阻塞编辑；角标以重算完成后的 flags 为准。
-- 零帧时组 3 隐藏，`manual.no_frames` 文案已在时间轴空态覆盖。
+- 零帧时组 3 隐藏，`manual.no_frames` 文案已在时间轴空态覆盖（手动空结果场景见 C-70）。
 
 **降级横幅**（画布区顶部，不是侧栏）：见 7.3。
 
@@ -364,7 +390,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 - Ctrl+点击：切换该帧选中态。
 - Shift+点击（时间轴芯片）：范围选择（从上次锚点芯片到当前）。
 - 画布空白处拖动：框选（marquee），松开时选中与拖拽矩形**相交**的全部帧；拖动距离 <3px 视为点击空白 = 取消选择。
-- Ctrl+A 全选；Ctrl+D / Esc 取消选择（Esc 优先取消进行中的操作，见 6.10）。
+- Ctrl+A 全选；Esc 取消选择（分层取消：先取消进行中的操作，见 6.10；不再使用 Ctrl+D——Chrome 将其保留为收藏当前页，UI-02）。
 - 画布选中 ↔ 时间轴芯片选中双向同步；从画布选中时时间轴自动滚动到当前芯片。
 
 ### 6.2 拖动移动
@@ -489,6 +515,12 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 
 ### 7.4 降级横幅（画布区顶部，持续显示）
 
+**显示与清除规则（UI-01，契约 r3 §13.2/§13.3）**：
+
+- 降级横幅的**唯一显示条件**是当前 `DetectResult.degraded ≠ null`。
+- 显式手动网格（manual-grid）成功返回时 `degraded=null`、无 DETECTION_DEGRADED——**不显示横幅**；即使此前处于自动降级或 EMPTY_INPUT 降级，应用网格成功后必须清除横幅、警告呈现与降级状态（第二次结果不继承第一次降级对象）。
+- 手动空结果（`frames=[]`）是检测成功，不显示任何降级横幅（C-70）。
+
 两种文案（同为 `--warn` 左条横幅，含关闭 ✕ 折叠为 40px 细条可再展开）：
 
 1. 低置信度/失败降级：`fallback.title` + `fallback.body`；动作：`fallback.retry_auto`（次按钮）。侧栏已切换为手动网格面板（预填建议行列），画布已是建议网格帧（全部 pending）。
@@ -519,8 +551,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 | `Delete` / `Backspace` | 删除选中帧（确认框） | `shortcuts.delete` / `tool.delete_frame` | 通用 |
 | `Ctrl+Z` | 撤销 | `shortcuts.undo` / `tool.undo` | 全行业 |
 | `Ctrl+Shift+Z` / `Ctrl+Y` | 重做 | `shortcuts.redo` / `tool.redo` | PS/Aseprite |
-| `Ctrl+A` | 全选帧 | — | 通用 |
-| `Ctrl+D` | 取消选择 | — | PS |
+| `Ctrl+A` | 全选帧（应用内覆写，仅画布/工作区焦点时拦截） | — | 通用 |
 | `←→↑↓` | 微调选中帧 1px | — | Aseprite |
 | `Shift+方向键` | 微调 10px | — | Aseprite |
 | `,` / `.` | 上一帧 / 下一帧 | `preview.previous` / `preview.next` | Aseprite 帧步进 |
@@ -530,6 +561,8 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 | `?`（Shift+/） | 快捷键面板 | `action.learn_shortcuts` / `shortcuts.title` | 通用 |
 
 注：时间轴帧步进用 `,`/`.` 而非方向键——方向键保留给帧微调（Aseprite 同款分工）；`Enter` 而非空格播放——空格是平移（PS 肌肉记忆优先）。
+
+浏览器冲突核对（UI-02，v1.1）：全表已对照 Chromium、Firefox、Safari 官方快捷键文档逐项核对，无保留组合冲突；v1.0 曾将 `Ctrl+D` 用作取消选择，与 Chrome「收藏当前页」冲突，v1.1 移除，取消选择仅由 `Esc` 分层承担。`Ctrl+A`/`Ctrl+Z`/`Ctrl+Y` 为应用内标准覆写（Figma/Aseprite 同款语义），仅在画布/工作区焦点且无文本输入时拦截。核对依据：[Chrome 键盘快捷键](https://support.google.com/chrome/answer/157179)、[Firefox 键盘快捷键](https://support.mozilla.org/kb/keyboard-shortcuts-perform-firefox-tasks-quickly)、[Safari 键盘快捷键](https://support.apple.com/guide/mac-help/mac-keyboard-shortcuts-mh21232/mac)；R5 实现落地后须在 Chromium/Firefox/WebKit 三个目标浏览器实测无浏览器动作被抢占，实测结果记录于实现侧验收材料。
 
 ---
 
@@ -570,9 +603,9 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 | # | 状态 | 呈现 | 文案 | 动作 |
 |---|---|---|---|---|
 | C-19 | 正常审校 | 工作区全貌 | `editor.title`（工作区概念）、`editor.summary`、`tool.*` | 全部编辑操作 |
-| C-20 | 零帧 | 时间轴空态 + 画布提示 | `manual.no_frames`、`preview.empty` | 应用网格 / 新增帧；导出禁用 `export.disabled_no_frames` |
+| C-20 | 零帧 | 时间轴空态 + 画布提示 | `manual.no_frames`、`preview.empty` | 应用网格 / 新增帧；导出禁用 `export.disabled_no_frames`（手动空结果场景见 C-70） |
 | C-21 | 单选帧 | 手柄 + 尺寸标注 + 状态栏 | `editor.frame_index`、`editor.frame_size` | 编辑 |
-| C-22 | 多选帧 | 联合虚线框 + 状态栏计数 | 计数文案缺词条（设计发现 D-01） | 移动/删除/合并 |
+| C-22 | 多选帧 | 联合虚线框 + 状态栏计数 | `editor.selection_count`（已选 {count} 帧 / {count} selected） | 移动/删除/合并 |
 | C-23 | 新增完成 | Toast | `editor.frame_added` | — |
 | C-24 | 删除确认 | 模态 | `confirm.delete_one/many`、`confirm.delete.body`、`confirm.delete.action` | 确认/取消 |
 | C-25 | 删除完成 | Toast | `editor.frame_deleted` | — |
@@ -596,12 +629,16 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 | C-43 | 筛选空 | 芯片行居中 | `review.filter.none` + 「`review.filter.all`」链接 | 清除筛选 |
 | C-44 | 未确认 | 状态栏 + 按钮态 | `review.pending` | `tool.confirm_review` |
 | C-45 | 确认完成 | Toast + 按钮成功态 | `review.confirmed` | `tool.export` |
-| C-46 | 手动网格面板 | 侧栏组 2b | `manual.title/rows/columns/apply/reset/draw_hint` | 应用/重置/画框 |
+| C-46 | 手动网格面板 | 侧栏组 2b | `manual.title/rows/columns/apply/reset/draw_hint` | 应用/重置/画框；乘积超限错误见 C-71 |
 | C-47 | 结果不对入口 | 侧栏文本链接 | `fallback.bad_result` | 切手动网格（应用时 `fallback.use_manual` 确认） |
 | C-48 | 规范化预览 | 侧栏组 3 | `editor.normalized_preview/help` | 选中帧切换 |
 | C-49 | 动画预览控件 | 时间轴头部 | `preview.play/pause/previous/next/fps/onion_skin/onion_on/onion_off` | 播放控制 |
 | C-50 | 预览空 | 芯片行空态 | `preview.empty` | — |
 | C-51 | 快捷键面板 | 模态 | `shortcuts.*`（第 8 节全表） | `shortcuts.close` |
+| C-68 | 显式手动模式（非降级，v1.1/UI-01） | **无降级横幅**；侧栏手动网格面板；状态栏 `detect.method.manual`；帧为用户网格/手画结果（全部待确认） | `manual.*`（契约 r3：confidence=1、degraded=null、无 DETECTION_DEGRADED） | 行列调整/应用网格/画框/正常确认导出 |
+| C-69 | 应用网格成功（替换 + 清除降级，v1.1/UI-01） | 原子替换整组帧；**清除降级横幅与 DETECTION_DEGRADED 呈现**；自动降级（含 EMPTY_INPUT）后二次应用不继承第一次降级对象 | 无新增文案（复用 C-68 呈现；契约 r3 §13.3 断言矩阵末行） | 继续编辑/确认审校 |
+| C-70 | 手动空结果（frames=[]，v1.1/UI-01） | 检测**成功**态：无降级横幅；时间轴空态 + 画布提示；隐藏「导出预览」组；预览控件禁用；确认审校/导出禁用（后续 pack/export 按 NO_FRAMES 阻断） | `manual.no_frames`、`preview.empty`、`export.disabled_no_frames`（导出 tooltip） | 应用网格 / 新增帧 |
+| C-71 | 手动网格超限（rows×columns > 有效 maxFrames=500，v1.1/UI-04） | 越界步进器红框 + `--danger` 值文字 + 内联错误行（`role=alert`、`aria-invalid`，含当前乘积与上限）；`manual.apply` 禁用 | 建议词条 `manual.grid_too_large`（**待 PM 录入**，建议文案见 §11 D-07） | 调低行列后自动恢复 |
 
 ### D. 导出（S4 + 全局）
 
@@ -645,16 +682,16 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 
 ## 11. 设计发现（上报，不擅自决定）
 
-| # | 发现 | 建议 | 影响 |
-|---|---|---|---|
-| D-01 | 多选状态无计数词条：状态栏/工具栏需要「已选 {count} 帧」类文案，copy-m1.md 未提供 | 增补 `editor.selection_count`（zh：已选 {count} 帧 / en：{count} selected） | C-22 当前以纯数字 + `editor.summary` 并列呈现，语义偏弱 |
-| D-02 | 「确认审校」按钮的已确认视觉态无专属词条（`review.confirmed` 是 Toast 文案，按钮上沿用 `tool.confirm_review` + 对勾图标） | 可接受；如需更明确可增补 `tool.review_done` | 低 |
-| D-03 | Godot 选中时图集设置组隐藏需要一行说明，现复用 `export.godot` 选项副行文字，无独立词条 | 可接受；或增补 `export.atlas_not_used` | 低 |
-| D-04 | PRD 未提及主题切换；本规范按暗色单主题实施（目标人群默认暗色） | 请 PM 确认 M1 不做浅色主题 | 如需浅色需补充一套令牌与验收 |
-| D-05 | 契约 ManualGrid 支持 `region`（局部区域网格），但 PRD/copy 无区域选择交互与文案；M1 UI 仅提供整图行列（region=null） | 维持整图；局部网格留给后续里程碑 | 契约能力暂不暴露，无功能缺失 |
-| D-06 | 导出文件名（baseName）无 UI 词条与字段，M1 固定默认 `atlas`（架构 §9 结论） | 请 PM 确认 M1 不提供导出重命名 | 与 PRD 一致，仅备案 |
-| D-07 | 手动网格步进器乘积超上限（500 帧）需内联错误文案，copy 无专属词条；当前用红框 + 通用禁用呈现 | 可增补 `manual.grid_too_large` | 低 |
-| D-08 | 拖动/缩放钳制到图内是静默行为（无提示）。符合工具惯例，但若 PM 希望显式提示需补词条 | 维持静默钳制 | 低 |
+| # | 状态 | 发现 | 建议 | 影响 |
+|---|---|---|---|---|
+| D-01 | 已解决（撤回） | （v1.0）多选状态无计数词条 | `editor.selection_count` 已录入 copy-m1.md 第 8 节（已选 {count} 帧 / {count} selected）；v1.1 起 C-22 绑定该词条，HTML 稿同步 | 无 |
+| D-02 | 备案 | 「确认审校」按钮的已确认视觉态无专属词条（`review.confirmed` 是 Toast 文案，按钮上沿用 `tool.confirm_review` + 对勾图标） | 可接受；如需更明确可增补 `tool.review_done` | 低 |
+| D-03 | 备案 | Godot 选中时图集设置组隐藏需要一行说明，现复用 `export.godot` 选项副行文字，无独立词条 | 可接受；或增补 `export.atlas_not_used` | 低 |
+| D-04 | 待 PM 确认 | PRD 未提及主题切换；本规范按暗色单主题实施（目标人群默认暗色，验收 3.4 已确认 PRD 规定 M1 仅暗色） | 维持暗色单主题 | 无（已对齐 PRD） |
+| D-05 | 备案 | 契约 ManualGrid 支持 `region`（局部区域网格），但 PRD/copy 无区域选择交互与文案；M1 UI 仅提供整图行列（region=null，5.3.6 已写明调用值） | 维持整图；局部网格留给后续里程碑 | 契约能力暂不暴露，无功能缺失 |
+| D-06 | 备案 | 导出文件名（baseName）无 UI 词条与字段，M1 固定默认 `atlas`（架构 §9 结论） | 请 PM 确认 M1 不提供导出重命名 | 与 PRD 一致，仅备案 |
+| D-07 | 部分解决（词条待 PM 录入） | 手动网格 rows×columns 超上限需可读错误文案，copy 无专属词条 | 状态项 C-71 已加入（v1.1）；建议词条 `manual.grid_too_large`：zh「行数×列数是 {count}，超过了 500 帧上限。调小后再应用。」/ en「Rows × columns is {count}, over the 500-frame limit. Lower them before applying.」（占位符沿用既有 `{count}`，不新增占位符类型） | 词条录入前实现与 HTML 稿按建议文案占位并注明待录入，录入后原位替换 |
+| D-08 | 备案 | 拖动/缩放钳制到图内是静默行为（无提示）。符合工具惯例，但若 PM 希望显式提示需补词条 | 维持静默钳制 | 低 |
 
 ---
 
@@ -663,7 +700,7 @@ S1/S2 无工具栏/侧栏/时间轴：S1 内容居中于画布区；S2 为居中
 | 文件 | 覆盖状态（对应第 9 节编号） |
 |---|---|
 | `design/mockups/upload.html` | A-1、A-2、A-3、A-6~A-9、A-11、A-12 |
-| `design/mockups/review-editor.html` | C-19~C-25、C-29、C-38~C-45、C-46~C-50、B-16（降级横幅变体）、C-43（筛选空变体） |
+| `design/mockups/review-editor.html` | C-19~C-25、C-29、C-38~C-45、C-46~C-50；变体：B-16（降级横幅）、C-39（重算中）、C-43（筛选空）、C-68+C-71（显式手动非降级 + 行列超限错误）、C-70（手动空结果）、C-69（自动降级后应用网格并清除横幅） |
 | `design/mockups/export-panel.html` | D-52、D-54~D-58、D-60 |
 
 三个稿均为单文件（内联 CSS + 少量内联 JS 做语言切换演示），浏览器直接打开；假数据为程序化绘制的示意帧。界面文案全部取自 `copy-m1.md`（右上角可切换 zh/EN 预览双语）。结构、类名与令牌即实现蓝本。

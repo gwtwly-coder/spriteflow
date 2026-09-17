@@ -17,7 +17,7 @@
   :root{
     --bg-0:#0e1116; --bg-1:#151a22; --bg-2:#1c232e; --bg-3:#242d3b;
     --border-1:#2a3342; --border-2:#3a465a;
-    --text-1:#e8edf5; --text-2:#a7b1c4; --text-3:#6b7688;
+    --text-1:#e8edf5; --text-2:#a7b1c4; --text-3:#808a9b;
     --accent:#4d8dff; --accent-hover:#6ea3ff; --accent-active:#3b74e0; --accent-dim:rgba(77,141,255,.16);
     --ok:#43d17c; --warn:#f0b13e; --danger:#f0596a;
     --frame:#98a5bd; --frame-selected:var(--accent);
@@ -229,6 +229,50 @@
   .is-filter-empty .chips-row .chip{display:none}
   .is-filter-empty .filter-empty-msg{display:flex}
   .sgroup.manual-grid{display:none}
+  /* ===== v1.1 / UI-01、UI-04：手动网格状态与错误 ===== */
+  .st-err{display:none;align-items:flex-start;gap:8px;margin-top:10px;padding:8px 10px;
+    border:1px solid rgba(240,89,106,.4);border-left:3px solid var(--danger);border-radius:6px;
+    background:rgba(240,89,106,.08);color:#ffb9bf;font-size:12px;line-height:18px}
+  .st-err .e-ic{width:14px;height:14px;flex:none;border-radius:50%;background:var(--danger);position:relative;margin-top:1px}
+  .st-err .e-ic::before,.st-err .e-ic::after{content:"";position:absolute;left:6px;top:3px;width:2px;height:8px;background:#0b1220;border-radius:1px;transform:rotate(90deg)}
+  .st-err .e-ic::after{transform:none}
+  .stepper.err .st-in{border-color:var(--danger)}
+  .stepper.err input{color:#ffb9bf}
+  .tl-empty{display:none;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:var(--text-2);font-size:12px}
+  .tl-empty .t2{color:var(--text-3);font-size:11px}
+  /* C-68 显式手动（非降级）：无横幅 + 手动侧栏；示例同时展示 C-71 超限错误 */
+  .is-manual .frame.scattered{display:none}
+  .is-manual .frame.gridcell{display:block}
+  .is-manual .sgroup.detect-settings{display:none}
+  .is-manual .sgroup.manual-grid{display:block}
+  .is-manual .method-chip::before{background:var(--frame)}
+  .is-manual .attention-strip{display:none}
+  .is-manual .handles,.is-manual .size-label{display:none}
+  .is-manual .st-err{display:flex}
+  .is-manual .apply-btn{opacity:.4;pointer-events:none}
+  .is-manual .chip .mini{background:var(--frame)}
+  .is-manual .chip .dot{display:none}
+  .is-manual .chip.empty-chip{border-style:solid}
+  /* C-69 自动降级后应用网格成功：同显式手动，无超限错误 */
+  .is-manual-cleared .frame.scattered{display:none}
+  .is-manual-cleared .frame.gridcell{display:block}
+  .is-manual-cleared .sgroup.detect-settings{display:none}
+  .is-manual-cleared .sgroup.manual-grid{display:block}
+  .is-manual-cleared .method-chip::before{background:var(--frame)}
+  .is-manual-cleared .attention-strip{display:none}
+  .is-manual-cleared .handles,.is-manual-cleared .size-label{display:none}
+  .is-manual-cleared .chip .mini{background:var(--frame)}
+  .is-manual-cleared .chip .dot{display:none}
+  .is-manual-cleared .chip.empty-chip{border-style:solid}
+  /* C-70 手动空结果：检测成功但 frames=[] */
+  .is-manual-empty .frame{display:none!important}
+  .is-manual-empty .chips-row .chip{display:none}
+  .is-manual-empty .tl-empty{display:flex}
+  .is-manual-empty .sgroup.norm-preview{display:none}
+  .is-manual-empty .btn-export,.is-manual-empty .btn-confirm{opacity:.4;pointer-events:none}
+  .is-manual-empty .filter-group,.is-manual-empty .frame-count{display:none}
+  .is-manual-empty .attention-strip{display:none}
+  .is-manual-empty .transport,.is-manual-empty .fps-box,.is-manual-empty .toggle-chip{opacity:.4;pointer-events:none}
 </style>
 </head>
 <body>
@@ -236,7 +280,7 @@
 <button class="lang-toggle" id="langToggle" onclick="toggleLang()">预览 English</button>
 
 <div class="review-note">
-  <b>SpriteFlow 审校编辑器静态稿</b> · 主屏为「自动检测成功（区域策略）」态；下方三个变体由状态类切换：B-16 低置信度降级 / C-39 参数重算中 / C-43 筛选空。文案取自 docs/copy-m1.md，右上角可切换双语。假数据：1024×768 透明 WebP、12 帧（#5 尺寸异常、#8 可能粘连、#11 空帧）。
+  <b>SpriteFlow 审校编辑器静态稿（v1.1）</b> · 主屏为「自动检测成功（区域策略）」态；下方六个变体由状态类切换：B-16 低置信度降级 / C-39 参数重算中 / C-43 筛选空 / <b>C-68+C-71 显式手动非降级+超限错误 / C-70 手动空结果 / C-69 降级后应用网格清除横幅</b>（后三个承接契约 2.0.0/r3）。文案取自 docs/copy-m1.md，右上角可切换双语。假数据：1024×768 透明 WebP、12 帧（#5 尺寸异常、#8 可能粘连、#11 空帧）。
 </div>
 
 <!-- ================= 主屏 ================= -->
@@ -263,7 +307,7 @@
     <button class="icon-btn edit-action" title="撤销 (Ctrl+Z)" data-zh="撤销" data-en="Undo">↶</button>
     <button class="icon-btn edit-action" title="重做 (Ctrl+Shift+Z)" data-zh="重做" data-en="Redo">↷</button>
     <span class="spring"></span>
-    <button class="btn-primary" style="margin-right:8px" data-zh="确认审校" data-en="Confirm review">确认审校</button>
+    <button class="btn-primary btn-confirm" style="margin-right:8px" data-zh="确认审校" data-en="Confirm review">确认审校</button>
     <button class="btn-secondary btn-export" data-zh="导出" data-en="Export">导出</button>
   </div>
 
@@ -402,21 +446,25 @@
       <div class="sgroup manual-grid">
         <h3 data-zh="手动网格" data-en="Manual grid">手动网格</h3>
         <div class="steppers">
-          <div class="stepper">
+          <div class="stepper st-rows">
             <label data-zh="行数" data-en="Rows">行数</label>
             <div class="st-in"><button>−</button><input value="3"><button>＋</button></div>
           </div>
-          <div class="stepper">
+          <div class="stepper st-cols">
             <label data-zh="列数" data-en="Columns">列数</label>
             <div class="st-in"><button>−</button><input value="4"><button>＋</button></div>
           </div>
         </div>
-        <button class="btn-primary full-btn" data-zh="应用网格" data-en="Apply grid">应用网格</button>
+        <div class="st-err" role="alert">
+          <span class="e-ic"></span>
+          <span data-zh="行数×列数是 600，超过了 500 帧上限。调小后再应用。" data-en="Rows × columns is 600, over the 500-frame limit. Lower them before applying.">行数×列数是 600，超过了 500 帧上限。调小后再应用。</span>
+        </div>
+        <button class="btn-primary full-btn apply-btn" data-zh="应用网格" data-en="Apply grid">应用网格</button>
         <button class="btn-secondary full-btn" data-zh="重置网格" data-en="Reset grid">重置网格</button>
         <div class="hint-text" data-zh="也可以用「新增帧」直接画框。" data-en="You can also draw a frame with Add frame.">也可以用「新增帧」直接画框。</div>
       </div>
 
-      <div class="sgroup">
+      <div class="sgroup norm-preview">
         <h3 data-zh="导出预览" data-en="Export preview">导出预览</h3>
         <div class="norm-preview">
           <svg class="np-sprite" viewBox="0 0 72 78">
@@ -477,6 +525,10 @@
         <span data-zh="没有符合条件的帧。" data-en="No frames match this filter.">没有符合条件的帧。</span>
         <button class="link-btn" data-zh="全部帧" data-en="All frames">全部帧</button>
       </div>
+      <div class="tl-empty">
+        <span class="t1" data-zh="还没有帧。应用网格或画一个帧框。" data-en="No frames yet. Apply a grid or draw a frame.">还没有帧。应用网格或画一个帧框。</span>
+        <span class="t2" data-zh="添加至少一帧后才能预览。" data-en="Add at least one frame to preview.">添加至少一帧后才能预览。</span>
+      </div>
     </div>
   </div>
 
@@ -486,12 +538,12 @@
     <span>100%</span><span class="sep"></span>
     <span>412, 96</span><span class="sep"></span>
     <span><span class="label" data-zh="检测方式：" data-en="Detection method: ">检测方式：</span><span class="method-val" data-zh="区域" data-en="Regions">区域</span></span><span class="sep"></span>
-    <span data-zh="12 帧 · 已选 1" data-en="12 frames · 1 selected">12 帧 · 已选 1</span>
+    <span><span class="sum-count" data-zh="12 帧" data-en="12 frames">12 帧</span><span class="sum-sel" data-zh=" · 已选 1 帧" data-en=" · 1 selected"> · 已选 1 帧</span></span>
     <span class="spring"></span>
     <span class="pending-txt" data-zh="还有 3 帧未确认。" data-en="3 frames still need confirmation.">还有 3 帧未确认。</span>
   </div>
 </div>
-<div class="frame-note">注：状态栏「已选 1」的计数词条尚无 copy 条目（ui-spec 第 11 节设计发现 D-01）。确认审校前「导出」为次按钮；确认后互换主次。多选时画布仅显示联合虚线框、不显示手柄（ui-spec 6.4）。</div>
+<div class="frame-note">注：状态栏计数使用 editor.summary（12 帧）与 editor.selection_count（已选 1 帧）。确认审校前「导出」为次按钮；确认后互换主次。多选时画布仅显示联合虚线框、不显示手柄（ui-spec 6.4）。</div>
 
 <!-- 变体容器（JS 克隆主屏并打状态类） -->
 <div class="variant-label">B-16 变体 · 低置信度降级（fallback.* + manual.*）</div>
@@ -506,6 +558,18 @@
 <div id="v-filterempty"></div>
 <div class="frame-note">筛选只影响显示：不匹配芯片隐藏、画布帧框降至 15%；清除入口为「全部帧」。播放与导出始终按完整时间轴。</div>
 
+<div class="variant-label">C-68 + C-71 变体 · 显式手动网格（非降级）+ 行列超限错误（契约 r3：confidence=1、degraded=null）</div>
+<div id="v-manual"></div>
+<div class="frame-note">无降级横幅、无 DETECTION_DEGRADED 呈现；侧栏为手动网格，状态栏「手动」。示例 12×50=600 超过 500 帧上限：越界步进器红框 + 内联错误（role=alert / aria-invalid），「应用网格」禁用（C-71）。错误文案为建议词条 manual.grid_too_large（<b>待 PM 录入</b>，ui-spec §11 D-07）。M1 显式手动固定传 keepEmptyCells=true、region=null。</div>
+
+<div class="variant-label">C-70 变体 · 手动空结果（frames=[]，检测成功而非错误）</div>
+<div id="v-manual-empty"></div>
+<div class="frame-note">无降级横幅；时间轴空态（manual.no_frames + preview.empty）；「导出预览」组隐藏；确认审校/导出禁用，后续 pack/export 按 NO_FRAMES 阻断。M1 固定 keepEmptyCells=true 通常不会出现该结果，此为防御性承接（契约 r3 §13.2）。</div>
+
+<div class="variant-label">C-69 变体 · 自动降级后应用网格成功（清除横幅，不继承第一次降级）</div>
+<div id="v-cleared"></div>
+<div class="frame-note">与 B-16 对照：降级横幅与 DETECTION_DEGRADED 呈现已清除（契约 r3 §13.3 断言矩阵末行）；帧为第二次 manual-grid 结果（原子替换，可撤销），侧栏保持手动网格。EMPTY_INPUT 后应用网格同样走此路径。</div>
+
 <div class="legend">
   <b style="color:var(--text-1)">角标图例</b>
   <span><span class="sw" style="background:var(--badge-outlier)"></span>尺寸异常 outlier</span>
@@ -517,17 +581,19 @@
 <script>
   /* 变体克隆：主屏为唯一手写蓝本，变体 = 克隆 + 状态类 + 少量补丁 */
   const main = document.getElementById('screen-main');
-  function makeVariant(containerId, className, patch){
+  function setMethod(clone, zh, en){
+    clone.querySelectorAll('.method-val').forEach(el=>{
+      el.textContent = zh; el.setAttribute('data-zh', zh); el.setAttribute('data-en', en);
+    });
+  }
+  function makeVariant(containerId, classNames, patch){
     const clone = main.cloneNode(true);
-    clone.classList.add(className);
+    clone.classList.add(...classNames.split(' '));
     clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
     if (patch) patch(clone);
     document.getElementById(containerId).appendChild(clone);
   }
-  makeVariant('v-fallback','is-fallback',clone=>{
-    const mv = clone.querySelectorAll('.method-val');
-    mv.forEach(el=>{ el.textContent='手动'; el.setAttribute('data-zh','手动'); el.setAttribute('data-en','Manual'); });
-  });
+  makeVariant('v-fallback','is-fallback',clone=>setMethod(clone,'手动','Manual'));
   makeVariant('v-recalc','is-recalc');
   makeVariant('v-filterempty','is-filter-empty',clone=>{
     /* 示例路径：用户选中「全部待复核」后又编辑帧，flags 被重算清零 → 计数 0、无匹配 */
@@ -537,6 +603,22 @@
     att.querySelector('.cnt').textContent = '0';
     clone.querySelectorAll('.fchip.f-outlier,.fchip.f-multi,.fchip.f-empty').forEach(c=>c.style.display='none'); /* 计数 0 的具体类不显示 */
   });
+  /* v1.1：契约 r3 三项手动网格承接（UI-01）+ 超限错误（UI-04） */
+  makeVariant('v-manual','is-manual',clone=>{
+    setMethod(clone,'手动','Manual');
+    const inputs = clone.querySelectorAll('.manual-grid .stepper input');
+    inputs[0].value = '12';
+    inputs[1].value = '50';
+    clone.querySelector('.manual-grid .st-cols').classList.add('err');
+  });
+  makeVariant('v-manual-empty','is-manual-cleared is-manual-empty',clone=>{
+    setMethod(clone,'手动','Manual');
+    const sc = clone.querySelector('.sum-count');
+    sc.textContent = '0 帧'; sc.setAttribute('data-zh','0 帧'); sc.setAttribute('data-en','0 frames');
+    clone.querySelector('.sum-sel').style.display = 'none';
+    clone.querySelector('.pending-txt').style.display = 'none';
+  });
+  makeVariant('v-cleared','is-manual-cleared',clone=>setMethod(clone,'手动','Manual'));
 
   /* 双语预览切换 */
   let lang = 'zh';
