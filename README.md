@@ -12,7 +12,7 @@
 | `docs/architecture-m1.md` | 仓库结构与架构决策（CI 设计、依赖审计） | ✅ 已通过验收（Gate 1, r2） |
 | `docs/interface-contract.md` | 管线 ↔ 前端接口契约（公共 API 唯一规范） | ✅ r2，并行双方以此开工 |
 | `docs/ui-spec.md` | UI 设计规范 + HTML 稿 | ⬜ UI 设计师待产出（Wave 2） |
-| `docs/devops.md` | 本地环境十分钟指南 + CI/部署说明 | ⬜ DevOps 待产出（Wave 3，随 CI 落地） |
+| `docs/devops.md` | 本地环境十分钟指南 + CI/部署说明 | ✅ DevOps 已交付（五 job CI + Cloudflare Pages） |
 
 ## 工作规则（对所有 agent 生效）
 
@@ -57,4 +57,9 @@ Workspace 结构（`pnpm-workspace.yaml`）：
 - **依赖增删改、根 lockfile、根配置一律由 DevOps（R7）唯一维护**：把依赖需求（包名 + 精确版本 + 理由）提交给 R7，禁止并行改写根 lockfile；
 - 依赖必须使用精确版本（无 `^/~`），新依赖先过许可/peer 审计（`docs/architecture-m1.md` 第 8 节），M1 禁入清单见同节。
 
-完整 CI 五 job（lint/typecheck/unit/golden/build）与 Cloudflare Pages 部署在 Wave 3 落地，见 `docs/architecture-m1.md` 第 7 节。
+## CI 与部署（DevOps / R7 维护）
+
+- CI：`.github/workflows/ci.yml`，五 job（lint / typecheck / unit / golden / build）并行，Node 24.12.0 + pnpm 11.9.0，全部绿才可合并 main；细节与演练记录见 `docs/devops.md`。
+- 部署：Cloudflare Pages，push main → 生产，PR → 自动 preview；账号绑定由产品主执行，步骤见 `docs/devops.md` 第 5 节。
+- 变更记录：`CHANGELOG.md`（合并 PR 必须登记，规范见文件头）；PR 描述模板已配置于 `.github/pull_request_template.md`。
+- 工程门禁：`scripts/check-boundaries.mjs`（依赖边界）、`scripts/check-licenses.mjs`（许可闭包 vs 审计清单）、`scripts/check-bundle-budget.mjs`（首屏 <300 KiB gzip + THIRD_PARTY_NOTICES）。

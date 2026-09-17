@@ -1,0 +1,13 @@
+# Cloudflare Pages configuration for the SpriteFlow static site.
+#
+# The Pages project itself (Cloudflare account binding, git integration) is created once
+# by the product owner in the Pages dashboard - see docs/devops.md section "Deployment".
+# Build settings for the git integration must match these values:
+#   build command:            pnpm build
+#   build output directory:   apps/web/dist
+#   environment variable:     NODE_VERSION = 24.12.0
+#
+# main -> production deployment; every other branch / PR -> automatic preview URL.
+
+name = "spriteflow"
+pages_build_output_dir = "apps/web/dist"
