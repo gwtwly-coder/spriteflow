@@ -118,6 +118,7 @@
 | manual.rows | 输入标签 | 行数 | Rows |
 | manual.columns | 输入标签 | 列数 | Columns |
 | manual.apply | 按钮 | 应用网格 | Apply grid |
+| manual.grid_too_large | 手动网格行列超限（状态 C-71） | 行数×列数是 {count}，超过了 500 帧上限。调小后再应用。 | Rows × columns is {count}, over the 500-frame limit. Lower them before applying. |
 | manual.reset | 按钮 | 重置网格 | Reset grid |
 | manual.draw_hint | 辅助说明 | 也可以用“新增帧”直接画框。 | You can also draw a frame with Add frame. |
 | manual.no_frames | 零帧状态 | 还没有帧。应用网格或画一个帧框。 | No frames yet. Apply a grid or draw a frame. |
