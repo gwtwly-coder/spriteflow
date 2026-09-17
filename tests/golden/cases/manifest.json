@@ -1,6 +1,6 @@
 {
   "schemaVersion": "spriteflow-golden-manifest/1",
-  "generatorVersion": "1.0.0",
+  "generatorVersion": "1.0.1",
   "caseCount": 20,
   "cases": [
     {
@@ -113,7 +113,7 @@
     },
     {
       "caseId": "19-ambiguous-degrade",
-      "title": "尺寸簇歧义显式降级",
+      "title": "嵌套 bbox 近邻合并后的显式降级",
       "category": "degradation",
       "inputType": "E"
     },

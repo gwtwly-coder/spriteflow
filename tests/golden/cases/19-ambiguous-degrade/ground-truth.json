@@ -1,7 +1,7 @@
 {
   "schemaVersion": "spriteflow-golden/1",
   "caseId": "19-ambiguous-degrade",
-  "title": "尺寸簇歧义显式降级",
+  "title": "嵌套 bbox 近邻合并后的显式降级",
   "category": "degradation",
   "inputType": "E",
   "input": {
@@ -15,15 +15,15 @@
     "detectOptions": null
   },
   "expected": {
-    "frameCount": 4,
+    "frameCount": 1,
     "strategy": "manual-grid",
     "origin": "manual",
     "layout": {
-      "rows": 2,
-      "columns": 2
+      "rows": 1,
+      "columns": 1
     },
     "degraded": {
-      "reason": "AMBIGUOUS_COMPONENTS",
+      "reason": "INSUFFICIENT_COMPONENTS",
       "attempted": [
         "grid",
         "components"
@@ -39,83 +39,14 @@
         "sourceRect": {
           "x": 0,
           "y": 0,
-          "width": 64,
-          "height": 64
+          "width": 128,
+          "height": 128
         },
         "bbox": {
           "x": 6,
           "y": 6,
-          "width": 58,
-          "height": 58
-        },
-        "flags": {
-          "outlier": false,
-          "merged": false,
-          "multipleComponents": true,
-          "empty": false,
-          "edited": false,
-          "duplicateOf": null
-        }
-      },
-      {
-        "index": 1,
-        "sourceRect": {
-          "x": 64,
-          "y": 0,
-          "width": 64,
-          "height": 64
-        },
-        "bbox": {
-          "x": 64,
-          "y": 6,
-          "width": 58,
-          "height": 58
-        },
-        "flags": {
-          "outlier": false,
-          "merged": false,
-          "multipleComponents": false,
-          "empty": false,
-          "edited": false,
-          "duplicateOf": null
-        }
-      },
-      {
-        "index": 2,
-        "sourceRect": {
-          "x": 0,
-          "y": 64,
-          "width": 64,
-          "height": 64
-        },
-        "bbox": {
-          "x": 6,
-          "y": 64,
-          "width": 58,
-          "height": 58
-        },
-        "flags": {
-          "outlier": false,
-          "merged": false,
-          "multipleComponents": false,
-          "empty": false,
-          "edited": false,
-          "duplicateOf": null
-        }
-      },
-      {
-        "index": 3,
-        "sourceRect": {
-          "x": 64,
-          "y": 64,
-          "width": 64,
-          "height": 64
-        },
-        "bbox": {
-          "x": 64,
-          "y": 64,
-          "width": 58,
-          "height": 58
+          "width": 116,
+          "height": 116
         },
         "flags": {
           "outlier": false,
@@ -138,7 +69,7 @@
   },
   "coverage": [
     "explicit-degradation",
-    "ambiguous-components",
+    "nested-bbox-merge",
     "suggested-grid"
   ]
 }

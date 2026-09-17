@@ -27,16 +27,16 @@
       {
         "index": 0,
         "sourceRect": {
-          "x": 12,
-          "y": 35,
-          "width": 24,
-          "height": 29
+          "x": 90,
+          "y": 32,
+          "width": 26,
+          "height": 32
         },
         "bbox": {
-          "x": 12,
-          "y": 35,
-          "width": 24,
-          "height": 29
+          "x": 90,
+          "y": 32,
+          "width": 26,
+          "height": 32
         },
         "flags": {
           "outlier": false,
@@ -50,13 +50,13 @@
       {
         "index": 1,
         "sourceRect": {
-          "x": 92,
+          "x": 12,
           "y": 35,
           "width": 24,
           "height": 29
         },
         "bbox": {
-          "x": 92,
+          "x": 12,
           "y": 35,
           "width": 24,
           "height": 29
@@ -76,13 +76,13 @@
           "x": 52,
           "y": 38,
           "width": 24,
-          "height": 29
+          "height": 30
         },
         "bbox": {
           "x": 52,
           "y": 38,
           "width": 24,
-          "height": 29
+          "height": 30
         },
         "flags": {
           "outlier": false,
@@ -96,15 +96,15 @@
       {
         "index": 3,
         "sourceRect": {
-          "x": 132,
+          "x": 130,
           "y": 38,
-          "width": 24,
+          "width": 26,
           "height": 29
         },
         "bbox": {
-          "x": 132,
+          "x": 130,
           "y": 38,
-          "width": 24,
+          "width": 26,
           "height": 29
         },
         "flags": {

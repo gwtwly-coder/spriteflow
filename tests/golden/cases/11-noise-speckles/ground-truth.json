@@ -50,18 +50,18 @@
         "sourceRect": {
           "x": 8,
           "y": 12,
-          "width": 22,
+          "width": 25,
           "height": 26
         },
         "bbox": {
           "x": 8,
           "y": 12,
-          "width": 22,
+          "width": 25,
           "height": 26
         },
         "flags": {
           "outlier": false,
-          "merged": false,
+          "merged": true,
           "multipleComponents": false,
           "empty": false,
           "edited": false,
@@ -96,13 +96,13 @@
         "sourceRect": {
           "x": 101,
           "y": 42,
-          "width": 22,
+          "width": 23,
           "height": 26
         },
         "bbox": {
           "x": 101,
           "y": 42,
-          "width": 22,
+          "width": 23,
           "height": 26
         },
         "flags": {

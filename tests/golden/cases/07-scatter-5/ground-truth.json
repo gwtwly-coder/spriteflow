@@ -48,20 +48,20 @@
       {
         "index": 1,
         "sourceRect": {
-          "x": 10,
+          "x": 8,
           "y": 10,
-          "width": 24,
+          "width": 29,
           "height": 24
         },
         "bbox": {
-          "x": 10,
+          "x": 8,
           "y": 10,
-          "width": 24,
+          "width": 29,
           "height": 24
         },
         "flags": {
           "outlier": false,
-          "merged": false,
+          "merged": true,
           "multipleComponents": false,
           "empty": false,
           "edited": false,

@@ -48,20 +48,20 @@
       {
         "index": 1,
         "sourceRect": {
-          "x": 10,
+          "x": 8,
           "y": 10,
-          "width": 24,
+          "width": 29,
           "height": 28
         },
         "bbox": {
-          "x": 10,
+          "x": 8,
           "y": 10,
-          "width": 24,
+          "width": 29,
           "height": 28
         },
         "flags": {
           "outlier": false,
-          "merged": false,
+          "merged": true,
           "multipleComponents": false,
           "empty": false,
           "edited": false,
@@ -71,20 +71,20 @@
       {
         "index": 2,
         "sourceRect": {
-          "x": 43,
+          "x": 40,
           "y": 18,
-          "width": 24,
+          "width": 27,
           "height": 28
         },
         "bbox": {
-          "x": 43,
+          "x": 40,
           "y": 18,
-          "width": 24,
+          "width": 27,
           "height": 28
         },
         "flags": {
           "outlier": false,
-          "merged": false,
+          "merged": true,
           "multipleComponents": false,
           "empty": false,
           "edited": false,
@@ -96,13 +96,13 @@
         "sourceRect": {
           "x": 111,
           "y": 26,
-          "width": 24,
+          "width": 25,
           "height": 28
         },
         "bbox": {
           "x": 111,
           "y": 26,
-          "width": 24,
+          "width": 25,
           "height": 28
         },
         "flags": {
@@ -141,9 +141,6 @@
     "hashEqualityGroups": [
       [
         0,
-        1,
-        2,
-        3,
         4
       ]
     ]

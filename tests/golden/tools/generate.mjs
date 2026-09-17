@@ -58,6 +58,78 @@ const cases = [
   emptyCase(),
 ];
 
+// Reviewed geometry corrections under the product owner's r3 authorization.
+// These are explicit annotations, independently checked by flood-fill and square
+// painting in audit-r3.mjs; never derive them from the pipeline under test.
+const reviewedGeometry = {
+  "07-scatter-5": {
+    rects: [
+      [70, 5, 24, 24],
+      [8, 10, 29, 24],
+      [40, 18, 24, 24],
+      [90, 38, 24, 24],
+      [58, 47, 24, 24],
+    ],
+    merged: [1],
+  },
+  "10-detached-weapons": {
+    rects: [
+      [90, 32, 26, 32],
+      [12, 35, 24, 29],
+      [52, 38, 24, 30],
+      [130, 38, 26, 29],
+    ],
+    merged: [0, 1, 2, 3],
+  },
+  "11-noise-speckles": {
+    rects: [
+      [73, 8, 22, 26],
+      [8, 12, 25, 26],
+      [40, 20, 22, 26],
+      [101, 42, 23, 26],
+      [57, 53, 22, 26],
+    ],
+    merged: [1],
+  },
+  "12-noise-clusters": {
+    rects: [
+      [73, 8, 25, 26],
+      [8, 12, 23, 26],
+      [38, 20, 24, 26],
+      [101, 42, 22, 26],
+      [57, 53, 22, 26],
+    ],
+    merged: [0, 2],
+  },
+  "15-repeated-frames": {
+    rects: [
+      [78, 7, 24, 28],
+      [8, 10, 29, 28],
+      [40, 18, 27, 28],
+      [111, 26, 25, 28],
+      [59, 54, 24, 28],
+    ],
+    merged: [1, 2],
+  },
+  "16-size-outlier": {
+    rects: [
+      [70, 8, 20, 28],
+      [8, 13, 25, 28],
+      [36, 24, 23, 28],
+      [99, 34, 23, 28],
+      [128, 50, 43, 56],
+    ],
+    merged: [1, 2, 3, 4],
+  },
+};
+for (const entry of cases) {
+  const correction = reviewedGeometry[entry.caseId];
+  if (correction) {
+    entry.sourceRects = correction.rects.map(([x, y, width, height]) => ({ x, y, width, height }));
+    entry.mergedIndexes = correction.merged;
+  }
+}
+
 await mkdir(casesRoot, { recursive: true });
 for (const entry of await readdir(casesRoot, { withFileTypes: true })) {
   if (entry.isDirectory() && /^\d{2}-/.test(entry.name)) {
@@ -71,7 +143,7 @@ for (const fixture of cases) {
 
 const manifest = {
   schemaVersion: "spriteflow-golden-manifest/1",
-  generatorVersion: "1.0.0",
+  generatorVersion: "1.0.1",
   caseCount: cases.length,
   cases: cases.map(({ caseId, title, category, inputType }) => ({
     caseId,
@@ -282,7 +354,8 @@ function repeatedCase() {
       coverage: ["repeated-frames", "dhash-metadata", "no-auto-fold"],
     },
   );
-  result.hashEqualityGroups = [[0, 1, 2, 3, 4]];
+  // Projection breakers change the other three crops; these two remain identical.
+  result.hashEqualityGroups = [[0, 4]];
   return result;
 }
 
@@ -352,11 +425,14 @@ function singleFrameDegradeCase() {
     "degradation",
     "E",
     png,
-    [{ x: 0, y: 0, width: 96, height: 80 }],
+    [
+      { x: 0, y: 0, width: 48, height: 80 },
+      { x: 48, y: 0, width: 48, height: 80 },
+    ],
     {
       strategy: "manual-grid",
       origin: "manual",
-      layout: { rows: 1, columns: 1 },
+      layout: { rows: 1, columns: 2 },
       degraded: { reason: "INSUFFICIENT_COMPONENTS", attempted: ["grid", "components"] },
       coverage: ["explicit-degradation", "insufficient-components"],
     },
@@ -371,15 +447,10 @@ function ambiguousDegradeCase() {
   drawRect(png, { x: 116, y: 12, width: 6, height: 104 }, PALETTE[0]);
   drawSprite(png, { x: 27, y: 29, width: 17, height: 19 }, 0, PALETTE[1]);
   drawRect(png, { x: 68, y: 72, width: 34, height: 11 }, PALETTE[2]);
-  const sourceRects = [];
-  for (let row = 0; row < 2; row += 1) {
-    for (let column = 0; column < 2; column += 1) {
-      sourceRects.push(cellRect(png.width, png.height, 2, 2, row, column));
-    }
-  }
+  const sourceRects = [{ x: 0, y: 0, width: 128, height: 128 }];
   return fixture(
     "19-ambiguous-degrade",
-    "尺寸簇歧义显式降级",
+    "嵌套 bbox 近邻合并后的显式降级",
     "degradation",
     "E",
     png,
@@ -387,9 +458,9 @@ function ambiguousDegradeCase() {
     {
       strategy: "manual-grid",
       origin: "manual",
-      layout: { rows: 2, columns: 2 },
-      degraded: { reason: "AMBIGUOUS_COMPONENTS", attempted: ["grid", "components"] },
-      coverage: ["explicit-degradation", "ambiguous-components", "suggested-grid"],
+      layout: { rows: 1, columns: 1 },
+      degraded: { reason: "INSUFFICIENT_COMPONENTS", attempted: ["grid", "components"] },
+      coverage: ["explicit-degradation", "nested-bbox-merge", "suggested-grid"],
     },
   );
 }
