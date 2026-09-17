@@ -1,0 +1,14 @@
+# Deterministic line endings across Windows dev machines and Linux CI.
+# Biome enforces LF; without this file a Windows checkout (core.autocrlf=true)
+# materializes CRLF and `pnpm lint` fails on a fresh clone.
+* text=auto eol=lf
+
+# Binary assets - never EOL-convert.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.zip binary
+*.woff2 binary
