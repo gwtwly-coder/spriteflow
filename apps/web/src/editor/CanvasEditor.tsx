@@ -1,5 +1,5 @@
 import type { PixelBuffer, Rect } from "@spriteflow/pipeline";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useEditorStore } from "../store/editor-store";
 
 interface Props {
@@ -345,7 +345,7 @@ export function CanvasEditor({ preview, sourceSize, disabled }: Props) {
     }
     drag.current = null;
   };
-  const fit = () => {
+  const fit = useCallback(() => {
     const host = hostRef.current;
     if (!host || !sourceSize) return;
     const value = Math.min(
@@ -356,14 +356,14 @@ export function CanvasEditor({ preview, sourceSize, disabled }: Props) {
       x: (host.clientWidth - sourceSize.width * value) / 2,
       y: (host.clientHeight - sourceSize.height * value) / 2,
     });
-  };
+  }, [setViewport, sourceSize]);
   useEffect(() => {
     fit();
   }, [fit]);
   useEffect(() => {
     window.addEventListener("spriteflow-fit", fit);
     return () => window.removeEventListener("spriteflow-fit", fit);
-  });
+  }, [fit]);
   return (
     <div className="canvas-host" ref={hostRef}>
       <canvas

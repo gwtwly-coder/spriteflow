@@ -5,9 +5,9 @@ import {
   ExportFormat,
   type ExportResult,
   type Frame,
+  type PackOptions,
   type PipelineClient,
   type PipelineError,
-  type PackOptions,
   PipelineErrorCode,
   type PixelBuffer,
   type ProgressEvent,
@@ -493,11 +493,11 @@ export function App() {
           </>
         )}
         <span className="grow" />
-        <button className="ghost" onClick={() => setModal("shortcuts")}>
+        <button type="button" className="ghost" onClick={() => setModal("shortcuts")}>
           {t("action.learn_shortcuts")}
         </button>
         {screen === "review" && (
-          <button className="ghost" onClick={() => setModal("newFile")}>
+          <button type="button" className="ghost" onClick={() => setModal("newFile")}>
             {t("action.new_file")}
           </button>
         )}
@@ -552,14 +552,18 @@ export function App() {
               {store.detection.manualGrid === null && pendingSettings && (
                 <div className="warning-banner">
                   {t("detect.recalculating")}{" "}
-                  <button onClick={() => void currentTask?.cancel()}>{t("detect.cancel")}</button>
+                  <button type="button" onClick={() => void currentTask?.cancel()}>
+                    {t("detect.cancel")}
+                  </button>
                 </div>
               )}
               {degraded && (
                 <div className="warning-banner">
                   <strong>{t("fallback.title")}</strong>
                   <span>{t("fallback.body")}</span>
-                  <button onClick={applyManual}>{t("fallback.use_manual")}</button>
+                  <button type="button" onClick={applyManual}>
+                    {t("fallback.use_manual")}
+                  </button>
                 </div>
               )}
               <CanvasEditor preview={preview} sourceSize={size} disabled={pendingSettings} />
@@ -691,6 +695,7 @@ function Upload({
         <h1>{t("app.tagline")}</h1>
         <p className="privacy">▣ {t("privacy.local_only")}</p>
         <button
+          type="button"
           className={`dropzone ${dragOver ? "over" : ""}`}
           onClick={onBrowse}
           onDragEnter={(event) => {
@@ -708,7 +713,7 @@ function Upload({
           <strong>{dragOver ? t("upload.drop_active") : t("upload.empty.title")}</strong>
           <span>{t("upload.empty.hint")}</span>
         </button>
-        <button className="primary" onClick={onBrowse}>
+        <button type="button" className="primary" onClick={onBrowse}>
           {t("upload.browse")}
         </button>
         <div className="chips">
@@ -737,7 +742,7 @@ function Upload({
         <div className="error-card">
           <h2>{copy[0]}</h2>
           <p>{copy[1]}</p>
-          <button className="danger-outline" onClick={onBrowse}>
+          <button type="button" className="danger-outline" onClick={onBrowse}>
             {t("error.choose_another")}
           </button>
         </div>
@@ -778,7 +783,12 @@ function Detect({
           aria-label={t("detect.progress", { percent })}
         />
         <span className="mono">{percent}%</span>
-        <button className="secondary" disabled={!progress?.cancellable} onClick={onCancel}>
+        <button
+          type="button"
+          className="secondary"
+          disabled={!progress?.cancellable}
+          onClick={onCancel}
+        >
           {t("detect.cancel")}
         </button>
       </div>
@@ -815,6 +825,7 @@ function Toolbar({
     shortcut: string,
   ) => (
     <button
+      type="button"
       className={store.tool === tool ? "tool active" : "tool"}
       disabled={disabled && tool !== "select" && tool !== "pan"}
       title={`${t(key)} (${shortcut})`}
@@ -830,10 +841,16 @@ function Toolbar({
       {toolButton("add", "tool.add_frame", "A")}
       {toolButton("split", "tool.split_frame", "S")}
       <i />
-      <button className="tool" disabled={!store.selected.length || disabled} onClick={onDelete}>
+      <button
+        type="button"
+        className="tool"
+        disabled={!store.selected.length || disabled}
+        onClick={onDelete}
+      >
         {t("tool.delete_frame")}
       </button>
       <button
+        type="button"
         className="tool"
         disabled={store.selected.length < 2 || disabled}
         title={store.selected.length < 2 ? t("editor.select_to_merge") : undefined}
@@ -842,6 +859,7 @@ function Toolbar({
         {t("tool.merge_frames")} <kbd>M</kbd>
       </button>
       <button
+        type="button"
         className="tool"
         disabled={store.selected.length !== 1 || disabled}
         title={store.selected.length !== 1 ? t("editor.select_one_to_split") : undefined}
@@ -851,6 +869,7 @@ function Toolbar({
       </button>
       <i />
       <button
+        type="button"
         className="tool"
         disabled={!useEditorStore.temporal.getState().pastStates.length || disabled}
         onClick={() => useEditorStore.temporal.getState().undo()}
@@ -858,6 +877,7 @@ function Toolbar({
         {t("tool.undo")}
       </button>
       <button
+        type="button"
         className="tool"
         disabled={!useEditorStore.temporal.getState().futureStates.length || disabled}
         onClick={() => useEditorStore.temporal.getState().redo()}
@@ -866,6 +886,7 @@ function Toolbar({
       </button>
       <span className="grow" />
       <button
+        type="button"
         className={pending ? "primary" : "confirmed"}
         disabled={!included || !pending || disabled}
         onClick={onConfirm}
@@ -873,6 +894,7 @@ function Toolbar({
         ✓ {t("tool.confirm_review")}
       </button>
       <button
+        type="button"
         className={pending ? "secondary" : "primary"}
         disabled={!included || disabled}
         aria-describedby={!included ? "no-frames-help" : undefined}
@@ -946,6 +968,7 @@ function Sidebar({
           )}
         </p>
         <button
+          type="button"
           className="secondary full"
           onClick={() => store.setDocument(store.normalized, deepDetect())}
         >
@@ -953,6 +976,7 @@ function Sidebar({
         </button>
         {!manual && (
           <button
+            type="button"
             className="link"
             onClick={() =>
               store.setDocument(store.normalized, {
@@ -998,10 +1022,11 @@ function Sidebar({
               {t("manual.grid_too_large", { count: rows * columns })}
             </p>
           )}
-          <button className="primary full" disabled={maxGrid} onClick={applyManual}>
+          <button type="button" className="primary full" disabled={maxGrid} onClick={applyManual}>
             {t("manual.apply")}
           </button>
           <button
+            type="button"
             className="secondary full"
             onClick={() => {
               setRows(1);
@@ -1044,6 +1069,7 @@ function Sidebar({
             store.detection.mergeDistancePx,
           )}
           <button
+            type="button"
             className="secondary full"
             onClick={() => store.setDocument(store.normalized, deepDetect())}
           >
@@ -1117,15 +1143,16 @@ function Timeline({
       <header>
         <b>{t("preview.title")}</b>
         <button
+          type="button"
           disabled={!frames.length}
           onClick={() => store.setPreview(store.fps, store.onion, !store.playing)}
         >
           {t(store.playing ? "preview.pause" : "preview.play")}
         </button>
-        <button disabled={!frames.length} onClick={() => move(-1)}>
+        <button type="button" disabled={!frames.length} onClick={() => move(-1)}>
           {t("preview.previous")}
         </button>
-        <button disabled={!frames.length} onClick={() => move(1)}>
+        <button type="button" disabled={!frames.length} onClick={() => move(1)}>
           {t("preview.next")}
         </button>
         <label>
@@ -1154,6 +1181,7 @@ function Timeline({
           .filter(([type, , count]) => type === "all" || type === "attention" || count > 0)
           .map(([type, key, count]) => (
             <button
+              type="button"
               className={store.filter === type ? "filter active" : "filter"}
               key={type}
               onClick={() => store.setFilter(type)}
@@ -1173,7 +1201,7 @@ function Timeline({
         ) : !frames.some(({ frame }) => visible(frame)) ? (
           <p>
             {t("review.filter.none")}{" "}
-            <button className="link" onClick={() => store.setFilter("all")}>
+            <button type="button" className="link" onClick={() => store.setFilter("all")}>
               {t("review.filter.all")}
             </button>
           </p>
@@ -1182,6 +1210,7 @@ function Timeline({
             .filter(({ frame }) => visible(frame))
             .map(({ draft, index, frame }) => (
               <button
+                type="button"
                 draggable
                 key={draft.id}
                 className={store.selected.includes(draft.id) ? "frame-chip active" : "frame-chip"}
@@ -1255,7 +1284,12 @@ function ExportDrawer({
                 : t("export.zipping")}
           </p>
           <progress value={percent} max="100" aria-label={t("export.progress", { percent })} />
-          <button className="secondary" disabled={!progress?.cancellable} onClick={onCancel}>
+          <button
+            type="button"
+            className="secondary"
+            disabled={!progress?.cancellable}
+            onClick={onCancel}
+          >
             {t("export.cancel")}
           </button>
         </div>
@@ -1263,10 +1297,10 @@ function ExportDrawer({
         <div className="drawer-state">
           <h1>✓ {t("export.success.title")}</h1>
           <p>{t("export.success.body", { name: result.fileName })}</p>
-          <button className="primary" onClick={onDownload}>
+          <button type="button" className="primary" onClick={onDownload}>
             {t("export.download")}
           </button>
-          <button className="secondary" onClick={onClose}>
+          <button type="button" className="secondary" onClick={onClose}>
             {t("export.continue_editing")}
           </button>
         </div>
@@ -1274,10 +1308,10 @@ function ExportDrawer({
         <div className="drawer-state">
           <h1>{t("export.failed.title")}</h1>
           <p>{t("export.failed.body")}</p>
-          <button className="primary" onClick={onStart}>
+          <button type="button" className="primary" onClick={onStart}>
             {t("action.retry")}
           </button>
-          <button className="secondary" onClick={onClose}>
+          <button type="button" className="secondary" onClick={onClose}>
             {t("export.back")}
           </button>
         </div>
@@ -1285,7 +1319,7 @@ function ExportDrawer({
         <>
           <header>
             <h1>{t("export.title")}</h1>
-            <button className="tool" onClick={onClose}>
+            <button type="button" className="tool" onClick={onClose}>
               ×
             </button>
           </header>
@@ -1326,15 +1360,37 @@ function ExportDrawer({
                 </button>
                 <button
                   type="button"
-                  className={packOptions.sizeMode === "pot" && packOptions.maxWidth === 2048 ? "filter active" : "filter"}
-                  onClick={() => setPackOptions({ ...packOptions, sizeMode: "pot", maxWidth: 2048, maxHeight: 2048 })}
+                  className={
+                    packOptions.sizeMode === "pot" && packOptions.maxWidth === 2048
+                      ? "filter active"
+                      : "filter"
+                  }
+                  onClick={() =>
+                    setPackOptions({
+                      ...packOptions,
+                      sizeMode: "pot",
+                      maxWidth: 2048,
+                      maxHeight: 2048,
+                    })
+                  }
                 >
                   {t("export.size_pot_2048")}
                 </button>
                 <button
                   type="button"
-                  className={packOptions.sizeMode === "pot" && packOptions.maxWidth === 4096 ? "filter active" : "filter"}
-                  onClick={() => setPackOptions({ ...packOptions, sizeMode: "pot", maxWidth: 4096, maxHeight: 4096 })}
+                  className={
+                    packOptions.sizeMode === "pot" && packOptions.maxWidth === 4096
+                      ? "filter active"
+                      : "filter"
+                  }
+                  onClick={() =>
+                    setPackOptions({
+                      ...packOptions,
+                      sizeMode: "pot",
+                      maxWidth: 4096,
+                      maxHeight: 4096,
+                    })
+                  }
                 >
                   {t("export.size_pot_4096")}
                 </button>
@@ -1348,7 +1404,12 @@ function ExportDrawer({
                   max="8192"
                   onChange={(event) => {
                     const limit = Math.max(64, Math.min(8192, Number(event.target.value) || 64));
-                    setPackOptions({ ...packOptions, maxWidth: limit, maxHeight: limit, sizeMode: "auto" });
+                    setPackOptions({
+                      ...packOptions,
+                      maxWidth: limit,
+                      maxHeight: limit,
+                      sizeMode: "auto",
+                    });
                   }}
                 />
               </label>
@@ -1356,8 +1417,11 @@ function ExportDrawer({
                 <input
                   type="checkbox"
                   checked={packOptions.allowRotation}
-                  onChange={(event) => setPackOptions({ ...packOptions, allowRotation: event.target.checked })}
-                /> {t("export.rotation")}
+                  onChange={(event) =>
+                    setPackOptions({ ...packOptions, allowRotation: event.target.checked })
+                  }
+                />{" "}
+                {t("export.rotation")}
               </label>
               <p className="muted">
                 {t("export.padding")}: 2 px · {t("export.extrude")}: 1 px
@@ -1365,10 +1429,10 @@ function ExportDrawer({
             </section>
           )}
           <footer>
-            <button className="secondary" onClick={onClose}>
+            <button type="button" className="secondary" onClick={onClose}>
               {t("export.back")}
             </button>
-            <button className="primary" onClick={onStart}>
+            <button type="button" className="primary" onClick={onStart}>
               {t("export.start")}
             </button>
           </footer>
@@ -1464,7 +1528,7 @@ function Modal({
               </div>
             ))}
           </dl>
-          <button className="secondary" onClick={onClose}>
+          <button type="button" className="secondary" onClick={onClose}>
             {t("shortcuts.close")}
           </button>
         </dialog>
@@ -1491,10 +1555,10 @@ function Modal({
           </label>
         )}
         <footer>
-          <button className="secondary" onClick={onClose}>
+          <button type="button" className="secondary" onClick={onClose}>
             {kind === "oversize" ? t("oversize.cancel") : t("action.cancel")}
           </button>
-          <button className={dangerous ? "danger" : "primary"} onClick={onConfirm}>
+          <button type="button" className={dangerous ? "danger" : "primary"} onClick={onConfirm}>
             {confirm}
           </button>
         </footer>
