@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "rw-05",
+  "title": "八帧相似动作条带",
+  "category": "real-world",
+  "inputType": "D",
+  "input": {
+    "file": "../RW-05.png",
+    "mimeType": "image/png",
+    "width": 2172,
+    "height": 724,
+    "sha256": "2d87013dced55f74aa7f41322408e10dd2013bec609f774fbc47f49e614bf5c8"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 2,
+    "strategy": "manual-grid",
+    "origin": "manual",
+    "layout": {
+      "rows": 1,
+      "columns": 2
+    },
+    "degraded": {
+      "reason": "INSUFFICIENT_COMPONENTS",
+      "attempted": ["grid", "components"]
+    },
+    "warningCodes": ["DETECTION_DEGRADED", "MULTIPLE_COMPONENTS"],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1086,
+          "height": 724
+        },
+        "bbox": {
+          "x": 22,
+          "y": 167,
+          "width": 1064,
+          "height": 427
+        },
+        "bboxTolerance": {
+          "x": [20, 24],
+          "y": [165, 169],
+          "width": [1062, 1066],
+          "height": [425, 429]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 1086,
+          "y": 0,
+          "width": 1086,
+          "height": 724
+        },
+        "bbox": {
+          "x": 1086,
+          "y": 169,
+          "width": 1081,
+          "height": 425
+        },
+        "bboxTolerance": {
+          "x": [1084, 1088],
+          "y": [167, 171],
+          "width": [1079, 1083],
+          "height": [423, 427]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "bboxTolerance": "inclusive-per-coordinate",
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": ["real-world", "similar-frames", "explicit-degradation"],
+  "annotation": {
+    "method": "tests/golden/tools/measure-real.mjs（pngjs 独立像素测量；未导入或调用管线）",
+    "alphaThreshold": 8,
+    "connectivity": 8,
+    "bboxConvention": "原图坐标、右下边界不包含；bboxTolerance 各坐标区间为闭区间",
+    "semanticReview": "pending-R10"
+  }
+}

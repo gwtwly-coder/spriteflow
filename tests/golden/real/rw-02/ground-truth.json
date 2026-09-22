@@ -1,0 +1,221 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "rw-02",
+  "title": "六帧不等间距透明条带",
+  "category": "real-world",
+  "inputType": "E",
+  "input": {
+    "file": "../rw-02.png",
+    "mimeType": "image/png",
+    "width": 1774,
+    "height": 887,
+    "sha256": "f0fd28b6a3977d23994069ecd2dd7aee44b174acafc27a3db6e0ef093e63f192"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 6,
+    "strategy": "grid",
+    "origin": "auto-grid",
+    "layout": {
+      "rows": 1,
+      "columns": 6
+    },
+    "degraded": null,
+    "warningCodes": ["MULTIPLE_COMPONENTS"],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 325,
+          "height": 887
+        },
+        "bbox": {
+          "x": 33,
+          "y": 245,
+          "width": 265,
+          "height": 397
+        },
+        "bboxTolerance": {
+          "x": [31, 35],
+          "y": [243, 247],
+          "width": [263, 267],
+          "height": [395, 399]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 325,
+          "y": 0,
+          "width": 286,
+          "height": 887
+        },
+        "bbox": {
+          "x": 352,
+          "y": 147,
+          "width": 251,
+          "height": 370
+        },
+        "bboxTolerance": {
+          "x": [350, 354],
+          "y": [145, 149],
+          "width": [249, 253],
+          "height": [368, 372]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 2,
+        "sourceRect": {
+          "x": 611,
+          "y": 0,
+          "width": 291,
+          "height": 887
+        },
+        "bbox": {
+          "x": 619,
+          "y": 346,
+          "width": 268,
+          "height": 387
+        },
+        "bboxTolerance": {
+          "x": [617, 621],
+          "y": [344, 348],
+          "width": [266, 270],
+          "height": [385, 389]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 3,
+        "sourceRect": {
+          "x": 902,
+          "y": 0,
+          "width": 277,
+          "height": 887
+        },
+        "bbox": {
+          "x": 919,
+          "y": 215,
+          "width": 252,
+          "height": 365
+        },
+        "bboxTolerance": {
+          "x": [917, 921],
+          "y": [213, 217],
+          "width": [250, 254],
+          "height": [363, 367]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 4,
+        "sourceRect": {
+          "x": 1179,
+          "y": 0,
+          "width": 294,
+          "height": 887
+        },
+        "bbox": {
+          "x": 1187,
+          "y": 373,
+          "width": 268,
+          "height": 385
+        },
+        "bboxTolerance": {
+          "x": [1185, 1189],
+          "y": [371, 375],
+          "width": [266, 270],
+          "height": [383, 387]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": false,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 5,
+        "sourceRect": {
+          "x": 1473,
+          "y": 0,
+          "width": 301,
+          "height": 887
+        },
+        "bbox": {
+          "x": 1493,
+          "y": 267,
+          "width": 246,
+          "height": 376
+        },
+        "bboxTolerance": {
+          "x": [1491, 1495],
+          "y": [265, 269],
+          "width": [244, 248],
+          "height": [374, 378]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "bboxTolerance": "inclusive-per-coordinate",
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": ["real-world", "irregular-spacing", "auto-grid"],
+  "annotation": {
+    "method": "tests/golden/tools/measure-real.mjs（pngjs 独立像素测量；未导入或调用管线）",
+    "alphaThreshold": 8,
+    "connectivity": 8,
+    "bboxConvention": "原图坐标、右下边界不包含；bboxTolerance 各坐标区间为闭区间",
+    "semanticReview": "pending-R10"
+  }
+}

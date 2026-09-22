@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "rw-03",
+  "title": "双角色重度桥接",
+  "category": "real-world",
+  "inputType": "E",
+  "input": {
+    "file": "../RW-03.png",
+    "mimeType": "image/png",
+    "width": 1374,
+    "height": 1145,
+    "sha256": "33d9c067153423d37274df8b4e0bf85546065012dfc488e5edc4436759ae1f32"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 2,
+    "strategy": "manual-grid",
+    "origin": "manual",
+    "layout": {
+      "rows": 1,
+      "columns": 2
+    },
+    "degraded": {
+      "reason": "INSUFFICIENT_COMPONENTS",
+      "attempted": ["grid", "components"]
+    },
+    "warningCodes": ["DETECTION_DEGRADED", "MULTIPLE_COMPONENTS"],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 687,
+          "height": 1145
+        },
+        "bbox": {
+          "x": 158,
+          "y": 161,
+          "width": 529,
+          "height": 912
+        },
+        "bboxTolerance": {
+          "x": [156, 160],
+          "y": [159, 163],
+          "width": [527, 531],
+          "height": [910, 914]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 687,
+          "y": 0,
+          "width": 687,
+          "height": 1145
+        },
+        "bbox": {
+          "x": 687,
+          "y": 153,
+          "width": 568,
+          "height": 920
+        },
+        "bboxTolerance": {
+          "x": [685, 689],
+          "y": [151, 155],
+          "width": [566, 570],
+          "height": [918, 922]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "bboxTolerance": "inclusive-per-coordinate",
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": ["real-world", "bridged-characters", "explicit-degradation"],
+  "annotation": {
+    "method": "tests/golden/tools/measure-real.mjs（pngjs 独立像素测量；未导入或调用管线）",
+    "alphaThreshold": 8,
+    "connectivity": 8,
+    "bboxConvention": "原图坐标、右下边界不包含；bboxTolerance 各坐标区间为闭区间",
+    "semanticReview": "pending-R10"
+  }
+}

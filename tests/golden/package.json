@@ -8,7 +8,8 @@
     "generate": "node tools/generate.mjs",
     "golden": "node tools/run.mjs",
     "golden:fixtures": "node tools/run.mjs --fixtures-only",
-    "gen:real": "node tools/gen-real.mjs"
+    "gen:real": "node tools/gen-real.mjs",
+    "measure:real": "node tools/measure-real.mjs"
   },
   "dependencies": {
     "@spriteflow/pipeline": "workspace:*"
