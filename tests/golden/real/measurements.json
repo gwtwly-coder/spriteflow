@@ -107,13 +107,7 @@
             "width": 1387,
             "height": 611
           },
-          "sourceGroupIds": [
-            1,
-            2,
-            4,
-            5,
-            6
-          ]
+          "sourceGroupIds": [1, 2, 4, 5, 6]
         },
         {
           "area": 59384,
@@ -123,9 +117,7 @@
             "width": 265,
             "height": 397
           },
-          "sourceGroupIds": [
-            3
-          ]
+          "sourceGroupIds": [3]
         }
       ],
       "componentConfidence": 0.6499999999999999,
@@ -166,13 +158,7 @@
         "rows": 1,
         "columns": 6,
         "rowCuts": [],
-        "columnCuts": [
-          325,
-          611,
-          902,
-          1179,
-          1473
-        ],
+        "columnCuts": [325, 611, 902, 1179, 1473],
         "rowScore": 1,
         "columnScore": 0.811965811965812,
         "periodScore": 0.905982905982906,
@@ -188,9 +174,7 @@
           "columns": 6
         },
         "degraded": null,
-        "warningCodes": [
-          "MULTIPLE_COMPONENTS"
-        ],
+        "warningCodes": ["MULTIPLE_COMPONENTS"],
         "frames": [
           {
             "index": 0,
@@ -425,13 +409,7 @@
         }
       ],
       "projectedFrameGapCv": {
-        "gaps": [
-          54,
-          16,
-          32,
-          16,
-          38
-        ],
+        "gaps": [54, 16, 32, 16, 38],
         "value": 0.45975438659079765
       },
       "perceptualHashPairs": [
@@ -520,9 +498,7 @@
             "width": 1097,
             "height": 920
           },
-          "sourceGroupIds": [
-            1
-          ]
+          "sourceGroupIds": [1]
         }
       ],
       "componentConfidence": 0,
@@ -545,15 +521,9 @@
         },
         "degraded": {
           "reason": "INSUFFICIENT_COMPONENTS",
-          "attempted": [
-            "grid",
-            "components"
-          ]
+          "attempted": ["grid", "components"]
         },
-        "warningCodes": [
-          "DETECTION_DEGRADED",
-          "MULTIPLE_COMPONENTS"
-        ],
+        "warningCodes": ["DETECTION_DEGRADED", "MULTIPLE_COMPONENTS"],
         "frames": [
           {
             "index": 0,
@@ -717,9 +687,7 @@
             "width": 1153,
             "height": 1113
           },
-          "sourceGroupIds": [
-            1
-          ]
+          "sourceGroupIds": [1]
         }
       ],
       "componentConfidence": 0,
@@ -742,15 +710,9 @@
         },
         "degraded": {
           "reason": "INSUFFICIENT_COMPONENTS",
-          "attempted": [
-            "grid",
-            "components"
-          ]
+          "attempted": ["grid", "components"]
         },
-        "warningCodes": [
-          "DETECTION_DEGRADED",
-          "MULTIPLE_COMPONENTS"
-        ],
+        "warningCodes": ["DETECTION_DEGRADED", "MULTIPLE_COMPONENTS"],
         "frames": [
           {
             "index": 0,
@@ -934,9 +896,7 @@
             "width": 2145,
             "height": 427
           },
-          "sourceGroupIds": [
-            1
-          ]
+          "sourceGroupIds": [1]
         }
       ],
       "componentConfidence": 0,
@@ -953,9 +913,7 @@
         "rows": 1,
         "columns": 2,
         "rowCuts": [],
-        "columnCuts": [
-          1642
-        ],
+        "columnCuts": [1642],
         "rowScore": 1,
         "columnScore": 0,
         "periodScore": 0.5,
@@ -972,15 +930,9 @@
         },
         "degraded": {
           "reason": "INSUFFICIENT_COMPONENTS",
-          "attempted": [
-            "grid",
-            "components"
-          ]
+          "attempted": ["grid", "components"]
         },
-        "warningCodes": [
-          "DETECTION_DEGRADED",
-          "MULTIPLE_COMPONENTS"
-        ],
+        "warningCodes": ["DETECTION_DEGRADED", "MULTIPLE_COMPONENTS"],
         "frames": [
           {
             "index": 0,
@@ -1077,10 +1029,7 @@
         }
       ],
       "projectedFrameGapCv": {
-        "gaps": [
-          1,
-          6
-        ],
+        "gaps": [1, 6],
         "value": 0.7142857142857143
       },
       "perceptualHashPairs": [
@@ -1214,9 +1163,7 @@
             "width": 375,
             "height": 541
           },
-          "sourceGroupIds": [
-            1
-          ]
+          "sourceGroupIds": [1]
         },
         {
           "area": 191827,
@@ -1226,13 +1173,7 @@
             "width": 1176,
             "height": 307
           },
-          "sourceGroupIds": [
-            2,
-            4,
-            5,
-            6,
-            7
-          ]
+          "sourceGroupIds": [2, 4, 5, 6, 7]
         },
         {
           "area": 39075,
@@ -1242,9 +1183,7 @@
             "width": 219,
             "height": 305
           },
-          "sourceGroupIds": [
-            3
-          ]
+          "sourceGroupIds": [3]
         },
         {
           "area": 40303,
@@ -1254,9 +1193,7 @@
             "width": 231,
             "height": 301
           },
-          "sourceGroupIds": [
-            8
-          ]
+          "sourceGroupIds": [8]
         }
       ],
       "componentConfidence": 0.6499999999999999,
@@ -1309,15 +1246,7 @@
         "rows": 1,
         "columns": 8,
         "rowCuts": [],
-        "columnCuts": [
-          238,
-          476,
-          707,
-          958,
-          1210,
-          1478,
-          1748
-        ],
+        "columnCuts": [238, 476, 707, 958, 1210, 1478, 1748],
         "rowScore": 1,
         "columnScore": 0.7052683896620279,
         "periodScore": 0.8526341948310139,
@@ -1333,9 +1262,7 @@
           "columns": 8
         },
         "degraded": null,
-        "warningCodes": [
-          "OUTLIER_FRAMES"
-        ],
+        "warningCodes": ["OUTLIER_FRAMES"],
         "frames": [
           {
             "index": 0,
@@ -1646,15 +1573,7 @@
         }
       ],
       "projectedFrameGapCv": {
-        "gaps": [
-          18,
-          32,
-          17,
-          19,
-          36,
-          40,
-          62
-        ],
+        "gaps": [18, 32, 17, 19, 36, 40, 62],
         "value": 0.46800536092778133
       },
       "perceptualHashPairs": [
@@ -1773,12 +1692,7 @@
             "width": 2127,
             "height": 508
           },
-          "sourceGroupIds": [
-            1,
-            2,
-            3,
-            4
-          ]
+          "sourceGroupIds": [1, 2, 3, 4]
         }
       ],
       "componentConfidence": 0,
@@ -1807,11 +1721,7 @@
         "rows": 1,
         "columns": 4,
         "rowCuts": [],
-        "columnCuts": [
-          533,
-          1079,
-          1661
-        ],
+        "columnCuts": [533, 1079, 1661],
         "rowScore": 1,
         "columnScore": 0.9675625579240037,
         "periodScore": 0.9837812789620018,
@@ -1986,11 +1896,7 @@
         }
       ],
       "projectedFrameGapCv": {
-        "gaps": [
-          28,
-          19,
-          5
-        ],
+        "gaps": [28, 19, 5],
         "value": 0.545964214099169
       },
       "perceptualHashPairs": [

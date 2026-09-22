@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -14,8 +15,10 @@ const MIN_GUTTER_PX = 2;
 const PERIOD_TOLERANCE = 0.08;
 
 const scriptRoot = path.dirname(fileURLToPath(import.meta.url));
+const workspaceRoot = path.resolve(scriptRoot, "..", "..", "..");
 const realRoot = path.resolve(scriptRoot, "..", "real");
 const reportPath = path.join(realRoot, "measurements.json");
+const biomeCliPath = path.join(workspaceRoot, "node_modules", "@biomejs", "biome", "bin", "biome");
 const inputs = ["rw-02.png", "RW-03.png", "RW-04.png", "RW-05.png", "RW-06.png", "RW-07.png"];
 
 const measurements = [];
@@ -27,31 +30,34 @@ for (const file of inputs) {
 }
 
 await mkdir(realRoot, { recursive: true });
-await writeFile(
-  reportPath,
-  `${JSON.stringify(
-    {
-      schemaVersion: "spriteflow-real-measurements/1",
-      method: {
-        implementation: "tests/golden/tools/measure-real.mjs",
-        pipelineImported: false,
-        alphaThreshold: ALPHA_THRESHOLD,
-        connectivity: 8,
-        minAreaPx: MIN_AREA_PX,
-        minAreaRatio: MIN_AREA_RATIO,
-        mergeDistanceRatio: MERGE_DISTANCE_RATIO,
-        clusterTolerance: CLUSTER_TOLERANCE,
-        gutterOccupancyThreshold: GUTTER_OCCUPANCY_THRESHOLD,
-        minGutterPx: MIN_GUTTER_PX,
-        periodTolerance: PERIOD_TOLERANCE,
-      },
-      images: measurements,
-    },
-    null,
-    2,
-  )}\n`,
-  "utf8",
+const report = {
+  schemaVersion: "spriteflow-real-measurements/1",
+  method: {
+    implementation: "tests/golden/tools/measure-real.mjs",
+    pipelineImported: false,
+    alphaThreshold: ALPHA_THRESHOLD,
+    connectivity: 8,
+    minAreaPx: MIN_AREA_PX,
+    minAreaRatio: MIN_AREA_RATIO,
+    mergeDistanceRatio: MERGE_DISTANCE_RATIO,
+    clusterTolerance: CLUSTER_TOLERANCE,
+    gutterOccupancyThreshold: GUTTER_OCCUPANCY_THRESHOLD,
+    minGutterPx: MIN_GUTTER_PX,
+    periodTolerance: PERIOD_TOLERANCE,
+  },
+  images: measurements,
+};
+const unformattedReport = `${JSON.stringify(report, null, 2)}\n`;
+const formattedReport = execFileSync(
+  process.execPath,
+  [biomeCliPath, "format", "--stdin-file-path", reportPath],
+  {
+    input: unformattedReport,
+    encoding: "utf8",
+    maxBuffer: 16 * 1024 * 1024,
+  },
 );
+await writeFile(reportPath, formattedReport, "utf8");
 console.log(`Report: ${reportPath}`);
 
 function measureImage(file, bytes, png) {
