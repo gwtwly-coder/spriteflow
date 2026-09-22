@@ -44,8 +44,8 @@ pnpm golden
 | 命令 | 内容 | 常见失败原因 |
 |---|---|---|
 | `pnpm lint` | Biome（lint+format+import 排序；`design/` 静态设计稿排除在外）+ `scripts/check-boundaries.mjs`（包依赖边界）+ `check:contract`（docs 契约代码块 vs 公共类型；运行前自动构建 pipeline 以解析其类型导出） | 格式漂移（`pnpm format` 修复）；core 引 react/zustand/comlink；绕过 exports 的跨包相对导入 |
-| `pnpm typecheck` | 各包 `tsc --noEmit`（strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes；core 无 DOM lib） | 类型与契约 exports 不符 |
-| `pnpm test:unit` | pipeline vitest + web vitest（组件测试 mock client）；取消/transfer 测试**不允许 skip** | 用例失败或零测试 |
+| `pnpm typecheck` | 先自动构建 pipeline 声明（web 检查需解析其 dist 导出），再各包 `tsc --noEmit`（strict + noUncheckedIndexedAccess + exactOptionalPropertyTypes；core 无 DOM lib） | 类型与契约 exports 不符 |
+| `pnpm test:unit` | 先自动构建 pipeline（web 组件测试需解析其包入口），再 pipeline vitest + web vitest（组件测试 mock client）；取消/transfer 测试**不允许 skip** | 用例失败或零测试 |
 | `pnpm golden` | 先自动构建 pipeline（干净 clone 可直接跑），再 20 例全量枚举（禁止 skip）；JSON 报告写入 `tests/golden/reports/`（gitignore，仅作 CI 产物） | 帧数/IoU/降级/授权/manifest 断言失败；SHA 不匹配 |
 | `pnpm build` | 各包构建（pipeline tsc、web vite）+ `scripts/check-licenses.mjs`（许可闭包）+ `scripts/check-bundle-budget.mjs`（首屏体积 + 静态产物） | 构建告警、首屏 ≥300 KiB gzip、锁文件与审计清单不一致、dist 缺 `THIRD_PARTY_NOTICES.txt` |
 
@@ -116,6 +116,14 @@ git branch -D ci-drill/intentional-failure
 **实测结果**：`pnpm build` 在 license 闭包校验处失败，退出码 1，输出
 `check-licenses: 1 problem(s): lockfile package not in audit: left-pad@1.3.0`，随后 `lockfile=214 audited=213`。
 五个 job 中受影响的是 **build**（lint/typecheck/unit/golden 不受 lockfile 内容影响，仍绿）→ 合并被拦截。演练分支与 worktree 已删除，main 未受污染。
+
+### 7.1 事故记录：CI job 隔离缺陷（2026-09-22，首次真实并行运行）
+
+CI 首次真实并行运行即暴露作业隔离缺陷：**typecheck 与 unit 两个 job 红灯**，报 `TS2307: Cannot find module '@spriteflow/pipeline'`。根因：CI 每个 job 都是干净 checkout，`apps/web` 提交后其类型检查与组件测试要解析 `@spriteflow/pipeline` 的 dist 导出，而这两个执行入口没有自建逻辑（golden 与 build 有）；此前本地验证按顺序跑五门，前一门留下的 dist 掩盖了缺构建的问题。
+
+修复：根脚本 `typecheck` / `test:unit` 改为与 `golden` 一致——入口先 `pnpm --filter @spriteflow/pipeline --if-present run build` 再执行本体。选择改根脚本而非在 ci.yml 两个 job 里加构建步：根门禁命令是 CI 与开发者共用的唯一契约，只改 ci.yml 会让全新克隆上的本地执行继续踩同一坑；架构对 typecheck job「先 pipeline 声明构建，再 `pnpm typecheck`」的要求在入口处同样满足。
+
+**验证协议（消除顺序掩盖）**：全新 `git clone` 后逐门执行，**每门前删除 `packages/pipeline/dist`**（等价每门独立 checkout），五门各自独立退出码 0 方可宣布通过。复现记录（修复前，无 dist）：`pnpm typecheck` 报 TS2307（exit 2）、`pnpm test:unit` 报 Failed to resolve entry for package（exit 1），与 CI 输出一致。
 
 ## 8. 常见问题
 

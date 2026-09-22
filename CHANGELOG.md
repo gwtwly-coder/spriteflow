@@ -24,6 +24,7 @@ All notable changes to SpriteFlow are documented here.
 
 - Root engineering infrastructure landed for Wave 3: five-job GitHub Actions CI (lint / typecheck / unit / golden / build, Node 24.12.0, pnpm 11.9.0), Cloudflare Pages config (production on main, preview per PR), PR template, license-closure + boundary + bundle-budget gates, devops guide. (DevOps / R7)
 - Tooling: `.gitattributes` enforces LF checkouts (Windows clones no longer fail `pnpm lint`); `design/` mockups excluded from the Biome lint surface; `pnpm golden` now builds the pipeline first so it runs on a clean clone. (DevOps / R7)
+- Fixed: CI job isolation defect - `pnpm typecheck` / `pnpm test:unit` now build the pipeline first, like `pnpm golden`; CI's first real parallel run failed both jobs with TS2307 because each job checks out a clean tree and apps/web resolves pipeline types from dist. (DevOps / R7)
 
 ## [0.1.0] - 2026-09-16
 
