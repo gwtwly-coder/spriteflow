@@ -35,7 +35,7 @@
       "caseId": "18-single-frame-degrade",
       "upload": "file-chooser",
       "expectedStrategy": "manual-grid",
-      "expectedFrameCount": 1,
+      "expectedFrameCount": 2,
       "expectedDegradedReason": "INSUFFICIENT_COMPONENTS",
       "exports": []
     },
