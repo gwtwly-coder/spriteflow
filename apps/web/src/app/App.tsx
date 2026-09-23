@@ -2,6 +2,7 @@ import {
   DEFAULT_DETECT_OPTIONS,
   DEFAULT_PACK_OPTIONS,
   type DetectOptions,
+  type DetectStrategy,
   ExportFormat,
   type ExportResult,
   type Frame,
@@ -36,6 +37,20 @@ const COPY = (
   values?: Record<string, string | number>,
 ) => translate(locale, key, values);
 const deepDetect = (): DetectOptions => structuredClone(DEFAULT_DETECT_OPTIONS);
+const methodCopyKey: Record<DetectStrategy, Parameters<typeof translate>[1]> = {
+  grid: "detect.method.grid",
+  components: "detect.method.components",
+  "manual-grid": "detect.method.manual",
+};
+export function DetectionMethod({
+  locale,
+  strategy,
+}: {
+  locale: Locale;
+  strategy: DetectStrategy;
+}) {
+  return COPY(locale, methodCopyKey[strategy]);
+}
 const errorCopy = (error: PipelineError, locale: Locale) =>
   error.code === PipelineErrorCode.OpaqueInput
     ? [COPY(locale, "error.opaque.title"), COPY(locale, "error.opaque.body")]
@@ -74,6 +89,7 @@ export function App() {
   const [manualRows, setManualRows] = useState(1);
   const [manualColumns, setManualColumns] = useState(1);
   const [degraded, setDegraded] = useState(false);
+  const [strategy, setStrategy] = useState<DetectStrategy>("grid");
   const [pendingSettings, setPendingSettings] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const temporaryTool = useRef<Store["tool"] | null>(null);
@@ -237,10 +253,11 @@ export function App() {
         frames: Frame[];
         options: DetectOptions;
         degraded: { suggestedGrid: { rows: number; columns: number } } | null;
-        strategy: string;
+        strategy: DetectStrategy;
       };
       store.setDocument(result.frames, result.options);
       setDegraded(result.degraded !== null);
+      setStrategy(result.strategy);
       if (result.degraded) {
         setManualRows(result.degraded.suggestedGrid.rows);
         setManualColumns(result.degraded.suggestedGrid.columns);
@@ -578,6 +595,7 @@ export function App() {
               setColumns={setManualColumns}
               applyManual={applyManual}
               schedule={scheduleSettings}
+              strategy={strategy}
             />
           </div>
           <Timeline locale={locale} frames={activeFrames} store={store} />
@@ -587,9 +605,7 @@ export function App() {
             <span className="grow" />
             <span className="mono">{Math.round(store.zoom * 100)}%</span>
             <span>
-              {t(
-                `detect.method.${store.detection.mode === "components" ? "components" : store.detection.mode === "manual-grid" ? "manual" : "grid"}` as never,
-              )}
+              <DetectionMethod locale={locale} strategy={strategy} />
             </span>
             <span>{t("editor.summary", { count: included.length })}</span>
             {store.selected.length > 1 && (
@@ -647,6 +663,7 @@ export function App() {
               setAsset(null);
               setPreview(null);
               setDegraded(false);
+              setStrategy("grid");
               store.setDocument([], deepDetect());
               setModal(null);
             } else setModal(null);
@@ -912,6 +929,7 @@ function Toolbar({
 function Sidebar({
   locale,
   store,
+  strategy,
   maxGrid,
   rows,
   columns,
@@ -922,6 +940,7 @@ function Sidebar({
 }: {
   locale: Locale;
   store: Store;
+  strategy: DetectStrategy;
   maxGrid: boolean;
   rows: number;
   columns: number;
@@ -963,9 +982,7 @@ function Sidebar({
       <section>
         <h2>{t("detect.method.label")}</h2>
         <p className="method-chip">
-          {t(
-            `detect.method.${manual ? "manual" : store.detection.mode === "components" ? "components" : "grid"}` as never,
-          )}
+          <DetectionMethod locale={locale} strategy={strategy} />
         </p>
         <button
           type="button"
