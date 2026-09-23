@@ -31,6 +31,7 @@ type Modal =
   | "error"
   | null;
 type ExportState = "closed" | "form" | "processing" | "success" | "failure";
+type ActiveTask = { cancel(): Promise<unknown> };
 const COPY = (
   locale: Locale,
   key: Parameters<typeof translate>[1],
@@ -79,7 +80,7 @@ export function App() {
   const [modal, setModal] = useState<Modal>(null);
   const [error, setError] = useState<PipelineError | null>(null);
   const [progress, setProgress] = useState<ProgressEvent | null>(null);
-  const [currentTask, setCurrentTask] = useState<{ cancel(): Promise<unknown> } | null>(null);
+  const [currentTask, setCurrentTask] = useState<ActiveTask | null>(null);
   const [downscale, setDownscale] = useState(8192);
   const [exportState, setExportState] = useState<ExportState>("closed");
   const [exportFormat, setExportFormat] = useState<ExportFormat>(ExportFormat.PhaserJsonHash);
@@ -94,6 +95,7 @@ export function App() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const temporaryTool = useRef<Store["tool"] | null>(null);
   const clientRef = useRef<PipelineClient | null>(null);
+  const taskRef = useRef<ActiveTask | null>(null);
   const store = useEditorStore();
   const included = store.drafts.filter((frame) => frame.included);
   const pending = included.filter((frame) => frame.reviewStatus === "pending");
@@ -130,7 +132,7 @@ export function App() {
     document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
   }, [locale]);
   const submit = async (
-    command: "load" | "detect" | "normalize" | "pack" | "export",
+    command: "load" | "detect" | "normalize" | "pack" | "export" | "release",
     payload: unknown,
   ): Promise<unknown> => {
     const pipeline = await client();
@@ -143,13 +145,35 @@ export function App() {
       cancel(): Promise<unknown>;
     };
     const task = invoke(command, payload, (event) => setProgress(event));
+    taskRef.current = task;
     setCurrentTask(task);
-    const response = await task.result;
+    try {
+      const response = await task.result;
+      if (!response.outcome.ok) throw response.outcome.error;
+      return response.outcome.value;
+    } finally {
+      if (taskRef.current === task) {
+        taskRef.current = null;
+        setCurrentTask(null);
+        setProgress(null);
+      }
+    }
+  };
+  const resetWorkerSession = () => {
+    if (timer.current) clearTimeout(timer.current);
+    const activeTask = taskRef.current;
+    taskRef.current = null;
+    if (activeTask) void activeTask.cancel();
     setCurrentTask(null);
-    if (!response.outcome.ok) throw response.outcome.error;
-    return response.outcome.value;
+    setProgress(null);
+    setPendingSettings(false);
+    const staleClient = clientRef.current;
+    clientRef.current = null;
+    if (staleClient) void staleClient.dispose();
   };
   const validateFile = async (files: FileList | File[]) => {
+    setError(null);
+    setProgress(null);
     const list = Array.from(files);
     if (list.length !== 1) {
       setError({
@@ -215,8 +239,7 @@ export function App() {
     setPreflight("decode");
     const nextAsset = { assetId: crypto.randomUUID().replaceAll("-", ""), revision: 1 };
     try {
-      const pipeline = await client();
-      if (asset) await pipeline.submit("release", { asset }).result;
+      if (asset) await submit("release", { asset });
       const result = (await submit("load", {
         kind: "encoded",
         ref: nextAsset,
@@ -658,12 +681,18 @@ export function App() {
               notify(t("editor.frame_deleted"));
             } else if (modal === "reset") confirmManual();
             else if (modal === "newFile") {
+              resetWorkerSession();
               setScreen("upload");
               setFile(null);
               setAsset(null);
               setPreview(null);
+              setSize(null);
+              setError(null);
               setDegraded(false);
               setStrategy("grid");
+              setExportState("closed");
+              setExportResult(null);
+              setPreflight("idle");
               store.setDocument([], deepDetect());
               setModal(null);
             } else setModal(null);
