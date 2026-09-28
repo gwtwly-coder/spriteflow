@@ -1238,9 +1238,9 @@ function Timeline({
   const [followAt, setFollowAt] = useState(0);
   const editRevision = useRef(store.editRevision);
   const frameRowRef = useRef<HTMLDivElement>(null);
-  const manualScrollUntil = useRef(0);
-  const autoScrollUntil = useRef(0);
+  const followPausedUntil = useRef(0);
   const followTimer = useRef<number | null>(null);
+  const programmaticTargets = useRef<number[]>([]);
   const resolvedFrames = frames.flatMap(({ frame }) => (frame ? [frame] : []));
   useEffect(() => {
     setPlayhead((index) => Math.max(0, Math.min(index, resolvedFrames.length - 1)));
@@ -1264,16 +1264,27 @@ function Timeline({
   }, [resolvedFrames.length, store.fps, store.playing]);
   useEffect(() => {
     if (!store.playing) return;
-    const remaining = manualScrollUntil.current - (followAt || Date.now());
+    const remaining = followPausedUntil.current - (followAt || Date.now());
     if (remaining > 0) {
       const timerId = window.setTimeout(() => setFollowAt(Date.now()), remaining);
       return () => window.clearTimeout(timerId);
     }
-    const chip = frameRowRef.current?.querySelector<HTMLElement>(
-      `[data-frame-index="${playhead}"]`,
-    );
-    if (!chip) return;
-    autoScrollUntil.current = Date.now() + 300;
+    const row = frameRowRef.current;
+    const chip = row?.querySelector<HTMLElement>(`[data-frame-index="${playhead}"]`);
+    if (!row || !chip) return;
+    const rowRect = row.getBoundingClientRect();
+    const chipRect = chip.getBoundingClientRect();
+    let target: number | null = null;
+    if (chipRect.left < rowRect.left) target = row.scrollLeft - (rowRect.left - chipRect.left);
+    else if (chipRect.right > rowRect.right)
+      target = row.scrollLeft + (chipRect.right - rowRect.right);
+    if (target !== null) {
+      const queue = programmaticTargets.current;
+      queue.push(Math.max(0, Math.min(target, row.scrollWidth - row.clientWidth)));
+      // A chip already in view issues no scroll; keep older targets so their in-flight
+      // scroll events still classify as programmatic.
+      if (queue.length > 4) queue.shift();
+    }
     chip.scrollIntoView({ behavior: "auto", block: "nearest", inline: "nearest" });
   }, [followAt, playhead, store.playing]);
   useEffect(
@@ -1282,12 +1293,23 @@ function Timeline({
     },
     [],
   );
-  const onFrameRowScroll = () => {
-    if (Date.now() < autoScrollUntil.current) return;
-    manualScrollUntil.current = Date.now() + 2000;
+  const pauseFollow = () => {
+    programmaticTargets.current = [];
+    followPausedUntil.current = Date.now() + 2000;
     setFollowAt(0);
     if (followTimer.current) window.clearTimeout(followTimer.current);
     followTimer.current = window.setTimeout(() => setFollowAt(Date.now()), 2000);
+  };
+  const onFrameRowScroll = () => {
+    const row = frameRowRef.current;
+    if (!row) return;
+    const queue = programmaticTargets.current;
+    const index = queue.findIndex((value) => Math.abs(row.scrollLeft - value) <= 1);
+    if (index >= 0) {
+      queue.splice(0, index + 1);
+      return;
+    }
+    pauseFollow();
   };
   const flagged = frames.filter(
     ({ frame }) =>
@@ -1390,7 +1412,13 @@ function Timeline({
             {t("review.attention.title", { count: flagged })} — {t("review.attention.body")}
           </div>
         )}
-        <div className="frame-row" onScroll={onFrameRowScroll} ref={frameRowRef}>
+        <div
+          className="frame-row"
+          onScroll={onFrameRowScroll}
+          onTouchStart={pauseFollow}
+          onWheel={pauseFollow}
+          ref={frameRowRef}
+        >
           {!frames.length ? (
             <p>{t("preview.empty")}</p>
           ) : !frames.some(({ frame }) => visible(frame)) ? (
