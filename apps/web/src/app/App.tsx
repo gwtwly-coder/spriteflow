@@ -1235,7 +1235,12 @@ function Timeline({
     COPY(locale, key, values);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [playhead, setPlayhead] = useState(0);
+  const [followAt, setFollowAt] = useState(0);
   const editRevision = useRef(store.editRevision);
+  const frameRowRef = useRef<HTMLDivElement>(null);
+  const manualScrollUntil = useRef(0);
+  const autoScrollUntil = useRef(0);
+  const followTimer = useRef<number | null>(null);
   const resolvedFrames = frames.flatMap(({ frame }) => (frame ? [frame] : []));
   useEffect(() => {
     setPlayhead((index) => Math.max(0, Math.min(index, resolvedFrames.length - 1)));
@@ -1257,6 +1262,33 @@ function Timeline({
     );
     return () => window.clearInterval(timerId);
   }, [resolvedFrames.length, store.fps, store.playing]);
+  useEffect(() => {
+    if (!store.playing) return;
+    const remaining = manualScrollUntil.current - (followAt || Date.now());
+    if (remaining > 0) {
+      const timerId = window.setTimeout(() => setFollowAt(Date.now()), remaining);
+      return () => window.clearTimeout(timerId);
+    }
+    const chip = frameRowRef.current?.querySelector<HTMLElement>(
+      `[data-frame-index="${playhead}"]`,
+    );
+    if (!chip) return;
+    autoScrollUntil.current = Date.now() + 300;
+    chip.scrollIntoView({ behavior: "auto", block: "nearest", inline: "nearest" });
+  }, [followAt, playhead, store.playing]);
+  useEffect(
+    () => () => {
+      if (followTimer.current) window.clearTimeout(followTimer.current);
+    },
+    [],
+  );
+  const onFrameRowScroll = () => {
+    if (Date.now() < autoScrollUntil.current) return;
+    manualScrollUntil.current = Date.now() + 2000;
+    setFollowAt(0);
+    if (followTimer.current) window.clearTimeout(followTimer.current);
+    followTimer.current = window.setTimeout(() => setFollowAt(Date.now()), 2000);
+  };
   const flagged = frames.filter(
     ({ frame }) =>
       frame && (frame.flags.outlier || frame.flags.multipleComponents || frame.flags.empty),
@@ -1298,6 +1330,10 @@ function Timeline({
         service={thumbnailService}
         title={t("preview.title")}
         viewportLoading={t("preview.viewport_loading")}
+        frameCaption={t("editor.frame_index", {
+          count: resolvedFrames.length,
+          index: playhead + 1,
+        })}
       />
       <div className="timeline-content">
         <header>
@@ -1354,7 +1390,7 @@ function Timeline({
             {t("review.attention.title", { count: flagged })} — {t("review.attention.body")}
           </div>
         )}
-        <div className="frame-row">
+        <div className="frame-row" onScroll={onFrameRowScroll} ref={frameRowRef}>
           {!frames.length ? (
             <p>{t("preview.empty")}</p>
           ) : !frames.some(({ frame }) => visible(frame)) ? (
@@ -1371,6 +1407,7 @@ function Timeline({
                 <button
                   type="button"
                   draggable
+                  data-frame-index={index}
                   key={draft.id}
                   className={`${store.selected.includes(draft.id) ? "frame-chip active" : "frame-chip"}${index === playhead ? " playhead" : ""}`}
                   onClick={(event) => {

@@ -15,6 +15,7 @@ export function AnimationViewport({
   title,
   busyLabel,
   viewportLoading,
+  frameCaption,
 }: {
   asset: AssetRef | null;
   frames: Frame[];
@@ -25,6 +26,7 @@ export function AnimationViewport({
   title: string;
   busyLabel: string;
   viewportLoading: string;
+  frameCaption: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pixels, setPixels] = useState(new Map<string, PixelBuffer>());
@@ -66,6 +68,8 @@ export function AnimationViewport({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const active = current && pixels.get(current.id);
+    if (current?.bbox && !active) return;
     const ratio = Math.min(window.devicePixelRatio || 1, 2.5);
     const dimension = Math.round(VIEWPORT_SIZE * ratio);
     canvas.width = dimension;
@@ -73,6 +77,10 @@ export function AnimationViewport({
     const context = canvas.getContext("2d");
     if (!context) return;
     context.clearRect(0, 0, dimension, dimension);
+    if (!current?.bbox) {
+      setRenderedFrameId(null);
+      return;
+    }
     const draw = (index: number, alpha: number) => {
       const frame = frames[index];
       const source = frame && pixels.get(frame.id);
@@ -82,11 +90,8 @@ export function AnimationViewport({
       draw(playhead - 1, 0.3);
       draw(playhead + 1, 0.2);
     }
-    const active = current && pixels.get(current.id);
-    if (current && active) {
-      draw(playhead, 1);
-      setRenderedFrameId(current.id);
-    }
+    draw(playhead, 1);
+    setRenderedFrameId(current.id);
   }, [current, frames, onion, pixels, playhead]);
 
   return (
@@ -96,7 +101,7 @@ export function AnimationViewport({
       {renderedFrameId !== current?.id && current?.bbox && (
         <output aria-label={`${viewportLoading} ${busyLabel}`} className="viewport-loading" />
       )}
-      <span className="viewport-caption">{playhead + 1}</span>
+      <span className="viewport-caption">{frameCaption}</span>
     </section>
   );
 }
