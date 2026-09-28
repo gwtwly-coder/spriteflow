@@ -114,6 +114,11 @@
 | fallback.retry_auto | 次按钮 | 重试自动检测 | Retry auto detection |
 | fallback.empty_input.title | 全透明检测降级 | 没找到可见像素，已切到手动模式 | No visible pixels found. Switched to manual mode |
 | fallback.empty_input.body | 全透明检测降级 | 已放入一个待确认空帧。你可以保留、删除，或直接画新的帧框。 | We added one empty frame for review. Keep it, delete it, or draw new frames. |
+| degraded.tune.title | 降级态调参引导标题 | 试着调整检测参数 | Try tuning detection |
+| degraded.tune.merged_components | 组件可能粘连 | 检测到组件可能粘连（合并距离 {distance}px）。尝试减小合并距离或膨胀半径后重试。 | Components may be merged (merge distance {distance}px). Lower merge distance or dilation radius, then retry. |
+| degraded.tune.alpha_bridge | 半透明像素桥接 | 半透明像素可能连接了相邻部件。尝试提高 Alpha 阈值后重试。 | Semi-transparent pixels may be bridging nearby parts. Raise the alpha threshold, then retry. |
+| degraded.tune.fragmented | 细碎部件过多 | 检测到较多细碎部件。尝试减小最小面积或合并距离后重试。 | Many small fragments were detected. Lower minimum area or merge distance, then retry. |
+| degraded.tune.retry | 降级态重试按钮 | 用当前参数重新检测 | Retry with current settings |
 | manual.title | 侧栏标题 | 手动网格 | Manual grid |
 | manual.rows | 输入标签 | 行数 | Rows |
 | manual.columns | 输入标签 | 列数 | Columns |
@@ -203,6 +208,7 @@
 | preview.onion_skin | 开关标签 | 洋葱皮 | Onion skin |
 | preview.onion_on | 开关状态 | 已开启洋葱皮 | Onion skin on |
 | preview.onion_off | 开关状态 | 已关闭洋葱皮 | Onion skin off |
+| preview.viewport_loading | 预览帧载入状态 | 正在载入预览帧… | Loading preview frame… |
 | preview.empty | 零帧空状态 | 添加至少一帧后才能预览。 | Add at least one frame to preview. |
 
 ## 11. 删除、重置与离开确认
