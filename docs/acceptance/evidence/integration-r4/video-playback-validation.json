@@ -1,0 +1,212 @@
+[
+  {
+    "file": "empty-frame.webm",
+    "duration": 4.36,
+    "width": 1440,
+    "height": 1000,
+    "samples": [
+      {
+        "time": 1.09,
+        "nonzero": 1440000
+      },
+      {
+        "time": 2.616,
+        "nonzero": 1440000
+      },
+      {
+        "time": 3.924,
+        "nonzero": 1440000
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "matrix-dark-en.webm",
+    "duration": 6.04,
+    "width": 1440,
+    "height": 1000,
+    "samples": [
+      {
+        "time": 1.51,
+        "nonzero": 1440000
+      },
+      {
+        "time": 3.623999,
+        "nonzero": 1440000
+      },
+      {
+        "time": 5.436,
+        "nonzero": 1440000
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "matrix-dark-zh.webm",
+    "duration": 6.72,
+    "width": 1440,
+    "height": 1000,
+    "samples": [
+      {
+        "time": 1.68,
+        "nonzero": 1440000
+      },
+      {
+        "time": 4.032,
+        "nonzero": 1440000
+      },
+      {
+        "time": 6.048,
+        "nonzero": 1440000
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "matrix-light-en.webm",
+    "duration": 6.12,
+    "width": 1440,
+    "height": 1000,
+    "samples": [
+      {
+        "time": 1.53,
+        "nonzero": 1440000
+      },
+      {
+        "time": 3.671999,
+        "nonzero": 1440000
+      },
+      {
+        "time": 5.508,
+        "nonzero": 1440000
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "matrix-light-zh.webm",
+    "duration": 6.16,
+    "width": 1440,
+    "height": 1000,
+    "samples": [
+      {
+        "time": 1.54,
+        "nonzero": 1440000
+      },
+      {
+        "time": 3.695999,
+        "nonzero": 1440000
+      },
+      {
+        "time": 5.544,
+        "nonzero": 1440000
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "playhead-auto-scroll.webm",
+    "duration": 10.64,
+    "width": 1024,
+    "height": 768,
+    "samples": [
+      {
+        "time": 2.66,
+        "nonzero": 786432
+      },
+      {
+        "time": 6.384,
+        "nonzero": 786432
+      },
+      {
+        "time": 9.576,
+        "nonzero": 786432
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "q3-changed-parameter-retry.webm",
+    "duration": 4.08,
+    "width": 1024,
+    "height": 768,
+    "samples": [
+      {
+        "time": 1.02,
+        "nonzero": 786432
+      },
+      {
+        "time": 2.448,
+        "nonzero": 786432
+      },
+      {
+        "time": 3.672,
+        "nonzero": 786432
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "session-three-exports.webm",
+    "duration": 7.48,
+    "width": 1440,
+    "height": 1000,
+    "samples": [
+      {
+        "time": 1.87,
+        "nonzero": 1440000
+      },
+      {
+        "time": 4.488,
+        "nonzero": 1440000
+      },
+      {
+        "time": 6.732,
+        "nonzero": 1440000
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "slow-player-hold-previous.webm",
+    "duration": 3.96,
+    "width": 1440,
+    "height": 1000,
+    "samples": [
+      {
+        "time": 0.99,
+        "nonzero": 1440000
+      },
+      {
+        "time": 2.376,
+        "nonzero": 1440000
+      },
+      {
+        "time": 3.564,
+        "nonzero": 1440000
+      }
+    ],
+    "status": "PASS"
+  },
+  {
+    "file": "slow-player-playing.webm",
+    "duration": 4.56,
+    "width": 1024,
+    "height": 768,
+    "samples": [
+      {
+        "time": 1.14,
+        "nonzero": 786432
+      },
+      {
+        "time": 2.735999,
+        "nonzero": 786432
+      },
+      {
+        "time": 4.104,
+        "nonzero": 786432
+      }
+    ],
+    "status": "PASS"
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "file": "empty-frame.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 000001ba44111a00] Requested output format 'null' is not known.\n[out#0 @ 000001ba428e6dc0] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "matrix-dark-en.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 00000222fbaa1a00] Requested output format 'null' is not known.\n[out#0 @ 00000222fbc06dc0] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "matrix-dark-zh.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 000001d0e3b91a00] Requested output format 'null' is not known.\n[out#0 @ 000001d0e23d6dc0] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "matrix-light-en.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 00000225e7691a00] Requested output format 'null' is not known.\n[out#0 @ 00000225e77d6dc0] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "matrix-light-zh.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 000001bcd5121a00] Requested output format 'null' is not known.\n[out#0 @ 000001bcd3966dc0] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "playhead-auto-scroll.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 00000213883b1a00] Requested output format 'null' is not known.\n[out#0 @ 0000021386b86dc0] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "q3-changed-parameter-retry.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 000002ac82fe0140] Requested output format 'null' is not known.\n[out#0 @ 000002ac82ff1a40] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "session-three-exports.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 000001d04b42c940] Requested output format 'null' is not known.\n[out#0 @ 000001d04b391a40] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "slow-player-hold-previous.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 000001e85cd6c940] Requested output format 'null' is not known.\n[out#0 @ 000001e85ccd1a40] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  },
+  {
+    "file": "slow-player-playing.webm",
+    "exitCode": -22,
+    "errors": "[AVFormatContext @ 00000161b0441a00] Requested output format 'null' is not known.\n[out#0 @ 00000161aec86dc0] Error initializing the muxer for NUL: Invalid argument\nError opening output file NUL.\nError opening output files: Invalid argument"
+  }
+]

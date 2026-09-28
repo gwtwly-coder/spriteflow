@@ -1,0 +1,518 @@
+{
+  "at": "2026-09-28T08:46:59.239Z",
+  "tests": [
+    {
+      "id": "playhead-auto-scroll",
+      "atLast": {
+        "frame": "12",
+        "nonzero": 12354,
+        "scroll": 0,
+        "scrollWidth": 976,
+        "clientWidth": 860,
+        "chipInside": false,
+        "rowRect": {
+          "left": 152,
+          "right": 1012
+        },
+        "chipRect": {
+          "left": 1044,
+          "right": 1116
+        }
+      },
+      "status": "FAIL",
+      "error": "Current playhead chip must scroll into view\n\nfalse !== true\n",
+      "commands": [
+        {
+          "time": 2978.2999999970198,
+          "command": "load"
+        },
+        {
+          "time": 2988.4000000059605,
+          "command": "detect",
+          "options": {
+            "mode": "auto",
+            "quality": "final",
+            "alphaThreshold": 8,
+            "minAreaPx": 4,
+            "minAreaRatio": 0.00001,
+            "dilationRadiusPx": null,
+            "mergeDistancePx": null,
+            "mergeDistanceRatio": 0.15,
+            "connectivity": 8,
+            "analysisMaxDimension": 1024,
+            "componentConfidenceThreshold": 0.75,
+            "maxFrames": 500,
+            "grid": {
+              "gutterOccupancyThreshold": 0.005,
+              "minGutterPx": 2,
+              "minCellPx": 4,
+              "periodTolerance": 0.08,
+              "confidenceThreshold": 0.9,
+              "keepEmptyCells": false
+            },
+            "manualGrid": null,
+            "normalize": {
+              "alphaThreshold": 8,
+              "componentMinAreaPx": 4,
+              "trim": true,
+              "padding": 0,
+              "canvasMode": "uniform",
+              "alignment": "center",
+              "computeHash": true,
+              "outlierThreshold": 0.4,
+              "clusterTolerance": 0.3
+            }
+          }
+        },
+        {
+          "time": 3066,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3070,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3151.7999999970198,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3155.5999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3162.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3168.2999999970198,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3173.2000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3179.2000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3188.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 3191,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3198,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3204.0999999940395,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3209.4000000059605,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3215.9000000059605,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3221.7999999970198,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3227.4000000059605,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3233.7999999970198,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3239.7999999970198,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3245.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 3251.5999999940395,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 4819.0999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 5322.0999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 5819.9000000059605,
+          "command": "preview",
+          "maxDimension": 320
+        }
+      ]
+    },
+    {
+      "id": "slow-player-playing",
+      "initial": {
+        "frame": "1",
+        "nonzero": 11536,
+        "scroll": 0,
+        "scrollWidth": 860,
+        "clientWidth": 860,
+        "chipInside": true,
+        "rowRect": {
+          "left": 152,
+          "right": 1012
+        },
+        "chipRect": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "second": {
+        "frame": "2",
+        "nonzero": 0,
+        "scroll": 0,
+        "scrollWidth": 860,
+        "clientWidth": 860,
+        "chipInside": true,
+        "rowRect": {
+          "left": 152,
+          "right": 1012
+        },
+        "chipRect": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "status": "FAIL",
+      "error": "Playback must retain previous ready image while next bitmap is unavailable",
+      "commands": [
+        {
+          "time": 2361.1000000089407,
+          "command": "load"
+        },
+        {
+          "time": 2371.5,
+          "command": "detect",
+          "options": {
+            "mode": "auto",
+            "quality": "final",
+            "alphaThreshold": 8,
+            "minAreaPx": 4,
+            "minAreaRatio": 0.00001,
+            "dilationRadiusPx": null,
+            "mergeDistancePx": null,
+            "mergeDistanceRatio": 0.15,
+            "connectivity": 8,
+            "analysisMaxDimension": 1024,
+            "componentConfidenceThreshold": 0.75,
+            "maxFrames": 500,
+            "grid": {
+              "gutterOccupancyThreshold": 0.005,
+              "minGutterPx": 2,
+              "minCellPx": 4,
+              "periodTolerance": 0.08,
+              "confidenceThreshold": 0.9,
+              "keepEmptyCells": false
+            },
+            "manualGrid": null,
+            "normalize": {
+              "alphaThreshold": 8,
+              "componentMinAreaPx": 4,
+              "trim": true,
+              "padding": 0,
+              "canvasMode": "uniform",
+              "alignment": "center",
+              "computeHash": true,
+              "outlierThreshold": 0.4,
+              "clusterTolerance": 0.3
+            }
+          }
+        },
+        {
+          "time": 2442,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 2448.300000011921,
+          "command": "preview",
+          "maxDimension": 320
+        }
+      ]
+    },
+    {
+      "id": "q3-changed-parameter-retry",
+      "alphaUI": "9",
+      "retry": {
+        "time": 4178.20000000298,
+        "command": "detect",
+        "options": {
+          "mode": "auto",
+          "quality": "final",
+          "alphaThreshold": 9,
+          "minAreaPx": 4,
+          "minAreaRatio": 0.00001,
+          "dilationRadiusPx": null,
+          "mergeDistancePx": null,
+          "mergeDistanceRatio": 0.15,
+          "connectivity": 8,
+          "analysisMaxDimension": 1024,
+          "componentConfidenceThreshold": 0.75,
+          "maxFrames": 500,
+          "grid": {
+            "gutterOccupancyThreshold": 0.005,
+            "minGutterPx": 2,
+            "minCellPx": 4,
+            "periodTolerance": 0.08,
+            "confidenceThreshold": 0.9,
+            "keepEmptyCells": false
+          },
+          "manualGrid": null,
+          "normalize": {
+            "alphaThreshold": 9,
+            "componentMinAreaPx": 4,
+            "trim": true,
+            "padding": 0,
+            "canvasMode": "uniform",
+            "alignment": "center",
+            "computeHash": true,
+            "outlierThreshold": 0.4,
+            "clusterTolerance": 0.3
+          }
+        }
+      },
+      "copy": "试着调整检测参数\n检测到组件可能粘连（合并距离 3px）。尝试减小合并距离或膨胀半径后重试。\n用当前参数重新检测",
+      "status": "PASS",
+      "commands": [
+        {
+          "time": 2336.7000000029802,
+          "command": "load"
+        },
+        {
+          "time": 2345.5999999940395,
+          "command": "detect",
+          "options": {
+            "mode": "auto",
+            "quality": "final",
+            "alphaThreshold": 8,
+            "minAreaPx": 4,
+            "minAreaRatio": 0.00001,
+            "dilationRadiusPx": null,
+            "mergeDistancePx": null,
+            "mergeDistanceRatio": 0.15,
+            "connectivity": 8,
+            "analysisMaxDimension": 1024,
+            "componentConfidenceThreshold": 0.75,
+            "maxFrames": 500,
+            "grid": {
+              "gutterOccupancyThreshold": 0.005,
+              "minGutterPx": 2,
+              "minCellPx": 4,
+              "periodTolerance": 0.08,
+              "confidenceThreshold": 0.9,
+              "keepEmptyCells": false
+            },
+            "manualGrid": null,
+            "normalize": {
+              "alphaThreshold": 8,
+              "componentMinAreaPx": 4,
+              "trim": true,
+              "padding": 0,
+              "canvasMode": "uniform",
+              "alignment": "center",
+              "computeHash": true,
+              "outlierThreshold": 0.4,
+              "clusterTolerance": 0.3
+            }
+          }
+        },
+        {
+          "time": 2434.2000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 2439.2000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 2482.7999999970198,
+          "command": "detect",
+          "options": {
+            "mode": "auto",
+            "quality": "preview",
+            "alphaThreshold": 9,
+            "minAreaPx": 4,
+            "minAreaRatio": 0.00001,
+            "dilationRadiusPx": null,
+            "mergeDistancePx": null,
+            "mergeDistanceRatio": 0.15,
+            "connectivity": 8,
+            "analysisMaxDimension": 1024,
+            "componentConfidenceThreshold": 0.75,
+            "maxFrames": 500,
+            "grid": {
+              "gutterOccupancyThreshold": 0.005,
+              "minGutterPx": 2,
+              "minCellPx": 4,
+              "periodTolerance": 0.08,
+              "confidenceThreshold": 0.9,
+              "keepEmptyCells": false
+            },
+            "manualGrid": null,
+            "normalize": {
+              "alphaThreshold": 9,
+              "componentMinAreaPx": 4,
+              "trim": true,
+              "padding": 0,
+              "canvasMode": "uniform",
+              "alignment": "center",
+              "computeHash": true,
+              "outlierThreshold": 0.4,
+              "clusterTolerance": 0.3
+            }
+          }
+        },
+        {
+          "time": 2495.5,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 2499.7000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 2786.4000000059605,
+          "command": "detect",
+          "options": {
+            "mode": "auto",
+            "quality": "final",
+            "alphaThreshold": 9,
+            "minAreaPx": 4,
+            "minAreaRatio": 0.00001,
+            "dilationRadiusPx": null,
+            "mergeDistancePx": null,
+            "mergeDistanceRatio": 0.15,
+            "connectivity": 8,
+            "analysisMaxDimension": 1024,
+            "componentConfidenceThreshold": 0.75,
+            "maxFrames": 500,
+            "grid": {
+              "gutterOccupancyThreshold": 0.005,
+              "minGutterPx": 2,
+              "minCellPx": 4,
+              "periodTolerance": 0.08,
+              "confidenceThreshold": 0.9,
+              "keepEmptyCells": false
+            },
+            "manualGrid": null,
+            "normalize": {
+              "alphaThreshold": 9,
+              "componentMinAreaPx": 4,
+              "trim": true,
+              "padding": 0,
+              "canvasMode": "uniform",
+              "alignment": "center",
+              "computeHash": true,
+              "outlierThreshold": 0.4,
+              "clusterTolerance": 0.3
+            }
+          }
+        },
+        {
+          "time": 2797.5999999940395,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 2802.7000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "time": 4178.20000000298,
+          "command": "detect",
+          "options": {
+            "mode": "auto",
+            "quality": "final",
+            "alphaThreshold": 9,
+            "minAreaPx": 4,
+            "minAreaRatio": 0.00001,
+            "dilationRadiusPx": null,
+            "mergeDistancePx": null,
+            "mergeDistanceRatio": 0.15,
+            "connectivity": 8,
+            "analysisMaxDimension": 1024,
+            "componentConfidenceThreshold": 0.75,
+            "maxFrames": 500,
+            "grid": {
+              "gutterOccupancyThreshold": 0.005,
+              "minGutterPx": 2,
+              "minCellPx": 4,
+              "periodTolerance": 0.08,
+              "confidenceThreshold": 0.9,
+              "keepEmptyCells": false
+            },
+            "manualGrid": null,
+            "normalize": {
+              "alphaThreshold": 9,
+              "componentMinAreaPx": 4,
+              "trim": true,
+              "padding": 0,
+              "canvasMode": "uniform",
+              "alignment": "center",
+              "computeHash": true,
+              "outlierThreshold": 0.4,
+              "clusterTolerance": 0.3
+            }
+          }
+        },
+        {
+          "time": 4186.70000000298,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "time": 4201.79999999702,
+          "command": "preview",
+          "maxDimension": 320
+        }
+      ]
+    }
+  ]
+}
