@@ -302,13 +302,10 @@ try {
       await upload(page, "02-grid-3x2");
       await page.waitForFunction(() => {
         const c = document.querySelector(".animation-canvas");
-        return (
-          c &&
-          c
-            .getContext("2d")
-            .getImageData(0, 0, c.width, c.height)
-            .data.some((v, i) => i % 4 === 3 && v > 0)
-        );
+        return c
+          ?.getContext("2d")
+          .getImageData(0, 0, c.width, c.height)
+          .data.some((v, i) => i % 4 === 3 && v > 0);
       });
       r.ready = (await pixels(page, ".animation-canvas"))[0];
       await shot(page, "slow-player-before");

@@ -1,6 +1,5 @@
 import { writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
-import path from "node:path";
 
 const root = "D:/projects/new_project1";
 const out = `${root}/docs/acceptance/evidence/integration-r4`;

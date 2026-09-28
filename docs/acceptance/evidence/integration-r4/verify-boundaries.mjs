@@ -90,13 +90,10 @@ async function run(id, fixture, fn, slow = false) {
     await page.locator("section.review").waitFor();
     await page.waitForFunction(() => {
       const c = document.querySelector(".animation-canvas");
-      return (
-        c &&
-        c
-          .getContext("2d")
-          .getImageData(0, 0, c.width, c.height)
-          .data.some((v, i) => i % 4 === 3 && v)
-      );
+      return c
+        ?.getContext("2d")
+        .getImageData(0, 0, c.width, c.height)
+        .data.some((v, i) => i % 4 === 3 && v);
     });
     await fn(page, r);
     r.status = "PASS";
