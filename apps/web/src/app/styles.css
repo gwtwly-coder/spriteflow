@@ -381,7 +381,7 @@ kbd {
   z-index: 10;
   left: 0;
   right: 0;
-  height: 40px;
+  min-height: 40px;
   padding: 8px 12px;
   border-left: 3px solid var(--warn);
   background: var(--bg-1);
@@ -389,6 +389,21 @@ kbd {
 }
 .warning-banner button {
   float: right;
+}
+.tune-guidance {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+  color: var(--text-2);
+  font-size: 12px;
+}
+.tune-guidance b {
+  color: var(--warn);
+}
+.tune-guidance button {
+  float: none;
 }
 .sidebar {
   width: 292px;

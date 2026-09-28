@@ -73,6 +73,12 @@ const zh = {
   "fallback.retry_auto": "重试自动检测",
   "fallback.empty_input.title": "没找到可见像素，已切到手动模式",
   "fallback.empty_input.body": "已放入一个待确认空帧。你可以保留、删除，或直接画新的帧框。",
+  "degraded.tune.title": "试着调整检测参数",
+  "degraded.tune.merged_components":
+    "检测到组件可能粘连（合并距离 {distance}px）。尝试减小合并距离或膨胀半径后重试。",
+  "degraded.tune.alpha_bridge": "半透明像素可能连接了相邻部件。尝试提高 Alpha 阈值后重试。",
+  "degraded.tune.fragmented": "检测到较多细碎部件。尝试减小最小面积或合并距离后重试。",
+  "degraded.tune.retry": "用当前参数重新检测",
   "manual.title": "手动网格",
   "manual.rows": "行数",
   "manual.columns": "列数",
@@ -144,6 +150,7 @@ const zh = {
   "preview.next": "下一帧",
   "preview.fps": "{fps} FPS",
   "preview.onion_skin": "洋葱皮",
+  "preview.viewport_loading": "正在载入预览帧…",
   "preview.empty": "添加至少一帧后才能预览。",
   "confirm.delete_one.title": "删除这个帧？",
   "confirm.delete_many.title": "删除选中的 {count} 帧？",
@@ -279,6 +286,14 @@ Object.assign(en, {
   "fallback.empty_input.title": "No visible pixels found. Switched to manual mode",
   "fallback.empty_input.body":
     "We added one empty frame for review. Keep it, delete it, or draw new frames.",
+  "degraded.tune.title": "Try tuning detection",
+  "degraded.tune.merged_components":
+    "Components may be merged (merge distance {distance}px). Lower merge distance or dilation radius, then retry.",
+  "degraded.tune.alpha_bridge":
+    "Semi-transparent pixels may be bridging nearby parts. Raise the alpha threshold, then retry.",
+  "degraded.tune.fragmented":
+    "Many small fragments were detected. Lower minimum area or merge distance, then retry.",
+  "degraded.tune.retry": "Retry with current settings",
   "manual.title": "Manual grid",
   "manual.rows": "Rows",
   "manual.columns": "Columns",
@@ -353,6 +368,7 @@ Object.assign(en, {
   "preview.next": "Next frame",
   "preview.fps": "{fps} FPS",
   "preview.onion_skin": "Onion skin",
+  "preview.viewport_loading": "Loading preview frame…",
   "preview.empty": "Add at least one frame to preview.",
   "confirm.delete_one.title": "Delete this frame?",
   "confirm.delete_many.title": "Delete {count} selected frames?",

@@ -14,6 +14,7 @@ export function AnimationViewport({
   service,
   title,
   busyLabel,
+  viewportLoading,
 }: {
   asset: AssetRef | null;
   frames: Frame[];
@@ -23,6 +24,7 @@ export function AnimationViewport({
   service: FrameThumbnailService;
   title: string;
   busyLabel: string;
+  viewportLoading: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [pixels, setPixels] = useState(new Map<string, PixelBuffer>());
@@ -92,7 +94,7 @@ export function AnimationViewport({
       <b>{title}</b>
       <canvas className="animation-canvas" ref={canvasRef} />
       {renderedFrameId !== current?.id && current?.bbox && (
-        <output aria-label={busyLabel} className="viewport-loading" />
+        <output aria-label={`${viewportLoading} ${busyLabel}`} className="viewport-loading" />
       )}
       <span className="viewport-caption">{playhead + 1}</span>
     </section>

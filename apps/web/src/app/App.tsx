@@ -1,6 +1,7 @@
 import {
   DEFAULT_DETECT_OPTIONS,
   DEFAULT_PACK_OPTIONS,
+  type DetectDiagnostics,
   type DetectOptions,
   type DetectStrategy,
   ExportFormat,
@@ -30,6 +31,7 @@ type Modal =
   | "reset"
   | "shortcuts"
   | "review"
+  | "recalculate"
   | "newFile"
   | "error"
   | null;
@@ -48,6 +50,16 @@ const methodCopyKey: Record<DetectStrategy, Parameters<typeof translate>[1]> = {
   grid: "detect.method.grid",
   components: "detect.method.components",
   "manual-grid": "detect.method.manual",
+};
+const degradedTuneKey = (diagnostics: DetectDiagnostics) => {
+  if (diagnostics.effectiveMergeDistancePx > 0 && diagnostics.filteredComponentCount <= 2)
+    return "degraded.tune.merged_components" as const;
+  if (
+    diagnostics.effectiveDilationRadiusPx > 0 &&
+    diagnostics.componentCount === diagnostics.filteredComponentCount
+  )
+    return "degraded.tune.alpha_bridge" as const;
+  return "degraded.tune.fragmented" as const;
 };
 export function DetectionMethod({
   locale,
@@ -96,6 +108,7 @@ export function App() {
   const [manualRows, setManualRows] = useState(1);
   const [manualColumns, setManualColumns] = useState(1);
   const [degraded, setDegraded] = useState(false);
+  const [diagnostics, setDiagnostics] = useState<DetectDiagnostics | null>(null);
   const [strategy, setStrategy] = useState<DetectStrategy>("grid");
   const [pendingSettings, setPendingSettings] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -298,12 +311,14 @@ export function App() {
         frames: Frame[];
         options: DetectOptions;
         degraded: { suggestedGrid: { rows: number; columns: number } } | null;
+        diagnostics: DetectDiagnostics;
         strategy: DetectStrategy;
       };
       store.setDocument(result.frames, result.options);
       setNormalizationId(null);
       invalidateThumbnails();
       setDegraded(result.degraded !== null);
+      setDiagnostics(result.diagnostics);
       setStrategy(result.strategy);
       if (result.degraded) {
         setManualRows(result.degraded.suggestedGrid.rows);
@@ -330,6 +345,11 @@ export function App() {
   const applyManual = () => {
     if (!asset || maxGrid) return;
     setModal("reset");
+  };
+  const recalculate = () => setModal("recalculate");
+  const confirmRecalculate = () => {
+    setModal(null);
+    if (asset) void detect(asset, store.detection, true);
   };
   const confirmManual = () => {
     setModal(null);
@@ -629,6 +649,22 @@ export function App() {
                 <div className="warning-banner">
                   <strong>{t("fallback.title")}</strong>
                   <span>{t("fallback.body")}</span>
+                  {diagnostics && (
+                    <div className="tune-guidance">
+                      <b>{t("degraded.tune.title")}</b>
+                      <span>
+                        {t(
+                          degradedTuneKey(diagnostics),
+                          degradedTuneKey(diagnostics) === "degraded.tune.merged_components"
+                            ? { distance: diagnostics.effectiveMergeDistancePx }
+                            : undefined,
+                        )}
+                      </span>
+                      <button type="button" onClick={recalculate}>
+                        {t("degraded.tune.retry")}
+                      </button>
+                    </div>
+                  )}
                   <button type="button" onClick={applyManual}>
                     {t("fallback.use_manual")}
                   </button>
@@ -646,6 +682,7 @@ export function App() {
               setColumns={setManualColumns}
               applyManual={applyManual}
               schedule={scheduleSettings}
+              recalculate={recalculate}
               strategy={strategy}
             />
           </div>
@@ -715,6 +752,7 @@ export function App() {
               setModal(null);
               notify(t("editor.frame_deleted"));
             } else if (modal === "reset") confirmManual();
+            else if (modal === "recalculate") confirmRecalculate();
             else if (modal === "newFile") {
               resetWorkerSession();
               setScreen("upload");
@@ -724,6 +762,7 @@ export function App() {
               setSize(null);
               setError(null);
               setDegraded(false);
+              setDiagnostics(null);
               setStrategy("grid");
               setExportState("closed");
               setExportResult(null);
@@ -1001,6 +1040,7 @@ function Sidebar({
   setColumns,
   applyManual,
   schedule,
+  recalculate,
 }: {
   locale: Locale;
   store: Store;
@@ -1015,6 +1055,7 @@ function Sidebar({
     name: "alphaThreshold" | "minAreaPx" | "dilationRadiusPx" | "mergeDistancePx",
     value: number,
   ): void;
+  recalculate(): void;
 }) {
   const t = (key: Parameters<typeof translate>[1], values?: Record<string, string | number>) =>
     COPY(locale, key, values);
@@ -1048,11 +1089,7 @@ function Sidebar({
         <p className="method-chip">
           <DetectionMethod locale={locale} strategy={strategy} />
         </p>
-        <button
-          type="button"
-          className="secondary full"
-          onClick={() => store.setDocument(store.normalized, deepDetect())}
-        >
+        <button type="button" className="secondary full" onClick={recalculate}>
           {t("detect.recalculate")}
         </button>
         {!manual && (
@@ -1260,6 +1297,7 @@ function Timeline({
         scope={scope}
         service={thumbnailService}
         title={t("preview.title")}
+        viewportLoading={t("preview.viewport_loading")}
       />
       <div className="timeline-content">
         <header>
@@ -1614,7 +1652,7 @@ function Modal({
     body = t("confirm.delete.body");
     confirm = t("confirm.delete.action");
     dangerous = true;
-  } else if (kind === "reset") {
+  } else if (kind === "reset" || kind === "recalculate") {
     title = t("confirm.reset_detection.title");
     body = t("confirm.reset_detection.body");
     confirm = t("confirm.reset_detection.action");

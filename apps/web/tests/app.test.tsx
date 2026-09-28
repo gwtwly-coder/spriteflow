@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, vi } from "vitest";
 import { App, DetectionMethod } from "../src/app/App";
 
-const pipelineMock = vi.hoisted(() => ({ createPipelineClient: vi.fn() }));
+const pipelineMock = vi.hoisted(() => ({ createPipelineClient: vi.fn(), degraded: false }));
 
 vi.mock("@spriteflow/pipeline/browser", () => ({
   createPipelineClient: pipelineMock.createPipelineClient,
@@ -51,6 +51,7 @@ const uploadFile = (name: string) => {
 
 describe("SpriteFlow app shell", () => {
   beforeEach(() => {
+    pipelineMock.degraded = false;
     pipelineMock.createPipelineClient.mockReset();
     pipelineMock.createPipelineClient.mockImplementation(() => {
       return {
@@ -69,7 +70,17 @@ describe("SpriteFlow app shell", () => {
               });
             if (command === "detect")
               return successfulTask(command, {
-                degraded: null,
+                degraded: pipelineMock.degraded ? { suggestedGrid: { columns: 2, rows: 2 } } : null,
+                diagnostics: {
+                  componentConfidence: 0.2,
+                  componentCount: pipelineMock.degraded ? 2 : 6,
+                  effectiveDilationRadiusPx: 1,
+                  effectiveMergeDistancePx: pipelineMock.degraded ? 46 : 0,
+                  effectiveMinAreaPx: 4,
+                  filteredComponentCount: pipelineMock.degraded ? 2 : 6,
+                  foregroundPixels: 20,
+                  gridConfidence: 0.1,
+                },
                 frames: [testFrame(assetId)],
                 options: { ...DEFAULT_DETECT_OPTIONS },
                 strategy: "grid",
@@ -137,6 +148,23 @@ describe("SpriteFlow app shell", () => {
 
     rerender(<DetectionMethod locale="en" strategy="manual-grid" />);
     expect(screen.getByText("Manual")).toBeTruthy();
+  });
+
+  it("shows a diagnostic-specific degraded retry and preserves the confirmation flow", async () => {
+    pipelineMock.degraded = true;
+    const user = userEvent.setup();
+    render(<App />);
+    const fileInput = document.getElementById("spriteflow-file");
+    if (!(fileInput instanceof HTMLInputElement)) throw new Error("Upload input is missing");
+
+    await user.upload(fileInput, uploadFile("ambiguous.png"));
+    expect(await screen.findByText("试着调整检测参数")).toBeTruthy();
+    expect(screen.getByText(/合并距离 46px/)).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "用当前参数重新检测" }));
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByText("重新检测并替换当前帧？")).toBeTruthy();
+    await user.click(within(dialog).getByRole("button", { name: "重新检测" }));
+    expect(await screen.findByText("试着调整检测参数")).toBeTruthy();
   });
 
   it("starts a fresh worker session after export before processing another upload", async () => {

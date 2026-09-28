@@ -123,6 +123,7 @@ it("preloads the playback window and composites both onion-skin alpha layers", a
       scope="normalization-a"
       service={service}
       title="Animation preview"
+      viewportLoading="Loading preview frame"
     />,
   );
 
