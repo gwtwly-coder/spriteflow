@@ -18,6 +18,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CanvasEditor } from "../editor/CanvasEditor";
 import { type Locale, translate } from "../i18n";
 import { type Store, useEditorStore } from "../store/editor-store";
+import { AnimationViewport } from "../thumbnail/AnimationViewport";
+import { FrameThumbnail } from "../thumbnail/FrameThumbnail";
+import { FrameThumbnailService } from "../thumbnail/frame-thumbnail-service";
 
 type Screen = "upload" | "detect" | "review";
 type Modal =
@@ -32,6 +35,9 @@ type Modal =
   | null;
 type ExportState = "closed" | "form" | "processing" | "success" | "failure";
 type ActiveTask = { cancel(): Promise<unknown> };
+type SubmittedTask = ActiveTask & {
+  result: Promise<{ outcome: { ok: boolean; value?: unknown; error?: PipelineError } }>;
+};
 const COPY = (
   locale: Locale,
   key: Parameters<typeof translate>[1],
@@ -96,6 +102,9 @@ export function App() {
   const temporaryTool = useRef<Store["tool"] | null>(null);
   const clientRef = useRef<PipelineClient | null>(null);
   const taskRef = useRef<ActiveTask | null>(null);
+  const thumbnailServiceRef = useRef<FrameThumbnailService | null>(null);
+  const [thumbnailScope, setThumbnailScope] = useState(0);
+  const [normalizationId, setNormalizationId] = useState<string | null>(null);
   const store = useEditorStore();
   const included = store.drafts.filter((frame) => frame.included);
   const pending = included.filter((frame) => frame.reviewStatus === "pending");
@@ -121,9 +130,17 @@ export function App() {
     clientRef.current = created;
     return created;
   };
+  if (!thumbnailServiceRef.current) {
+    thumbnailServiceRef.current = new FrameThumbnailService(client, () => taskRef.current !== null);
+  }
+  const invalidateThumbnails = () => {
+    thumbnailServiceRef.current?.invalidate();
+    setThumbnailScope((scope) => scope + 1);
+  };
   useEffect(
     () => () => {
       if (timer.current) clearTimeout(timer.current);
+      thumbnailServiceRef.current?.dispose();
       void clientRef.current?.dispose();
     },
     [],
@@ -135,28 +152,31 @@ export function App() {
     command: "load" | "detect" | "normalize" | "pack" | "export" | "release",
     payload: unknown,
   ): Promise<unknown> => {
-    const pipeline = await client();
-    const invoke = pipeline.submit as unknown as (
-      name: string,
-      value: unknown,
-      progress: (event: ProgressEvent) => void,
-    ) => {
-      result: Promise<{ outcome: { ok: boolean; value?: unknown; error?: PipelineError } }>;
-      cancel(): Promise<unknown>;
-    };
-    const task = invoke(command, payload, (event) => setProgress(event));
-    taskRef.current = task;
-    setCurrentTask(task);
+    thumbnailServiceRef.current?.pauseForUserTask();
+    let task: SubmittedTask | null = null;
     try {
+      const pipeline = await client();
+      const invoke = pipeline.submit as unknown as (
+        name: string,
+        value: unknown,
+        progress: (event: ProgressEvent) => void,
+      ) => {
+        result: Promise<{ outcome: { ok: boolean; value?: unknown; error?: PipelineError } }>;
+        cancel(): Promise<unknown>;
+      };
+      task = invoke(command, payload, (event) => setProgress(event)) as SubmittedTask;
+      taskRef.current = task;
+      setCurrentTask(task);
       const response = await task.result;
       if (!response.outcome.ok) throw response.outcome.error;
       return response.outcome.value;
     } finally {
-      if (taskRef.current === task) {
+      if (task && taskRef.current === task) {
         taskRef.current = null;
         setCurrentTask(null);
         setProgress(null);
       }
+      thumbnailServiceRef.current?.resumeAfterUserTask();
     }
   };
   const resetWorkerSession = () => {
@@ -167,6 +187,8 @@ export function App() {
     setCurrentTask(null);
     setProgress(null);
     setPendingSettings(false);
+    setNormalizationId(null);
+    invalidateThumbnails();
     const staleClient = clientRef.current;
     clientRef.current = null;
     if (staleClient) void staleClient.dispose();
@@ -279,6 +301,8 @@ export function App() {
         strategy: DetectStrategy;
       };
       store.setDocument(result.frames, result.options);
+      setNormalizationId(null);
+      invalidateThumbnails();
       setDegraded(result.degraded !== null);
       setStrategy(result.strategy);
       if (result.degraded) {
@@ -328,6 +352,10 @@ export function App() {
       options: store.normalization,
     })) as { normalizationId: string; frames: Frame[] };
     store.setDocument(result.frames, store.detection);
+    if (result.normalizationId !== normalizationId) {
+      setNormalizationId(result.normalizationId);
+      invalidateThumbnails();
+    }
     return result;
   };
   const startExport = async () => {
@@ -621,7 +649,14 @@ export function App() {
               strategy={strategy}
             />
           </div>
-          <Timeline locale={locale} frames={activeFrames} store={store} />
+          <Timeline
+            asset={asset}
+            locale={locale}
+            frames={activeFrames}
+            scope={`${normalizationId ?? "draft"}:${thumbnailScope}`}
+            store={store}
+            thumbnailService={thumbnailServiceRef.current}
+          />
           <footer className="statusbar">
             <span className={progress ? "busy-dot" : "idle-dot"} />
             <span>{progress ? t("status.busy") : t("status.ready")}</span>
@@ -1145,17 +1180,46 @@ function Sidebar({
 }
 
 function Timeline({
+  asset,
   locale,
   frames,
+  scope,
   store,
+  thumbnailService,
 }: {
+  asset: { assetId: string; revision: number } | null;
   locale: Locale;
   frames: { draft: Store["drafts"][number]; index: number; frame: Frame | undefined }[];
+  scope: string;
   store: Store;
+  thumbnailService: FrameThumbnailService;
 }) {
   const t = (key: Parameters<typeof translate>[1], values?: Record<string, string | number>) =>
     COPY(locale, key, values);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [playhead, setPlayhead] = useState(0);
+  const editRevision = useRef(store.editRevision);
+  const resolvedFrames = frames.flatMap(({ frame }) => (frame ? [frame] : []));
+  useEffect(() => {
+    setPlayhead((index) => Math.max(0, Math.min(index, resolvedFrames.length - 1)));
+  }, [resolvedFrames.length]);
+  useEffect(() => {
+    const selectedIndex = frames.findIndex(({ draft }) => draft.id === store.selected[0]);
+    if (selectedIndex >= 0) setPlayhead(selectedIndex);
+  }, [frames, store.selected]);
+  useEffect(() => {
+    if (editRevision.current === store.editRevision) return;
+    editRevision.current = store.editRevision;
+    if (store.playing) store.setPreview(store.fps, store.onion, false);
+  }, [store]);
+  useEffect(() => {
+    if (!store.playing || resolvedFrames.length < 2) return;
+    const timerId = window.setInterval(
+      () => setPlayhead((index) => (index + 1) % resolvedFrames.length),
+      1000 / store.fps,
+    );
+    return () => window.clearInterval(timerId);
+  }, [resolvedFrames.length, store.fps, store.playing]);
   const flagged = frames.filter(
     ({ frame }) =>
       frame && (frame.flags.outlier || frame.flags.multipleComponents || frame.flags.empty),
@@ -1180,104 +1244,123 @@ function Timeline({
     ["empty", "review.filter.empty", frames.filter(({ frame }) => frame?.flags.empty).length],
   ];
   const move = (offset: number) => {
-    const from = frames.findIndex((entry) => entry.draft.id === store.selected[0]);
-    const next = frames[Math.max(0, Math.min(frames.length - 1, from + offset))];
-    if (next) store.setSelection([next.draft.id]);
+    const nextIndex = Math.max(0, Math.min(resolvedFrames.length - 1, playhead + offset));
+    const next = resolvedFrames[nextIndex];
+    setPlayhead(nextIndex);
+    if (next) store.setSelection([next.id]);
   };
   return (
     <section className="timeline">
-      <header>
-        <b>{t("preview.title")}</b>
-        <button
-          type="button"
-          disabled={!frames.length}
-          onClick={() => store.setPreview(store.fps, store.onion, !store.playing)}
-        >
-          {t(store.playing ? "preview.pause" : "preview.play")}
-        </button>
-        <button type="button" disabled={!frames.length} onClick={() => move(-1)}>
-          {t("preview.previous")}
-        </button>
-        <button type="button" disabled={!frames.length} onClick={() => move(1)}>
-          {t("preview.next")}
-        </button>
-        <label>
-          {t("preview.fps", { fps: store.fps })}
-          <input
-            type="number"
-            min="1"
-            max="120"
-            value={store.fps}
-            onChange={(event) =>
-              store.setPreview(Number(event.target.value), store.onion, store.playing)
-            }
-          />
-        </label>
-        <label>
-          <input
-            type="checkbox"
-            checked={store.onion}
-            onChange={(event) => store.setPreview(store.fps, event.target.checked, store.playing)}
-          />
-          {t("preview.onion_skin")}
-        </label>
-        <span className="grow" />
-        <span>{t("review.filter.label")}</span>
-        {filters
-          .filter(([type, , count]) => type === "all" || type === "attention" || count > 0)
-          .map(([type, key, count]) => (
-            <button
-              type="button"
-              className={store.filter === type ? "filter active" : "filter"}
-              key={type}
-              onClick={() => store.setFilter(type)}
-            >
-              {t(key)} <b>{count}</b>
-            </button>
-          ))}
-      </header>
-      {flagged > 0 && (
-        <div className="attention">
-          {t("review.attention.title", { count: flagged })} — {t("review.attention.body")}
-        </div>
-      )}
-      <div className="frame-row">
-        {!frames.length ? (
-          <p>{t("preview.empty")}</p>
-        ) : !frames.some(({ frame }) => visible(frame)) ? (
-          <p>
-            {t("review.filter.none")}{" "}
-            <button type="button" className="link" onClick={() => store.setFilter("all")}>
-              {t("review.filter.all")}
-            </button>
-          </p>
-        ) : (
-          frames
-            .filter(({ frame }) => visible(frame))
-            .map(({ draft, index, frame }) => (
+      <AnimationViewport
+        asset={asset}
+        busyLabel={t("status.busy")}
+        frames={resolvedFrames}
+        onion={store.onion}
+        playhead={playhead}
+        scope={scope}
+        service={thumbnailService}
+        title={t("preview.title")}
+      />
+      <div className="timeline-content">
+        <header>
+          <button
+            type="button"
+            disabled={!frames.length}
+            onClick={() => store.setPreview(store.fps, store.onion, !store.playing)}
+          >
+            {t(store.playing ? "preview.pause" : "preview.play")}
+          </button>
+          <button type="button" disabled={!frames.length} onClick={() => move(-1)}>
+            {t("preview.previous")}
+          </button>
+          <button type="button" disabled={!frames.length} onClick={() => move(1)}>
+            {t("preview.next")}
+          </button>
+          <label>
+            {t("preview.fps", { fps: store.fps })}
+            <input
+              type="number"
+              min="1"
+              max="120"
+              value={store.fps}
+              onChange={(event) =>
+                store.setPreview(Number(event.target.value), store.onion, store.playing)
+              }
+            />
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={store.onion}
+              onChange={(event) => store.setPreview(store.fps, event.target.checked, store.playing)}
+            />
+            {t("preview.onion_skin")}
+          </label>
+          <span className="grow" />
+          <span>{t("review.filter.label")}</span>
+          {filters
+            .filter(([type, , count]) => type === "all" || type === "attention" || count > 0)
+            .map(([type, key, count]) => (
               <button
                 type="button"
-                draggable
-                key={draft.id}
-                className={store.selected.includes(draft.id) ? "frame-chip active" : "frame-chip"}
-                onClick={(event) =>
-                  store.setSelection(event.shiftKey ? [...store.selected, draft.id] : [draft.id])
-                }
-                onDragStart={() => setDragIndex(index)}
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={() => {
-                  if (dragIndex !== null) store.reorder(dragIndex, index);
-                  setDragIndex(null);
-                }}
+                className={store.filter === type ? "filter active" : "filter"}
+                key={type}
+                onClick={() => store.setFilter(type)}
               >
-                <span>{index + 1}</span>
-                <i className={frame?.flags.empty ? "empty-dot" : "thumb"} />
-                {frame?.flags.outlier && <em className="outlier" />}
-                {frame?.flags.multipleComponents && <em className="multi" />}
-                {frame?.flags.empty && <em className="empty" />}
+                {t(key)} <b>{count}</b>
               </button>
-            ))
+            ))}
+        </header>
+        {flagged > 0 && (
+          <div className="attention">
+            {t("review.attention.title", { count: flagged })} — {t("review.attention.body")}
+          </div>
         )}
+        <div className="frame-row">
+          {!frames.length ? (
+            <p>{t("preview.empty")}</p>
+          ) : !frames.some(({ frame }) => visible(frame)) ? (
+            <p>
+              {t("review.filter.none")}{" "}
+              <button type="button" className="link" onClick={() => store.setFilter("all")}>
+                {t("review.filter.all")}
+              </button>
+            </p>
+          ) : (
+            frames
+              .filter(({ frame }) => visible(frame))
+              .map(({ draft, index, frame }) => (
+                <button
+                  type="button"
+                  draggable
+                  key={draft.id}
+                  className={`${store.selected.includes(draft.id) ? "frame-chip active" : "frame-chip"}${index === playhead ? " playhead" : ""}`}
+                  onClick={(event) => {
+                    setPlayhead(index);
+                    store.setSelection(event.shiftKey ? [...store.selected, draft.id] : [draft.id]);
+                  }}
+                  onDragStart={() => setDragIndex(index)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => {
+                    if (dragIndex !== null) store.reorder(dragIndex, index);
+                    setDragIndex(null);
+                  }}
+                >
+                  <span>{index + 1}</span>
+                  <FrameThumbnail
+                    asset={asset}
+                    frame={frame}
+                    index={index}
+                    scope={scope}
+                    service={thumbnailService}
+                  />
+                  {frame?.flags.outlier && <em className="outlier" />}
+                  {frame?.flags.multipleComponents && <em className="multi" />}
+                  {frame?.flags.empty && <em className="empty" />}
+                </button>
+              ))
+          )}
+        </div>
       </div>
     </section>
   );

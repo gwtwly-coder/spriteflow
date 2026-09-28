@@ -474,9 +474,78 @@ kbd {
   font: 12px ui-monospace;
 }
 .timeline {
+  height: 152px;
+  display: flex;
+  gap: 12px;
+  padding: 12px;
   background: var(--bg-1);
   border-top: 1px solid var(--border-1);
   overflow: hidden;
+}
+.timeline-content {
+  min-width: 0;
+  flex: 1;
+}
+.animation-viewport {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  flex: none;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      45deg,
+      var(--checker-a) 25%,
+      transparent 25%,
+      transparent 75%,
+      var(--checker-a) 75%
+    )
+    0 0 / 16px 16px,
+    linear-gradient(
+      45deg,
+      var(--checker-a) 25%,
+      var(--checker-b) 25%,
+      var(--checker-b) 75%,
+      var(--checker-a) 75%
+    )
+    8px 8px / 16px 16px;
+  border: 1px solid var(--border-1);
+  border-radius: 5px;
+}
+.animation-viewport > b {
+  position: absolute;
+  z-index: 1;
+  top: 4px;
+  left: 5px;
+  font-size: 11px;
+  color: var(--text-2);
+}
+.animation-canvas {
+  display: block;
+  width: 128px;
+  height: 128px;
+}
+.viewport-caption {
+  position: absolute;
+  bottom: 4px;
+  left: 5px;
+  padding: 1px 3px;
+  background: color-mix(in srgb, var(--bg-1) 80%, transparent);
+  font: 11px ui-monospace;
+}
+.viewport-loading {
+  position: absolute;
+  right: 5px;
+  bottom: 5px;
+  left: 5px;
+  height: 2px;
+  background: var(--accent);
+  animation: viewport-loading 1s ease-in-out infinite;
+}
+@keyframes viewport-loading {
+  50% {
+    opacity: 0.25;
+  }
 }
 .timeline header {
   height: 40px;
@@ -543,12 +612,22 @@ kbd {
   border: 2px solid var(--accent);
   background: var(--accent-dim);
 }
+.frame-chip.playhead::before {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: var(--accent);
+  content: "";
+}
 .frame-chip span {
   font: 11px ui-monospace;
 }
 .thumb {
   display: block;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   margin-top: 2px;
   background:
     linear-gradient(
@@ -569,8 +648,6 @@ kbd {
     6px 6px / 12px 12px;
 }
 .empty-dot {
-  display: block;
-  height: 48px;
   border: 1px dashed var(--text-3);
 }
 .frame-chip em {
