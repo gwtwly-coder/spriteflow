@@ -17,6 +17,27 @@ type Drag = {
 };
 const handles = ["nw", "n", "ne", "e", "se", "s", "sw", "w"] as const;
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+
+let checkerTile: HTMLCanvasElement | null = null;
+// 16×16 two-tone checkerboard generated once and reused; colors mirror the --checker-a/b
+// tokens in styles.css. This is the transparent-area indicator tiled under the image
+// rectangle — never tile the source image itself: the preview bitmap is smaller than the
+// working coordinate system, so a self-pattern leaks scaled-out copies through transparency.
+const getCheckerTile = () => {
+  if (checkerTile) return checkerTile;
+  const tile = document.createElement("canvas");
+  tile.width = 16;
+  tile.height = 16;
+  const ctx = tile.getContext("2d");
+  if (!ctx) return null;
+  ctx.fillStyle = "#1a202a";
+  ctx.fillRect(0, 0, 16, 16);
+  ctx.fillStyle = "#232a35";
+  ctx.fillRect(0, 0, 8, 8);
+  ctx.fillRect(8, 8, 8, 8);
+  checkerTile = tile;
+  return tile;
+};
 const contained = (rect: Rect, size: { width: number; height: number }): Rect => {
   const left = clamp(Math.floor(rect.x), 0, size.width - 1);
   const top = clamp(Math.floor(rect.y), 0, size.height - 1);
@@ -118,7 +139,8 @@ export function CanvasEditor({ preview, sourceSize, disabled }: Props) {
     ctx.scale(zoom, zoom);
     const image = imageRef.current;
     if (image && sourceSize) {
-      const pattern = ctx.createPattern(image, "repeat");
+      const tile = getCheckerTile();
+      const pattern = tile ? ctx.createPattern(tile, "repeat") : null;
       if (pattern) {
         ctx.fillStyle = pattern;
         ctx.fillRect(0, 0, sourceSize.width, sourceSize.height);

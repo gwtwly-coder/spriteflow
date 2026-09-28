@@ -1,0 +1,18 @@
+{
+  "at": "2026-09-28T17:43:47.135Z",
+  "baseUrl": "http://localhost:4175/",
+  "checks": [
+    {
+      "id": "synthetic-1536-no-tiled-copy",
+      "status": "PASS",
+      "redPixels": 50400,
+      "minX": 49,
+      "maxX": 160,
+      "span": 0.1434108527131783
+    },
+    {
+      "id": "mermaid-1536-screenshot",
+      "status": "PASS"
+    }
+  ]
+}
