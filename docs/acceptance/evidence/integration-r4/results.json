@@ -15,9 +15,7 @@
       "lang": "zh",
       "startedAt": "2026-09-28T08:44:42.367Z",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"],
       "theme": {
         "prefersDark": true,
         "background": "rgb(14, 17, 22)",
@@ -1191,10 +1189,7 @@
                 "confidence": 0,
                 "degraded": {
                   "reason": "INSUFFICIENT_COMPONENTS",
-                  "attempted": [
-                    "grid",
-                    "components"
-                  ],
+                  "attempted": ["grid", "components"],
                   "suggestedGrid": {
                     "rows": 1,
                     "columns": 1,
@@ -1256,9 +1251,7 @@
                   {
                     "code": "MULTIPLE_COMPONENTS",
                     "messageKey": "pipeline.warning.MULTIPLE_COMPONENTS",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]
@@ -1369,10 +1362,7 @@
                 "confidence": 0,
                 "degraded": {
                   "reason": "INSUFFICIENT_COMPONENTS",
-                  "attempted": [
-                    "grid",
-                    "components"
-                  ],
+                  "attempted": ["grid", "components"],
                   "suggestedGrid": {
                     "rows": 1,
                     "columns": 1,
@@ -1434,9 +1424,7 @@
                   {
                     "code": "MULTIPLE_COMPONENTS",
                     "messageKey": "pipeline.warning.MULTIPLE_COMPONENTS",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]
@@ -1454,9 +1442,7 @@
       "lang": "en",
       "startedAt": "2026-09-28T08:44:49.292Z",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"],
       "theme": {
         "prefersDark": true,
         "background": "rgb(14, 17, 22)",
@@ -2630,10 +2616,7 @@
                 "confidence": 0,
                 "degraded": {
                   "reason": "INSUFFICIENT_COMPONENTS",
-                  "attempted": [
-                    "grid",
-                    "components"
-                  ],
+                  "attempted": ["grid", "components"],
                   "suggestedGrid": {
                     "rows": 1,
                     "columns": 1,
@@ -2695,9 +2678,7 @@
                   {
                     "code": "MULTIPLE_COMPONENTS",
                     "messageKey": "pipeline.warning.MULTIPLE_COMPONENTS",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]
@@ -2808,10 +2789,7 @@
                 "confidence": 0,
                 "degraded": {
                   "reason": "INSUFFICIENT_COMPONENTS",
-                  "attempted": [
-                    "grid",
-                    "components"
-                  ],
+                  "attempted": ["grid", "components"],
                   "suggestedGrid": {
                     "rows": 1,
                     "columns": 1,
@@ -2873,9 +2851,7 @@
                   {
                     "code": "MULTIPLE_COMPONENTS",
                     "messageKey": "pipeline.warning.MULTIPLE_COMPONENTS",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]
@@ -2893,9 +2869,7 @@
       "lang": "zh",
       "startedAt": "2026-09-28T08:44:55.116Z",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"],
       "theme": {
         "prefersDark": false,
         "background": "rgb(14, 17, 22)",
@@ -4069,10 +4043,7 @@
                 "confidence": 0,
                 "degraded": {
                   "reason": "INSUFFICIENT_COMPONENTS",
-                  "attempted": [
-                    "grid",
-                    "components"
-                  ],
+                  "attempted": ["grid", "components"],
                   "suggestedGrid": {
                     "rows": 1,
                     "columns": 1,
@@ -4134,9 +4105,7 @@
                   {
                     "code": "MULTIPLE_COMPONENTS",
                     "messageKey": "pipeline.warning.MULTIPLE_COMPONENTS",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]
@@ -4247,10 +4216,7 @@
                 "confidence": 0,
                 "degraded": {
                   "reason": "INSUFFICIENT_COMPONENTS",
-                  "attempted": [
-                    "grid",
-                    "components"
-                  ],
+                  "attempted": ["grid", "components"],
                   "suggestedGrid": {
                     "rows": 1,
                     "columns": 1,
@@ -4312,9 +4278,7 @@
                   {
                     "code": "MULTIPLE_COMPONENTS",
                     "messageKey": "pipeline.warning.MULTIPLE_COMPONENTS",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]
@@ -4332,9 +4296,7 @@
       "lang": "en",
       "startedAt": "2026-09-28T08:45:01.172Z",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"],
       "theme": {
         "prefersDark": false,
         "background": "rgb(14, 17, 22)",
@@ -5508,10 +5470,7 @@
                 "confidence": 0,
                 "degraded": {
                   "reason": "INSUFFICIENT_COMPONENTS",
-                  "attempted": [
-                    "grid",
-                    "components"
-                  ],
+                  "attempted": ["grid", "components"],
                   "suggestedGrid": {
                     "rows": 1,
                     "columns": 1,
@@ -5573,9 +5532,7 @@
                   {
                     "code": "MULTIPLE_COMPONENTS",
                     "messageKey": "pipeline.warning.MULTIPLE_COMPONENTS",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]
@@ -5686,10 +5643,7 @@
                 "confidence": 0,
                 "degraded": {
                   "reason": "INSUFFICIENT_COMPONENTS",
-                  "attempted": [
-                    "grid",
-                    "components"
-                  ],
+                  "attempted": ["grid", "components"],
                   "suggestedGrid": {
                     "rows": 1,
                     "columns": 1,
@@ -5751,9 +5705,7 @@
                   {
                     "code": "MULTIPLE_COMPONENTS",
                     "messageKey": "pipeline.warning.MULTIPLE_COMPONENTS",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]
@@ -5771,20 +5723,14 @@
       "lang": "zh",
       "startedAt": "2026-09-28T08:45:07.251Z",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"],
       "cycles": [
         {
           "id": "01-grid-2x2",
           "frames": 4,
           "zip": "session-1.zip",
           "sha256": "236bfd736b0427768ffac39f56aa733b7d77416aa792a4b77735adf8d3315fb1",
-          "files": [
-            "animations.json",
-            "atlas.json",
-            "atlas.png"
-          ],
+          "files": ["animations.json", "atlas.json", "atlas.png"],
           "status": "PASS",
           "screenshot": "session-1.png"
         },
@@ -5793,11 +5739,7 @@
           "frames": 5,
           "zip": "session-2.zip",
           "sha256": "59d5f6e282df6b8d87ce037773931b5e346dbb9bac99d8b8bc02489f96c3c541",
-          "files": [
-            "animations.json",
-            "atlas.json",
-            "atlas.png"
-          ],
+          "files": ["animations.json", "atlas.json", "atlas.png"],
           "status": "PASS",
           "screenshot": "session-2.png"
         },
@@ -5806,11 +5748,7 @@
           "frames": 6,
           "zip": "session-3.zip",
           "sha256": "608c9de099b6df5ea0afc18b3e7a0230d1dec45f6a76e63c79435ae93553e2f5",
-          "files": [
-            "animations.json",
-            "atlas.json",
-            "atlas.png"
-          ],
+          "files": ["animations.json", "atlas.json", "atlas.png"],
           "status": "PASS",
           "screenshot": "session-3.png"
         }
@@ -7112,11 +7050,7 @@
                       "height": 24
                     },
                     "origin": "components",
-                    "sourceFrameIds": [
-                      "p_9",
-                      "p_12",
-                      "p_13"
-                    ],
+                    "sourceFrameIds": ["p_9", "p_12", "p_13"],
                     "included": true,
                     "reviewStatus": "pending",
                     "canvas": {
@@ -7715,9 +7649,7 @@
       "lang": "zh",
       "startedAt": "2026-09-28T08:45:13.989Z",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"],
       "ready": {
         "width": 128,
         "height": 128,
@@ -8198,9 +8130,7 @@
       "lang": "zh",
       "startedAt": "2026-09-28T08:45:17.468Z",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"],
       "thumb": [
         {
           "width": 112,
@@ -8433,9 +8363,7 @@
                   {
                     "code": "EMPTY_FRAMES",
                     "messageKey": "pipeline.warning.EMPTY_FRAMES",
-                    "frameIds": [
-                      "g_0_0"
-                    ],
+                    "frameIds": ["g_0_0"],
                     "reason": null
                   }
                 ]

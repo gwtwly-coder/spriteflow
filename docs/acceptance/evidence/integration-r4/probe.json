@@ -1,9 +1,7 @@
 {
   "version": "153.0.8010.54",
   "url": "https://spriteflow-doa.pages.dev/",
-  "scripts": [
-    "https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"
-  ],
+  "scripts": ["https://spriteflow-doa.pages.dev/assets/index-VtamTWCb.js"],
   "text": "SpriteFlow\ninput.png\n156×104\n快捷键\n换一张图\n语言\n中文\n英文\n可以继续。\n选择 V\n平移 H\n新增帧 A\n拆分帧 S\n删除帧\n合并帧 M\n拆分帧\n撤销\n重做\n✓ 确认审校\n导出\n-\n658%\n+\n0\n—\n检测方式\n\n网格\n\n重新检测\n结果不对？切到手动模式\n检测设置\n容差\n8\n调高会把更多接近透明的像素算进主体。\n最小面积\n4\n小于这个值的区域会当作噪点忽略。\n膨胀半径\nAuto\n调高可把靠近的身体、帽子或武器并成一帧。\n合并距离\nAuto\n距离小于这个值的区域会尝试合并。\n恢复默认值\n动画预览\n1\n播放\n上一帧\n下一帧\n12 FPS\n洋葱皮\n筛选帧\n全部帧 6\n全部待复核 6\n可能粘连 6\n有 6 帧需要看一眼 — 这些标记只是提醒，不会自动删除或修改帧。\n1\n2\n3\n4\n5\n6\n可以继续。\n658%\n网格\n6 帧",
   "canvases": [
     {
