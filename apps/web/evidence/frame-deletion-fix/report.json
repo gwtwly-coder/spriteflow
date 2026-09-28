@@ -1,0 +1,39 @@
+{
+  "at": "2026-09-28T18:54:52.427Z",
+  "baseUrl": "http://localhost:4175/",
+  "checks": [
+    {
+      "id": "initial",
+      "chips": 6,
+      "summary": "6 帧"
+    },
+    {
+      "id": "after-delete",
+      "chips": 5,
+      "summary": "5 帧",
+      "deleteDisabled": true,
+      "canvasRects": {
+        "note": "chip count is the drafts-derived assertion; canvas reads same store"
+      }
+    },
+    {
+      "id": "assertions",
+      "chipsReduced": true,
+      "summaryAgrees": true,
+      "deleteDisabledAgain": true,
+      "status": "PASS"
+    },
+    {
+      "id": "undo-redo",
+      "afterUndo": {
+        "chips": 6,
+        "summary": "6 帧"
+      },
+      "afterRedo": {
+        "chips": 5,
+        "summary": "5 帧"
+      },
+      "status": "PASS"
+    }
+  ]
+}

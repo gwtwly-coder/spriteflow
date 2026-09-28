@@ -129,11 +129,7 @@ export const useEditorStore = create<Store>()(
         }),
       removeSelected: () =>
         set((state) => ({
-          drafts: resetPending(
-            state.drafts.map((entry) =>
-              state.selected.includes(entry.id) ? { ...entry, included: false } : entry,
-            ),
-          ),
+          drafts: resetPending(state.drafts.filter((entry) => !state.selected.includes(entry.id))),
           selected: [],
           editRevision: state.editRevision + 1,
         })),
