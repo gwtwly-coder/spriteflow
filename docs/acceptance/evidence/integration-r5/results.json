@@ -1,0 +1,2600 @@
+{
+  "startedAt": "2026-09-28T10:57:23.334Z",
+  "url": "https://spriteflow-doa.pages.dev/",
+  "browser": "153.0.8010.54",
+  "tests": [
+    {
+      "id": "hold-dark-zh",
+      "scheme": "dark",
+      "lang": "zh",
+      "hold": true,
+      "fixture": "02-grid-3x2",
+      "pageErrors": [],
+      "assets": [
+        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
+      ],
+      "initial": {
+        "at": 2859.7000000029802,
+        "frameIndex": 0,
+        "caption": "第 1 帧，共 6 帧",
+        "nonzero": 0,
+        "hash": "8c1ab045",
+        "width": 300,
+        "height": 150,
+        "loading": true,
+        "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "screenshots": [
+        "hold-dark-zh-initial-c72.png",
+        "hold-dark-zh-ready.png",
+        "hold-dark-zh-waiting.png",
+        "hold-dark-zh-playing-held.png",
+        "hold-dark-zh-recovered.png"
+      ],
+      "ready": {
+        "at": 2979.2000000029802,
+        "frameIndex": 0,
+        "caption": "第 1 帧，共 6 帧",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "waiting": {
+        "at": 3053.7999999970198,
+        "frameIndex": 1,
+        "caption": "第 2 帧，共 6 帧",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": true,
+        "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "playing": {
+        "at": 4163.5999999940395,
+        "frameIndex": 1,
+        "caption": "第 2 帧，共 6 帧",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": true,
+        "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "recovered": {
+        "at": 4242.899999991059,
+        "frameIndex": 1,
+        "caption": "第 2 帧，共 6 帧",
+        "nonzero": 11896,
+        "hash": "1a764d6d",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "status": "PASS",
+      "commands": [
+        {
+          "at": 2768.2000000029802,
+          "command": "load"
+        },
+        {
+          "at": 2776.7000000029802,
+          "command": "detect"
+        },
+        {
+          "at": 2853.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2963.0999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4231.20000000298,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4232.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4234.29999999702,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4238.0999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4248,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4258,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4268.0999999940395,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4277,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4286.5,
+          "command": "preview",
+          "maxDimension": 112
+        }
+      ],
+      "scrollEvents": [],
+      "video": "videos/hold-dark-zh.webm"
+    },
+    {
+      "id": "hold-dark-en",
+      "scheme": "dark",
+      "lang": "en",
+      "hold": true,
+      "fixture": "02-grid-3x2",
+      "pageErrors": [],
+      "assets": [
+        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
+      ],
+      "initial": {
+        "at": 2652.7999999970198,
+        "frameIndex": 0,
+        "caption": "Frame 1 of 6",
+        "nonzero": 0,
+        "hash": "8c1ab045",
+        "width": 300,
+        "height": 150,
+        "loading": true,
+        "loadingLabel": "Loading preview frame… Processing. Please wait.",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "screenshots": [
+        "hold-dark-en-initial-c72.png",
+        "hold-dark-en-ready.png",
+        "hold-dark-en-waiting.png",
+        "hold-dark-en-playing-held.png",
+        "hold-dark-en-recovered.png"
+      ],
+      "ready": {
+        "at": 2715.2000000029802,
+        "frameIndex": 0,
+        "caption": "Frame 1 of 6",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "waiting": {
+        "at": 2776.7999999970198,
+        "frameIndex": 1,
+        "caption": "Frame 2 of 6",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": true,
+        "loadingLabel": "Loading preview frame… Processing. Please wait.",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "playing": {
+        "at": 3893.9000000059605,
+        "frameIndex": 1,
+        "caption": "Frame 2 of 6",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": true,
+        "loadingLabel": "Loading preview frame… Processing. Please wait.",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "recovered": {
+        "at": 4016.7999999970198,
+        "frameIndex": 1,
+        "caption": "Frame 2 of 6",
+        "nonzero": 11896,
+        "hash": "1a764d6d",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "status": "PASS",
+      "commands": [
+        {
+          "at": 2584.0999999940395,
+          "command": "load"
+        },
+        {
+          "at": 2591.5999999940395,
+          "command": "detect"
+        },
+        {
+          "at": 2646.2999999970198,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2704.2000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4003.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4007.0999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4019.7999999970198,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4021.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4027.0999999940395,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4030.0999999940395,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4036.2000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4041.5,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4047.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4053.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        }
+      ],
+      "scrollEvents": [],
+      "video": "videos/hold-dark-en.webm"
+    },
+    {
+      "id": "hold-light-zh",
+      "scheme": "light",
+      "lang": "zh",
+      "hold": true,
+      "fixture": "02-grid-3x2",
+      "pageErrors": [],
+      "assets": [
+        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
+      ],
+      "initial": {
+        "at": 2375.7000000029802,
+        "frameIndex": 0,
+        "caption": "第 1 帧，共 6 帧",
+        "nonzero": 0,
+        "hash": "8c1ab045",
+        "width": 300,
+        "height": 150,
+        "loading": true,
+        "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "screenshots": [
+        "hold-light-zh-initial-c72.png",
+        "hold-light-zh-ready.png",
+        "hold-light-zh-waiting.png",
+        "hold-light-zh-playing-held.png",
+        "hold-light-zh-recovered.png"
+      ],
+      "ready": {
+        "at": 2442,
+        "frameIndex": 0,
+        "caption": "第 1 帧，共 6 帧",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "waiting": {
+        "at": 2527.7000000029802,
+        "frameIndex": 1,
+        "caption": "第 2 帧，共 6 帧",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": true,
+        "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "playing": {
+        "at": 3731.4000000059605,
+        "frameIndex": 1,
+        "caption": "第 2 帧，共 6 帧",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": true,
+        "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "recovered": {
+        "at": 3827.2999999970198,
+        "frameIndex": 1,
+        "caption": "第 2 帧，共 6 帧",
+        "nonzero": 11896,
+        "hash": "1a764d6d",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "status": "PASS",
+      "commands": [
+        {
+          "at": 2301,
+          "command": "load"
+        },
+        {
+          "at": 2308.2999999970198,
+          "command": "detect"
+        },
+        {
+          "at": 2370.5999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2433.2000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 3814.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 3815.7000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 3816.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 3820.5999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 3821.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 3822.5,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 3827.9000000059605,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 3837.2000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 3848.2999999970198,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 3860.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        }
+      ],
+      "scrollEvents": [],
+      "video": "videos/hold-light-zh.webm"
+    },
+    {
+      "id": "hold-light-en",
+      "scheme": "light",
+      "lang": "en",
+      "hold": true,
+      "fixture": "02-grid-3x2",
+      "pageErrors": [],
+      "assets": [
+        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
+      ],
+      "initial": {
+        "at": 2870.2999999970198,
+        "frameIndex": 0,
+        "caption": "Frame 1 of 6",
+        "nonzero": 0,
+        "hash": "8c1ab045",
+        "width": 300,
+        "height": 150,
+        "loading": true,
+        "loadingLabel": "Loading preview frame… Processing. Please wait.",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "screenshots": [
+        "hold-light-en-initial-c72.png",
+        "hold-light-en-ready.png",
+        "hold-light-en-waiting.png",
+        "hold-light-en-playing-held.png",
+        "hold-light-en-recovered.png"
+      ],
+      "ready": {
+        "at": 2970.0999999940395,
+        "frameIndex": 0,
+        "caption": "Frame 1 of 6",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "waiting": {
+        "at": 3045.7999999970198,
+        "frameIndex": 1,
+        "caption": "Frame 2 of 6",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": true,
+        "loadingLabel": "Loading preview frame… Processing. Please wait.",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "playing": {
+        "at": 4215,
+        "frameIndex": 1,
+        "caption": "Frame 2 of 6",
+        "nonzero": 11536,
+        "hash": "b6e8baf5",
+        "width": 128,
+        "height": 128,
+        "loading": true,
+        "loadingLabel": "Loading preview frame… Processing. Please wait.",
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "recovered": {
+        "at": 4328.399999991059,
+        "frameIndex": 1,
+        "caption": "Frame 2 of 6",
+        "nonzero": 11896,
+        "hash": "1a764d6d",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 860,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "status": "PASS",
+      "commands": [
+        {
+          "at": 2427.699999988079,
+          "command": "load"
+        },
+        {
+          "at": 2435.2999999970198,
+          "command": "detect"
+        },
+        {
+          "at": 2492,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2961.0999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4318.5999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4319.699999988079,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4320.399999991059,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4321,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4329.29999999702,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4342.29999999702,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4354.699999988079,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4366.5999999940395,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 4378.79999999702,
+          "command": "preview",
+          "maxDimension": 112
+        }
+      ],
+      "scrollEvents": [],
+      "video": "videos/hold-light-en.webm"
+    },
+    {
+      "id": "follow-2fps",
+      "scheme": "dark",
+      "lang": "zh",
+      "hold": false,
+      "fixture": "03-grid-4x3",
+      "pageErrors": [],
+      "assets": [
+        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
+      ],
+      "auto": {
+        "at": 8196,
+        "frameIndex": 11,
+        "caption": "第 12 帧，共 12 帧",
+        "nonzero": 12354,
+        "hash": "7e1d49ed",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 104,
+        "clientWidth": 860,
+        "scrollWidth": 976,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 940,
+          "right": 1012
+        }
+      },
+      "screenshots": [
+        "follow-2fps-auto.png",
+        "follow-2fps-manual.png",
+        "follow-2fps-after-2s.png"
+      ],
+      "wheelAt": 8584.59999999404,
+      "manual": {
+        "at": 8678.39999999106,
+        "frameIndex": 0,
+        "caption": "第 1 帧，共 12 帧",
+        "nonzero": 11944,
+        "hash": "ec259f05",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 976,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 164,
+          "right": 236
+        }
+      },
+      "samples": [
+        {
+          "at": 8845.79999999702,
+          "frameIndex": 0,
+          "caption": "第 1 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "ec259f05",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 164,
+            "right": 236
+          }
+        },
+        {
+          "at": 8956.5,
+          "frameIndex": 0,
+          "caption": "第 1 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "ec259f05",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 164,
+            "right": 236
+          }
+        },
+        {
+          "at": 9063.29999999702,
+          "frameIndex": 0,
+          "caption": "第 1 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "ec259f05",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 164,
+            "right": 236
+          }
+        },
+        {
+          "at": 9171.70000000298,
+          "frameIndex": 1,
+          "caption": "第 2 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "76eb8b15",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 244,
+            "right": 316
+          }
+        },
+        {
+          "at": 9279.79999999702,
+          "frameIndex": 1,
+          "caption": "第 2 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "76eb8b15",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 244,
+            "right": 316
+          }
+        },
+        {
+          "at": 9402.79999999702,
+          "frameIndex": 1,
+          "caption": "第 2 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "76eb8b15",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 244,
+            "right": 316
+          }
+        },
+        {
+          "at": 9512.89999999106,
+          "frameIndex": 1,
+          "caption": "第 2 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "76eb8b15",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 244,
+            "right": 316
+          }
+        },
+        {
+          "at": 9622,
+          "frameIndex": 1,
+          "caption": "第 2 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "76eb8b15",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 244,
+            "right": 316
+          }
+        },
+        {
+          "at": 9731.89999999106,
+          "frameIndex": 2,
+          "caption": "第 3 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14097245",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 324,
+            "right": 396
+          }
+        },
+        {
+          "at": 9838.09999999404,
+          "frameIndex": 2,
+          "caption": "第 3 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14097245",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 324,
+            "right": 396
+          }
+        },
+        {
+          "at": 9947.79999999702,
+          "frameIndex": 2,
+          "caption": "第 3 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14097245",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 324,
+            "right": 396
+          }
+        },
+        {
+          "at": 10056.09999999404,
+          "frameIndex": 2,
+          "caption": "第 3 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14097245",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 324,
+            "right": 396
+          }
+        },
+        {
+          "at": 10166.70000000298,
+          "frameIndex": 3,
+          "caption": "第 4 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "232b325",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 404,
+            "right": 476
+          }
+        },
+        {
+          "at": 10275.39999999106,
+          "frameIndex": 3,
+          "caption": "第 4 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "232b325",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 404,
+            "right": 476
+          }
+        },
+        {
+          "at": 10385.20000000298,
+          "frameIndex": 3,
+          "caption": "第 4 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "232b325",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 404,
+            "right": 476
+          }
+        },
+        {
+          "at": 10493.5,
+          "frameIndex": 3,
+          "caption": "第 4 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "232b325",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 404,
+            "right": 476
+          }
+        },
+        {
+          "at": 10607.29999999702,
+          "frameIndex": 3,
+          "caption": "第 4 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "232b325",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 404,
+            "right": 476
+          }
+        },
+        {
+          "at": 10713,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 10821.20000000298,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 10929.29999999702,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 11038.59999999404,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 11151.79999999702,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": true,
+          "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 564,
+            "right": 636
+          }
+        },
+        {
+          "at": 11256.29999999702,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 564,
+            "right": 636
+          }
+        },
+        {
+          "at": 11365.29999999702,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 564,
+            "right": 636
+          }
+        },
+        {
+          "at": 11473.39999999106,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 564,
+            "right": 636
+          }
+        }
+      ],
+      "scrollEvents": [
+        {
+          "at": 7646.5,
+          "left": 24,
+          "frame": "10"
+        },
+        {
+          "at": 8149.5999999940395,
+          "left": 104,
+          "frame": "11"
+        },
+        {
+          "at": 8592.59999999404,
+          "left": 0,
+          "frame": "11"
+        }
+      ],
+      "earlyScrolls": [],
+      "afterPause": [
+        {
+          "at": 10713,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 10821.20000000298,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 10929.29999999702,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 11038.59999999404,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 11151.79999999702,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": true,
+          "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 564,
+            "right": 636
+          }
+        },
+        {
+          "at": 11256.29999999702,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 564,
+            "right": 636
+          }
+        },
+        {
+          "at": 11365.29999999702,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 564,
+            "right": 636
+          }
+        },
+        {
+          "at": 11473.39999999106,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 564,
+            "right": 636
+          }
+        }
+      ],
+      "status": "PASS",
+      "commands": [
+        {
+          "at": 2205,
+          "command": "load"
+        },
+        {
+          "at": 2214.0999999940395,
+          "command": "detect"
+        },
+        {
+          "at": 2272.7999999970198,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2285.5999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2296.7000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2309.0999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2321.0999999940395,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2333.2999999970198,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2345.2999999970198,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2357.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2369.5,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2381.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2394.0999999940395,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2406.2000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2418.2000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2430.2000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2442.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2454.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2466.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2478.8999999910593,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2491,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2503.2000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 3157.8999999910593,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 3654.7000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 4151.899999991059,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 8153.399999991059,
+          "command": "preview",
+          "maxDimension": 112
+        }
+      ],
+      "video": "videos/follow-2fps.webm"
+    },
+    {
+      "id": "follow-12fps",
+      "scheme": "dark",
+      "lang": "zh",
+      "hold": false,
+      "fixture": "03-grid-4x3",
+      "pageErrors": [],
+      "assets": [
+        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
+      ],
+      "auto": {
+        "at": 3654.800000011921,
+        "frameIndex": 11,
+        "caption": "第 12 帧，共 12 帧",
+        "nonzero": 12354,
+        "hash": "7e1d49ed",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 104,
+        "clientWidth": 860,
+        "scrollWidth": 976,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 940,
+          "right": 1012
+        }
+      },
+      "screenshots": [
+        "follow-12fps-auto.png",
+        "follow-12fps-manual.png",
+        "follow-12fps-after-2s.png"
+      ],
+      "wheelAt": 3714.7000000029802,
+      "manual": {
+        "at": 3811.5,
+        "frameIndex": 1,
+        "caption": "第 2 帧，共 12 帧",
+        "nonzero": 12344,
+        "hash": "76eb8b15",
+        "width": 128,
+        "height": 128,
+        "loading": false,
+        "scrollLeft": 0,
+        "clientWidth": 860,
+        "scrollWidth": 976,
+        "chipInside": true,
+        "row": {
+          "left": 152,
+          "right": 1012
+        },
+        "chip": {
+          "left": 244,
+          "right": 316
+        }
+      },
+      "samples": [
+        {
+          "at": 3967.6000000089407,
+          "frameIndex": 3,
+          "caption": "第 4 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "232b325",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 404,
+            "right": 476
+          }
+        },
+        {
+          "at": 4075.7000000029802,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 484,
+            "right": 556
+          }
+        },
+        {
+          "at": 4186.100000008941,
+          "frameIndex": 6,
+          "caption": "第 7 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "de6c80c5",
+          "width": 128,
+          "height": 128,
+          "loading": true,
+          "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 644,
+            "right": 716
+          }
+        },
+        {
+          "at": 4294,
+          "frameIndex": 7,
+          "caption": "第 8 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "32aa51e5",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 724,
+            "right": 796
+          }
+        },
+        {
+          "at": 4402,
+          "frameIndex": 8,
+          "caption": "第 9 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "d22bcf45",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 0,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 804,
+            "right": 876
+          }
+        },
+        {
+          "at": 4529.800000011921,
+          "frameIndex": 10,
+          "caption": "第 11 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "57fb55c5",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 24,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 940,
+            "right": 1012
+          }
+        },
+        {
+          "at": 4650.4000000059605,
+          "frameIndex": 11,
+          "caption": "第 12 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "7e1d49ed",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 104,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 940,
+            "right": 1012
+          }
+        },
+        {
+          "at": 4758.9000000059605,
+          "frameIndex": 0,
+          "caption": "第 1 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "ec259f05",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 152,
+            "right": 224
+          }
+        },
+        {
+          "at": 4867,
+          "frameIndex": 2,
+          "caption": "第 3 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14097245",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 312,
+            "right": 384
+          }
+        },
+        {
+          "at": 4975.9000000059605,
+          "frameIndex": 3,
+          "caption": "第 4 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "232b325",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 392,
+            "right": 464
+          }
+        },
+        {
+          "at": 5085.100000008941,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 472,
+            "right": 544
+          }
+        },
+        {
+          "at": 5194.600000008941,
+          "frameIndex": 6,
+          "caption": "第 7 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "de6c80c5",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 632,
+            "right": 704
+          }
+        },
+        {
+          "at": 5299.800000011921,
+          "frameIndex": 7,
+          "caption": "第 8 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "32aa51e5",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 712,
+            "right": 784
+          }
+        },
+        {
+          "at": 5410.9000000059605,
+          "frameIndex": 8,
+          "caption": "第 9 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "d22bcf45",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 792,
+            "right": 864
+          }
+        },
+        {
+          "at": 5521.800000011921,
+          "frameIndex": 10,
+          "caption": "第 11 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "57fb55c5",
+          "width": 128,
+          "height": 128,
+          "loading": true,
+          "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+          "scrollLeft": 24,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 940,
+            "right": 1012
+          }
+        },
+        {
+          "at": 5628.20000000298,
+          "frameIndex": 11,
+          "caption": "第 12 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "7e1d49ed",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 104,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 940,
+            "right": 1012
+          }
+        },
+        {
+          "at": 5736.20000000298,
+          "frameIndex": 0,
+          "caption": "第 1 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "ec259f05",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 152,
+            "right": 224
+          }
+        },
+        {
+          "at": 5847.4000000059605,
+          "frameIndex": 2,
+          "caption": "第 3 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14097245",
+          "width": 128,
+          "height": 128,
+          "loading": true,
+          "loadingLabel": "正在载入预览帧… 正在处理，请稍候。",
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 312,
+            "right": 384
+          }
+        },
+        {
+          "at": 5954.20000000298,
+          "frameIndex": 3,
+          "caption": "第 4 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "232b325",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 392,
+            "right": 464
+          }
+        },
+        {
+          "at": 6063.20000000298,
+          "frameIndex": 4,
+          "caption": "第 5 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "e3053485",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 472,
+            "right": 544
+          }
+        },
+        {
+          "at": 6171.5,
+          "frameIndex": 5,
+          "caption": "第 6 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "14d81441",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 552,
+            "right": 624
+          }
+        },
+        {
+          "at": 6279.300000011921,
+          "frameIndex": 7,
+          "caption": "第 8 帧，共 12 帧",
+          "nonzero": 12344,
+          "hash": "32aa51e5",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 712,
+            "right": 784
+          }
+        },
+        {
+          "at": 6389.5,
+          "frameIndex": 8,
+          "caption": "第 9 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "d22bcf45",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 792,
+            "right": 864
+          }
+        },
+        {
+          "at": 6498.20000000298,
+          "frameIndex": 9,
+          "caption": "第 10 帧，共 12 帧",
+          "nonzero": 11944,
+          "hash": "ee8a2575",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 12,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 872,
+            "right": 944
+          }
+        },
+        {
+          "at": 6607.100000008941,
+          "frameIndex": 11,
+          "caption": "第 12 帧，共 12 帧",
+          "nonzero": 12354,
+          "hash": "7e1d49ed",
+          "width": 128,
+          "height": 128,
+          "loading": false,
+          "scrollLeft": 104,
+          "clientWidth": 860,
+          "scrollWidth": 976,
+          "chipInside": true,
+          "row": {
+            "left": 152,
+            "right": 1012
+          },
+          "chip": {
+            "left": 940,
+            "right": 1012
+          }
+        }
+      ],
+      "scrollEvents": [
+        {
+          "at": 3529.9000000059605,
+          "left": 24,
+          "frame": "10"
+        },
+        {
+          "at": 3614.9000000059605,
+          "left": 104,
+          "frame": "11"
+        },
+        {
+          "at": 3687.5,
+          "left": 12,
+          "frame": "0"
+        },
+        {
+          "at": 3735.9000000059605,
+          "left": 0,
+          "frame": "0"
+        },
+        {
+          "at": 4526.5,
+          "left": 24,
+          "frame": "10"
+        },
+        {
+          "at": 4602.5,
+          "left": 104,
+          "frame": "11"
+        },
+        {
+          "at": 4679.800000011921,
+          "left": 12,
+          "frame": "0"
+        },
+        {
+          "at": 5524.600000008941,
+          "left": 24,
+          "frame": "10"
+        },
+        {
+          "at": 5594.9000000059605,
+          "left": 104,
+          "frame": "11"
+        },
+        {
+          "at": 5699.800000011921,
+          "left": 12,
+          "frame": "0"
+        },
+        {
+          "at": 6523.800000011921,
+          "left": 24,
+          "frame": "10"
+        },
+        {
+          "at": 6590.5,
+          "left": 104,
+          "frame": "11"
+        },
+        {
+          "at": 6671.100000008941,
+          "left": 12,
+          "frame": "0"
+        }
+      ],
+      "earlyScrolls": [
+        {
+          "at": 4526.5,
+          "left": 24,
+          "frame": "10"
+        },
+        {
+          "at": 4602.5,
+          "left": 104,
+          "frame": "11"
+        },
+        {
+          "at": 4679.800000011921,
+          "left": 12,
+          "frame": "0"
+        },
+        {
+          "at": 5524.600000008941,
+          "left": 24,
+          "frame": "10"
+        },
+        {
+          "at": 5594.9000000059605,
+          "left": 104,
+          "frame": "11"
+        }
+      ],
+      "status": "FAIL",
+      "error": "AssertionError [ERR_ASSERTION]: User scroll must pause follow for two seconds\n\n5 !== 0\n\n    at file:///D:/projects/new_project1/docs/acceptance/evidence/integration-r5/verify.mjs:129:14\n    at async run (file:///D:/projects/new_project1/docs/acceptance/evidence/integration-r5/verify.mjs:62:5)\n    at async file:///D:/projects/new_project1/docs/acceptance/evidence/integration-r5/verify.mjs:100:5",
+      "commands": [
+        {
+          "at": 2253.4000000059605,
+          "command": "load"
+        },
+        {
+          "at": 2262.2000000029802,
+          "command": "detect"
+        },
+        {
+          "at": 2325.800000011921,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2336.300000011921,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2347.9000000059605,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2360,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2372,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2384.6000000089407,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2396.7000000029802,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2408.4000000059605,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2420.6000000089407,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2432.9000000059605,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2445.300000011921,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2457.5,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2469.5,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2481.5,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2493.800000011921,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2505.7000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2518.1000000089407,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2530,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2542,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2554.5,
+          "command": "preview",
+          "maxDimension": 112
+        },
+        {
+          "at": 2784.800000011921,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2869.6000000089407,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 2954.6000000089407,
+          "command": "preview",
+          "maxDimension": 320
+        },
+        {
+          "at": 3616.2000000029802,
+          "command": "preview",
+          "maxDimension": 112
+        }
+      ],
+      "video": "videos/follow-12fps.webm"
+    }
+  ],
+  "finishedAt": "2026-09-28T10:57:59.803Z"
+}
