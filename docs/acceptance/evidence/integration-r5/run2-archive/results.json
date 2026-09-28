@@ -10,9 +10,7 @@
       "hold": true,
       "fixture": "02-grid-3x2",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"],
       "initial": {
         "at": 4154.199999988079,
         "frameIndex": 0,
@@ -214,9 +212,7 @@
       "hold": true,
       "fixture": "02-grid-3x2",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"],
       "initial": {
         "at": 3276.5999999940395,
         "frameIndex": 0,
@@ -418,9 +414,7 @@
       "hold": true,
       "fixture": "02-grid-3x2",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"],
       "initial": {
         "at": 3212.199999988079,
         "frameIndex": 0,
@@ -622,9 +616,7 @@
       "hold": true,
       "fixture": "02-grid-3x2",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"],
       "initial": {
         "at": 3725.1000000089407,
         "frameIndex": 0,
@@ -826,9 +818,7 @@
       "hold": false,
       "fixture": "03-grid-4x3",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"],
       "auto": {
         "at": 9137.5,
         "frameIndex": 11,
@@ -851,11 +841,7 @@
           "right": 1012
         }
       },
-      "screenshots": [
-        "follow-2fps-auto.png",
-        "follow-2fps-manual.png",
-        "follow-2fps-after-2s.png"
-      ],
+      "screenshots": ["follow-2fps-auto.png", "follow-2fps-manual.png", "follow-2fps-after-2s.png"],
       "wheelAt": 9534.40000000596,
       "manual": {
         "at": 9634.40000000596,
@@ -1767,9 +1753,7 @@
       "hold": false,
       "fixture": "03-grid-4x3",
       "pageErrors": [],
-      "assets": [
-        "https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"
-      ],
+      "assets": ["https://spriteflow-doa.pages.dev/assets/index-BuOfCckW.js"],
       "auto": {
         "at": 8659.800000011921,
         "frameIndex": 11,
