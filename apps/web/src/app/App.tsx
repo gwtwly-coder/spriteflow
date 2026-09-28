@@ -703,7 +703,7 @@ export function App() {
               <DetectionMethod locale={locale} strategy={strategy} />
             </span>
             <span>{t("editor.summary", { count: included.length })}</span>
-            {store.selected.length > 1 && (
+            {store.selected.length > 0 && (
               <span>{t("editor.selection_count", { count: store.selected.length })}</span>
             )}
           </footer>
@@ -1439,8 +1439,26 @@ function Timeline({
                   key={draft.id}
                   className={`${store.selected.includes(draft.id) ? "frame-chip active" : "frame-chip"}${index === playhead ? " playhead" : ""}`}
                   onClick={(event) => {
+                    if (event.shiftKey) {
+                      const lo = Math.min(playhead, index);
+                      const hi = Math.max(playhead, index);
+                      store.setSelection(
+                        frames
+                          .filter(({ frame, index: i }) => i >= lo && i <= hi && visible(frame))
+                          .map(({ draft: entry }) => entry.id),
+                      );
+                      return;
+                    }
+                    if (event.ctrlKey) {
+                      store.setSelection(
+                        store.selected.includes(draft.id)
+                          ? store.selected.filter((id) => id !== draft.id)
+                          : [...store.selected, draft.id],
+                      );
+                      return;
+                    }
                     setPlayhead(index);
-                    store.setSelection(event.shiftKey ? [...store.selected, draft.id] : [draft.id]);
+                    store.setSelection([draft.id]);
                   }}
                   onDragStart={() => setDragIndex(index)}
                   onDragOver={(event) => event.preventDefault()}
