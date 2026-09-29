@@ -37,4 +37,11 @@
 
 - 生图：两个 coding 套餐均不含；黄金人物集由产品主用 ChatGPT 产品内生图手动生成（进行中，3/11 合格入库待产品主补齐）。
 - 账号私有状态（余额/到期/重置）未知不阻塞当前任务；影响派单时按运行协议 §2.1 定点询问。
-- 待整合：三订阅公开权益调研结果（完成后更新本表"公开口径/来源/日期"列）。
+- ~~待整合：三订阅公开权益调研结果~~ ✅ 已整合（下节）。
+
+### 公开权益口径（RC 委派子代理调研官方文档，核实日期 2026-09-29）
+
+- **智谱 Coding Plan Pro**：套餐含 GLM-5.3 / GLM-5.3-Flash；额度＝12,000 积分/5 小时＋60,000 积分/周（不结转）；工作日 14–18 点（UTC+8）全额计、非高峰 5 折；**套餐与开放平台 API 分开计费，不含任何视觉/生成 API 额度**（docs.bigmodel.cn/cn/coding-plan/overview）。→ v3 L1 BYOK 联调必须走开放平台 API key（`BIGMODEL_API_KEY` 余额属账号私有，开放平台控制台可查）。
+- **Codex Plus**：模型 GPT-6 Astra / Sol / Luna；本地消息 5 小时窗口＋周上限（官方估算：Astra≈5–45 条、Sol 15–150、Luna 350–3000 条/5h）；云任务消耗更高；GPT-5.5 于 2026-10-14 退役；Codex 支持图像输入（CLI `-i`）；ChatGPT 内生图为动态限额（learn.chatgpt.com/codex/pricing）。→ **派单规则：Astra 只投高风险单点（复核/核心算法），日常迭代用 Sol/Luna**。
+- **Gemini AI Pro**：Gemini 3.1 Pro 4x 用量、Nano Banana Pro 生图、Flow 视频 1,000 credits/月、Jules/Antigravity 更高限额、Gemini CLI≈1,500 请求/天；**订阅不含 Gemini API 金额**（one.google.com、docs.cloud.google.com/gemini/docs/quotas）。→ 三家中编码侧冗余最大，可作第三备选；AI Studio 免费层可小规模验证 v3 L1 的 Gemini 视觉调用格式。
+- **横向结论**：三家订阅均不含 BYOK 可用的 API 额度——v3 语义定位联调只能走开放平台 API key；订阅内生的图像生成（ChatGPT / Nano Banana Pro）可用于黄金人物集与运营素材，不构成站内功能依赖。
