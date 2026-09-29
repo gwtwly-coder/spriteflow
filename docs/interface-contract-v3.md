@@ -56,7 +56,9 @@ export interface CharacterLimits {
   maxWorkingPixels: number;
   maxParts: number;
   maxPromptsPerPart: number;
+  /** v3.5 reserved — no v3.0-alpha stage reads or enforces this limit. */
   maxMotionFrames: number;
+  /** v3.5 reserved — no v3.0-alpha stage reads or enforces this limit. */
   maxRenderPixels: number;
   maxModelBytes: number;
   maxLlmResponseBytes: number;
@@ -66,7 +68,7 @@ export interface CharacterLimits {
 export declare const DEFAULT_CHARACTER_LIMITS: Readonly<CharacterLimits>;
 ```
 
-字段默认值：`maxWorkingDimension=2048`、`maxWorkingPixels=4_194_304`、`maxParts=32`、`maxPromptsPerPart=16`、`maxMotionFrames=120`、`maxRenderPixels=67_108_864`、`maxModelBytes=41_943_040`、`maxLlmResponseBytes=1_048_576`、`maxArchiveBytes=268_435_456`（沿用 M1 desktop 上限）。限制对象不可在运行时改变。
+字段默认值：`maxWorkingDimension=2048`、`maxWorkingPixels=4_194_304`、`maxParts=32`、`maxPromptsPerPart=16`、`maxMotionFrames=120`、`maxRenderPixels=67_108_864`、`maxModelBytes=41_943_040`、`maxLlmResponseBytes=1_048_576`、`maxArchiveBytes=268_435_456`（仅 `maxArchiveBytes` 沿用 M1 desktop 上限，其余为 v3 新增限制）。限制对象不可在运行时改变。
 
 ```ts
 export interface CharacterProgressEvent {
@@ -839,6 +841,7 @@ export type CharacterRecoveryAction =
   | "choose-points"
   | "reload-model"
   | "reduce-image-size"
+  /** v3.5 reserved — rig/motion editor surface; unreachable in v3.0-alpha. */
   | "edit-rig"
   | "edit-motion"
   | "review-parts"

@@ -46,7 +46,7 @@ CSP 依据产物实测制定：`dist/index.html` 仅 1 个外链 module script�
 
 ### 生产配置核验（2026-09-29，部署后补记）
 
-- 状态：**已核验**。推送后 `curl -sI https://spriteflow-doa.pages.dev/` 返回 200，且 CSP/nosniff/X-Frame-Options/Referrer-Policy/Permissions-Policy/COOP 六头全部在生产响应中出现（与本地同值）。见 git 历史本文件后续提交的核验记录。
+- 状态：**已核验（2026-09-29）**。推送 `387779c` 后 Pages 部署，`curl -sI https://spriteflow-doa.pages.dev/` 返回 HTTP 200，CSP / X-Content-Type-Options / X-Frame-Options / Referrer-Policy / Permissions-Policy / COOP 六头全部出现在生产响应中，值与本地验证一致。
 
 ## 未验证项与剩余风险
 

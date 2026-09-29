@@ -136,7 +136,7 @@ SAM 工作图默认最大边 2048、原 RGBA 16 MiB。模型输入最大边 1024
 
 `tests/golden/characters` 至少包含 10 例计入配额的人形立绘，另有至少 1 例独立非人形降级锚点（不占 10 例）。每例携带输入及 SHA-256、许可来源、working-size、ground-truth Parts（kind、sourceRect、二值mask）、期望路径；人形例另带部位命中容差。敏感图像只有明确商用/测试授权后入库；无授权、作者或 provenance 任一缺失即测试集准入失败。
 
-segment 对标注 mask 断言部位 ID/kind 集、bbox IoU≥0.90、mask IoU≥0.90、重复运行输出确定；所有导出 PNG 必须逐部件断言 RGB 逐字节一致、alpha 不大于源 alpha、mask 外 alpha 为 0。另验证 tight bbox、PNG 数量和 parts.json 映射、README 存在、ZIP 解包/安全路径检查；断言失败不得生成归档。非人形锚点必须触发纯点击降级，且不得按人形样例计数。LLM 在线服务不进入 CI：固定原始 HTTP fixture 覆盖 parser/修复重试，prompt 文本变更做 golden JSON schema 回归。
+segment 对标注 mask 断言部位 ID/kind 集、bbox IoU≥0.90、mask IoU≥0.90、重复运行输出确定；所有导出 PNG 必须逐部件断言 RGB 逐字节一致、alpha 不大于源 alpha（`≤` 为通用拒绝边界；v3.0-alpha 实现与黄金回归按契约 extractPartPixels 的更强"蒙版内相等"口径断言）、mask 外 alpha 为 0。另验证 tight bbox、PNG 数量和 parts.json 映射、README 存在、ZIP 解包/安全路径检查；断言失败不得生成归档。非人形锚点必须触发纯点击降级，且不得按人形样例计数。LLM 在线服务不进入 CI：固定原始 HTTP fixture 覆盖 parser/修复重试，prompt 文本变更做 golden JSON schema 回归。
 
 报告分为纯算法、真实浏览器 ORT-WASM、真实浏览器 ORT-WebGPU 三种，不用 mock 结果冒充真实 provider 成绩；失败回归保存 case ID、模型 manifest hash、runtime/provider、浏览器版本和 mask/导出 PNG diff，报告仅作为 CI artifact。
 
@@ -163,3 +163,5 @@ Wave 0 门槛依据已入库 PRD v3 与 copy v3 执行：技术主冻结具体�
 PRD §8 的门禁写“从确认上传到部位审校就绪 P50≤30 秒”，同时规定首次模型下载和 LLM 单次往返单独披露且不计入门禁；§8 的端到端退出标准又要求“含点击修正的审校→导出”至少 3 例全程计时满足 30 秒口径。建议 PM 明文分成两个指标：`T_gate = wall time - cold model download - one LLM request/response RTT`（仍报告扣除项和原始墙钟时间），门禁只测上传至审校就绪；端到端人工修正与导出另定阈值/报告要求，不复用“P50≤30 秒”，除非 PM 明确接受。否则一个是“不含人工审校、止于就绪”，另一个是“含人工修正、直到导出”，同名口径无法判定是否达标。
 
 另建议在 PRD AC-V05 增写导出前与 PNG 编码后解码各运行一次同一三断言，并注明 alpha 保持源值或只允许降低；当前契约选择 mask=1 时复制源 RGBA 原值（因此 alpha 相等），mask=0 时 alpha=0，这是满足 `alpha_output ≤ alpha_source` 的更强策略。产品若需部分 alpha 编辑，应另定义算法与回归，不可默认为实现细节。
+
+> **采纳记录（2026-09-29）**：以上两项已经 PRD 修订 `4329161` 落地——§8 拆为门禁口径（确认上传→审校就绪 P50≤30s，样例 ≤2048/≤12 部位）与体验口径（含点击修正与导出，单独记录非门禁）；AC-V05 明确像素生成与 PNG 编码后解码复验各执行一次、alpha 采用"蒙版内相等"强口径。Gate 1 复核（`docs/acceptance/gate1-v3-verdict-1.md`）已核实闭环。

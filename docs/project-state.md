@@ -11,10 +11,10 @@
 
 ## 当前任务（2026-09-29）
 
-1. **Gate 1（v3 PRD+架构双验收）**：流程迁移后由 RC 直接安排独立复核，裁决落 `docs/acceptance/gate1-v3-verdict-1.md`；PASS → Wave 2 开工。
-2. **安全专项轮（新强制基线）**：对已上线的 M1 建立安全基线并覆盖 v3 新攻击面（BYOK key、模型加载），`docs/security-review.md`；本轮交付前必须完成。
+1. **Gate 1（v3 PRD+架构+契约对齐验收）**：✅ **PASS**（2026-09-29，`docs/acceptance/gate1-v3-verdict-1.md`，六项检查全过、0 P0 / 0 P1；4 项 P2 建议已随手修复——架构 §9 采纳记录、alpha 口径注明、契约 v3.5 成员 reserved 注释、M1 上限括注限定）。**待产品主确认 → 契约冻结、Wave 2 开工**。
+2. **安全专项轮**：✅ Round 1 完成（2026-09-29）——生产站安全头（CSP 等六头）已上线并 curl 核验，本地真浏览器全链路 0 违例；`docs/security-review.md` 发布判定＝不阻塞。v3 新攻击面（BYOK key、模型完整性、LLM JSON）随 v3.0-alpha 交付增量复核。
 3. **黄金人物集**：3/11 合格（预检报告 `docs/inspections/v3-golden-precheck-2026-09-29.md`），缺 7 人形 + 1 非人形——产品主生成中（用户动作，唯一外部阻塞）。
-4. **资源记录**：三订阅公开权益调研进行中，结果整合进 `docs/resource-profile.md`。
+4. **资源记录**：✅ 三订阅公开权益调研完成并整合进 `docs/resource-profile.md`（要点：三家订阅均不含 BYOK 可用 API 额度；Codex Astra 档量紧、日常用 Sol/Luna）。
 
 ## 关键决定（冻结）
 
@@ -43,7 +43,7 @@
 
 ## 下一步（顺序）
 
-1. Gate 1 独立复核（进行中）→ PASS 后 Wave 2：`packages/segment`（SAM 会话/蒙版，onnxruntime-web 1.30.0）+ `packages/rig`（v3.5 占位类型）+ 拆件审校 UI（复用 ui-spec v1.3 与 mockups；**前端交付须含项目内视觉调节面板**，运行协议 §4.4，仅开发构建启用）。
+1. 产品主确认 Gate 1 → 契约冻结 → **Wave 2 开工**：`packages/segment`（SAM 会话/蒙版，onnxruntime-web 1.30.0）+ `packages/rig`（v3.5 占位类型）+ 拆件审校 UI（复用 ui-spec v1.3 与 mockups；**前端交付须含项目内视觉调节面板**，运行协议 §4.4，仅开发构建启用）。
 2. 安全专项轮完成（本轮交付前强制）。
 3. 黄金人物集齐后入库 `tests/golden/characters/`（truth 口径＝三断言；与 M1 `real/` 分开）。
 4. 资源调研结果整合后，v3 L1 BYOK 联调用 `BIGMODEL_API_KEY` 小范围实测。
@@ -54,4 +54,4 @@ M1 遗留 P1×3（Firefox 快捷键实测、dialog 可访问名称、CI 视觉�
 
 ## 安全状态
 
-专项轮进行中（2026-09-29 启动，M1 生产基线 + v3 攻击面），记录见 `docs/security-review.md`；**本轮交付前必须完成**。
+Round 1 完成（2026-09-29，`docs/security-review.md`）：生产安全头已上线核验，发布判定＝**不阻塞**；v3.0-alpha 交付前做增量复核（BYOK/模型完整性/LLM JSON schema）。
