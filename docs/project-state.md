@@ -11,7 +11,8 @@
 
 ## 当前任务（2026-09-29）
 
-1. **Gate 1（v3 PRD+架构+契约对齐验收）**：✅ **PASS**（2026-09-29，`docs/acceptance/gate1-v3-verdict-1.md`，六项检查全过、0 P0 / 0 P1；4 项 P2 建议已随手修复——架构 §9 采纳记录、alpha 口径注明、契约 v3.5 成员 reserved 注释、M1 上限括注限定）。**待产品主确认 → 契约冻结、Wave 2 开工**。
+1. **Gate 1（v3 PRD+架构+契约对齐验收）**：✅ **PASS 并经产品主确认冻结**（2026-09-29，裁决 `docs/acceptance/gate1-v3-verdict-1.md` 六项全过、0 P0/0 P1、4 项 P2 已修；产品主回复"继续"视为确认——已向其声明该理解，如有异议可回退）。**Wave 2 已开工**。
+2. **Wave 2 增量 1（进行中）**：`packages/segment` 纯 TS 根入口（BitMask/PartAsset/五纯函数/像素不变量提取/L1 文档解析与修复请求），零依赖 Node 可测，委派实现中；**`packages/rig` 本版不建**（契约 §7 明文 v3.0-alpha 不得发布 rig 入口，v3.5 再议）。SAM 浏览器适配（onnxruntime-web + CacheAPI + fetch transport）与拆件审校 UI 为后续增量；UI 交付须含 §4.4 视觉调节面板。
 2. **安全专项轮**：✅ Round 1 完成（2026-09-29）——生产站安全头（CSP 等六头）已上线并 curl 核验，本地真浏览器全链路 0 违例；`docs/security-review.md` 发布判定＝不阻塞。v3 新攻击面（BYOK key、模型完整性、LLM JSON）随 v3.0-alpha 交付增量复核。
 3. **黄金人物集**：3/11 合格（预检报告 `docs/inspections/v3-golden-precheck-2026-09-29.md`），缺 7 人形 + 1 非人形——产品主生成中（用户动作，唯一外部阻塞）。
 4. **资源记录**：✅ 三订阅公开权益调研完成并整合进 `docs/resource-profile.md`（要点：三家订阅均不含 BYOK 可用 API 额度；Codex Astra 档量紧、日常用 Sol/Luna）。
@@ -26,6 +27,7 @@
 - 导出主形态（v3.5）＝逐帧渲染复用 M1 导出管线；骨骼格式为 Pro 选项。【已确认，technical-design-v3】
 - 非人形降级锚点 ≥1 例，不占 10 例人形配额。【已确认，prd-v3 V-07】
 - 流程自 2026-09-29 起为 RC 运行协议 v3.0：RC 单负责人直接执行 + 子代理委派；用户保留产品方向/范围/发布决定；最少记录（本文件 + resource-profile + security-review + design/ui-spec）。【已确认，产品主 2026-09-29 指令】
+- v3 契约 0.2.0-r2 随 Gate 1 关闭冻结；`packages/rig` 不在 v3.0-alpha 创建/发布（契约 §7 明文）。【已确认，2026-09-29】
 
 ## 代码与资产事实（核验摘要）
 
