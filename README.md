@@ -18,6 +18,7 @@
 | `docs/devops.md` | 本地环境十分钟指南 + CI/部署说明 | ✅ DevOps 已交付（五 job CI + Cloudflare Pages） |
 | `docs/m1-retrospective.md` | M1 复盘（战果/事故/固化为规则的教训） | ✅ 2026-09-25 |
 | `docs/multi-agent-playbook.md` | 多 agent 开发方法论（可移植） | ✅ 2026-09-25 |
+| `docs/technical-design-v3.md` | v3/v3.5 技术方案（拆部位/遮挡补全/极简绑骨） | ✅ 奠基文档已定稿，待 Wave 1 |
 
 ## 工作规则（对所有 agent 生效）
 
