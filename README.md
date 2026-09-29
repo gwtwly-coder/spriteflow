@@ -2,17 +2,22 @@
 
 「AI 生图 → 引擎就绪素材」纯前端 Web 管线工具，面向 2D 游戏开发者（vibe coder）。零服务器成本，全部计算在浏览器端。
 
+**状态：M1 已完工**（2026-09-25 产品主终裁通过）。生产站：https://spriteflow-doa.pages.dev
+下一步：v2 视频转帧 → v3 拆部位 + v3.5 极简绑骨 → 上线三件套（自定义域名/国内 CDN、Lemon Squeezy）。复盘见 `docs/m1-retrospective.md`，多 agent 方法论见 `docs/multi-agent-playbook.md`。
+
 ## 文档地图（任何 agent 或人，开工前必读）
 
 | 文档 | 内容 | 状态 |
 |---|---|---|
-| `docs/technical-design.md` | 技术方案（唯一事实来源） | ✅ 已定稿 |
-| `docs/agent-roles.md` | 多 agent 角色提示词、模型分配、验收流程、文件所有权 | ✅ 已定稿 |
+| `docs/technical-design.md` | 技术方案（唯一事实来源，含 v2-v4 路线） | ✅ 已定稿 |
+| `docs/agent-roles.md` | 多 agent 角色提示词、模型分配、验收流程、任务分配规则 v2 | ✅ 随项目演进 |
 | `docs/prd-m1.md` | M1 产品需求文档 | ✅ 已通过验收（Gate 1） |
 | `docs/architecture-m1.md` | 仓库结构与架构决策（CI 设计、依赖审计） | ✅ 已通过验收（Gate 1, r2） |
-| `docs/interface-contract.md` | 管线 ↔ 前端接口契约（公共 API 唯一规范） | ✅ r2，并行双方以此开工 |
-| `docs/ui-spec.md` | UI 设计规范 + HTML 稿 | ⬜ UI 设计师待产出（Wave 2） |
+| `docs/interface-contract.md` | 管线 ↔ 前端接口契约 | ✅ 3.0.0/r4（已生效基线） |
+| `docs/ui-spec.md` | UI 设计规范 v1.3 | ✅ 已通过验收（Gate 2 + 热修修订） |
 | `docs/devops.md` | 本地环境十分钟指南 + CI/部署说明 | ✅ DevOps 已交付（五 job CI + Cloudflare Pages） |
+| `docs/m1-retrospective.md` | M1 复盘（战果/事故/固化为规则的教训） | ✅ 2026-09-25 |
+| `docs/multi-agent-playbook.md` | 多 agent 开发方法论（可移植） | ✅ 2026-09-25 |
 
 ## 工作规则（对所有 agent 生效）
 
