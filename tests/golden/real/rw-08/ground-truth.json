@@ -1,0 +1,116 @@
+{
+  "schemaVersion": "spriteflow-golden/1",
+  "caseId": "rw-08",
+  "title": "游泳角色复杂透明表桥接降级",
+  "category": "real-world",
+  "inputType": "E",
+  "input": {
+    "file": "../RW-08.png",
+    "mimeType": "image/png",
+    "width": 1536,
+    "height": 1024,
+    "sha256": "3f1367074c848e1b02426ceeaf26ac62db1200b4189a41e220c516579df65476"
+  },
+  "run": {
+    "detectOptions": null
+  },
+  "expected": {
+    "frameCount": 2,
+    "strategy": "manual-grid",
+    "origin": "manual",
+    "layout": {
+      "rows": 1,
+      "columns": 2
+    },
+    "degraded": {
+      "reason": "INSUFFICIENT_COMPONENTS",
+      "attempted": ["grid", "components"]
+    },
+    "warningCodes": ["DETECTION_DEGRADED", "MULTIPLE_COMPONENTS"],
+    "frames": [
+      {
+        "index": 0,
+        "sourceRect": {
+          "x": 0,
+          "y": 0,
+          "width": 768,
+          "height": 1024
+        },
+        "bbox": {
+          "x": 15,
+          "y": 36,
+          "width": 753,
+          "height": 941
+        },
+        "bboxTolerance": {
+          "x": [13, 17],
+          "y": [34, 38],
+          "width": [751, 755],
+          "height": [939, 943]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      },
+      {
+        "index": 1,
+        "sourceRect": {
+          "x": 768,
+          "y": 0,
+          "width": 768,
+          "height": 1024
+        },
+        "bbox": {
+          "x": 768,
+          "y": 63,
+          "width": 746,
+          "height": 919
+        },
+        "bboxTolerance": {
+          "x": [766, 770],
+          "y": [61, 65],
+          "width": [744, 748],
+          "height": [917, 921]
+        },
+        "flags": {
+          "outlier": false,
+          "merged": false,
+          "multipleComponents": true,
+          "empty": false,
+          "edited": false,
+          "duplicateOf": null
+        }
+      }
+    ],
+    "hashEqualityGroups": []
+  },
+  "assertions": {
+    "frameCount": "exact",
+    "bboxIouExclusiveMinimum": 0.9,
+    "bboxTolerance": "inclusive-per-coordinate",
+    "frameMatching": "contract-order",
+    "flags": "exact",
+    "degradation": "exact-reason-and-attempted"
+  },
+  "coverage": [
+    "real-world",
+    "type-e",
+    "bridged-hair-tail-droplets",
+    "explicit-degradation",
+    "m2-detection-regression-anchor"
+  ],
+  "annotation": {
+    "method": "tests/golden/tools/measure-real.mjs（pngjs 独立像素测量；未导入或调用管线）",
+    "alphaThreshold": 8,
+    "connectivity": 8,
+    "bboxConvention": "原图坐标、右下边界不包含；bboxTolerance 各坐标区间为闭区间",
+    "measurementSummary": "alpha>8 时有 100 个原始连通域；10px 膨胀后形成 7 组，经 36px 邻近合并后只剩 1 个有效候选；网格置信度 0.775。",
+    "semanticReview": "pending-R10",
+    "regressionIntent": "M1 必须诚实降级，不把建议的 1×2 手动网格解释为真实语义帧；M2 优化不得回退为静默硬切。"
+  }
+}

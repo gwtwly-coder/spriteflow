@@ -19,7 +19,15 @@ const workspaceRoot = path.resolve(scriptRoot, "..", "..", "..");
 const realRoot = path.resolve(scriptRoot, "..", "real");
 const reportPath = path.join(realRoot, "measurements.json");
 const biomeCliPath = path.join(workspaceRoot, "node_modules", "@biomejs", "biome", "bin", "biome");
-const inputs = ["rw-02.png", "RW-03.png", "RW-04.png", "RW-05.png", "RW-06.png", "RW-07.png"];
+const inputs = [
+  "rw-02.png",
+  "RW-03.png",
+  "RW-04.png",
+  "RW-05.png",
+  "RW-06.png",
+  "RW-07.png",
+  "RW-08.png",
+];
 
 const measurements = [];
 for (const file of inputs) {
