@@ -1,6 +1,6 @@
 # SpriteFlow v3 segment / rig 公共接口契约
 
-> 版本：0.2.1-r3；日期：2026-09-30；状态：按 PRD v3.0-alpha 对齐，既有 Gate 1 文档验收已通过；当前实现范围与接续见 project-state.md。**r3 变更（产品主 2026-09-30 选定模型档位 A 后授权）**：`maxModelBytes` 默认值 41,943,040（40 MiB）→ 83,886,080（80 MiB），依据=实测 SAM 2.1 Hiera-Tiny fp16 encoder 67,313,499 字节（`docs/research/2026-09-30-sam2-onnx-model-sources.md`）；其余条款未变。
+> 版本：0.2.2-r4；日期：2026-09-30；状态：按 PRD v3.0-alpha 对齐，既有 Gate 1 文档验收已通过；当前实现范围与接续见 project-state.md。**r3 变更（产品主 2026-09-30 选定模型档位 A 后授权）**：`maxModelBytes` 默认值 41,943,040（40 MiB）→ 83,886,080（80 MiB），依据=实测 SAM 2.1 Hiera-Tiny fp16 encoder 67,313,499 字节（`docs/research/2026-09-30-sam2-onnx-model-sources.md`）。**r4 变更（browser 适配独立验收 P1 裁定，RC 2026-09-30）**：①`mergePromptMask` 移出 v3.0-alpha 公共表面（推迟至有真实调用方的版本）——alpha 交互流由 `SamSession.segment` 重推理返回整幅替换蒙版 + `applyMaskEdits` 手工像素编辑完全覆盖，该函数语义未定义且无调用方；②§10 `messageKey` 枚举补 `character.degradation.<REASON>`（`SegmentationDegradation` 专用，与 error/warning 三者并列）。供给策略同步定版：**fp16 单档上架**（WASM 回退沿用 fp16 工件，PRD AC-V03-B 只要求回退可用），fp32 工件不上架（哈希仍记录于研究文档）。
 >
 > 本文件定义 `@spriteflow/segment`、`@spriteflow/segment/browser` 与 `@spriteflow/rig` 的公共 API；代码标识符为英文，本文说明为中文。文中代码块是完整的接口声明/调用形状，不是功能实现。
 >
@@ -511,13 +511,9 @@ export declare function createSamSession(
   options: SamRuntimeOptions,
   backend: SamInferenceBackend
 ): SamSession;
-
-export declare function mergePromptMask(
-  current: BitMask,
-  patch: BitMask,
-  prompt: SamPrompt
-): CharacterOutcome<BitMask>;
 ```
+
+> r4 注：原此处声明的 `mergePromptMask(current, patch, prompt)` 已移出 v3.0-alpha 公共表面（见版本头注 r4 变更①），后续版本携带明确语义时随独立契约修订回归。
 
 `DEFAULT_SAM_RUNTIME_OPTIONS` 为 `{provider:"auto", wasmThreads:1, useModelCache:true}`；v3.0-alpha 不允许改变 WASM thread 数。模型 initialize 下载/校验/ORT 初始化失败返回可重试错误，保留当前 `InputAsset` 与已确认部件；再次调用 `initialize()` 重试模型阶段，不要求也不得要求 UI 重新上传/transfer 同一图像。直到 initialize 成功后才重新执行 embedding。若 WebGPU 和 WASM 都不可用，自动拆件与点击模式均不可用；保留页面状态并提供 retry，不能显示“手动画蒙版”作为现有能力。
 
@@ -880,7 +876,7 @@ export interface CharacterError {
 | `NOT_IMPLEMENTED` | v3.0 completion 面板标示“遮挡补全将在 v3.1 提供”；不出现成功版本或空图下载 |
 | CANCELLED / BUSY | 取消为普通状态；BUSY 等当前任务终态后重试，不能并行启动另一模型/渲染任务 |
 
-所有 `messageKey` 形如 `character.error.<CODE>` 或 `character.warning.<CODE>`；`details` 不得含 key、图像、base64、完整 LLM response、prompt 原文、任意 URL query 或堆栈。返回可定位错误时，`partIds` 只放当前用户资产内 ID。
+所有 `messageKey` 形如 `character.error.<CODE>`、`character.warning.<CODE>` 或 `character.degradation.<REASON>`（`SegmentationDegradation.messageKey` 专用，r4 增补）；`details` 不得含 key、图像、base64、完整 LLM response、prompt 原文、任意 URL query 或堆栈。返回可定位错误时，`partIds` 只放当前用户资产内 ID。
 
 ## 11. 自足性和验收约定
 
