@@ -20,12 +20,34 @@ export function presetEndpoint(provider: ByokConfig["provider"]): string {
   return provider === "custom" ? "" : PRESET_ENDPOINTS[provider];
 }
 
+// --- 语义定位 maxOutputTokens（契约 §3 :421 范围 128..4,096） ---------------------
+// 默认取契约上限 4,096；个别模型的服务商侧 max_tokens 上限更低，超限会被快速
+// 400 拒绝（2026-10-01 实测：api.z.ai glm-4v-flash 回 HTTP 400 code 1210
+// "The max_tokens parameter is illegal.：限制数值范围[1,1024]"，<1s——曾因
+// 4xx 被归网络类而横幅误报"连不上服务商，或请求超时"）。此处只登记实测过的
+// 模型档；未登记模型的 4xx 拒绝由 segment 的 LLM_CONFIGURATION_INVALID 诚实
+// 归类兜底（打开 BYOK 设置修复）。
+export const DEFAULT_MAX_OUTPUT_TOKENS = 4_096;
+
+const MODEL_MAX_OUTPUT_TOKENS: Readonly<Record<string, number>> = {
+  "glm-4v-flash": 1_024,
+};
+
+/** 模型的语义定位输出 token 上限：已实测档取服务商上限，其余取契约上限。 */
+export function maxOutputTokensForModel(model: string): number {
+  return MODEL_MAX_OUTPUT_TOKENS[model.trim().toLowerCase()] ?? DEFAULT_MAX_OUTPUT_TOKENS;
+}
+
+/** URL hostname 形态的 loopback 家族（与 segment llm.ts 的 isAuthorityLocalhost 对齐）。 */
+const LOOPBACK_HOSTNAMES: ReadonlySet<string> = new Set(["localhost", "127.0.0.1", "[::1]"]);
+
 /** 契约 :421：endpoint 必须是完整 HTTPS /chat/completions URL（开发 localhost 例外）。 */
 export function isValidEndpoint(url: string): boolean {
   if (url.length === 0 || url.length > 2048) return false;
   try {
     const parsed = new URL(url);
-    const isLocal = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+    // URL 解析后 IPv6 hostname 带方括号（如 "[::1]"），与 segment 的 authority 形态一致。
+    const isLocal = LOOPBACK_HOSTNAMES.has(parsed.hostname);
     if (parsed.protocol !== "https:" && !(isLocal && parsed.protocol === "http:")) return false;
     if (parsed.username || parsed.password || parsed.hash) return false;
     return parsed.pathname.endsWith("/chat/completions");

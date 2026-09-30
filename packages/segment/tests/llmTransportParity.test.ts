@@ -193,3 +193,91 @@ describe("locatePartsWithLlm over the real fetch transport (browser parity)", ()
     expect(expectFailure(result).code).toBe("LLM_TIMEOUT");
   });
 });
+
+// 2026-10-01 RC 走查回归锁（契约 :331 开发 localhost 例外）：RC 的 BYOK 形状
+// `http://localhost:<port>/chat/completions` 必须通过配置校验并经真实 fetch
+// 到达对端（服务端计数即"请求确实发出"的证据），响应分类不受 scheme 影响。
+// 反向锁定：http 到非 loopback 主机在发出任何请求前即被校验拒绝。
+describe("localhost http endpoint parity (RC BYOK shape)", () => {
+  let loopbackServer: http.Server;
+  let loopbackEndpoint = "";
+  let postsReceived = 0;
+
+  beforeAll(async () => {
+    loopbackServer = http.createServer((req, res) => {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Headers", "content-type,authorization");
+      res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+      if (req.method === "OPTIONS") {
+        res.writeHead(204);
+        res.end();
+        return;
+      }
+      req.on("data", () => {});
+      req.on("end", () => {
+        postsReceived += 1;
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(BIGMODEL_401_BODY);
+      });
+    });
+    await new Promise<void>((resolve) => loopbackServer.listen(0, "localhost", resolve));
+    const { port } = loopbackServer.address() as AddressInfo;
+    loopbackEndpoint = `http://localhost:${port}/chat/completions`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((resolve) => loopbackServer.close(() => resolve()));
+  });
+
+  it("sends a real fetch to a localhost-named http endpoint and classifies the 401", async () => {
+    const before = postsReceived;
+    const result = await locatePartsWithLlm(
+      {
+        asset: { assetId: "fixture", revision: 1 },
+        image: LOCATE_IMAGE,
+        provider: {
+          endpoint: loopbackEndpoint,
+          model: "glm-4v-flash",
+          apiKey: API_KEY,
+          timeoutMs: 4_000,
+          maxResponseBytes: 65_536,
+          maxOutputTokens: 1_024,
+        },
+        userConsent: true,
+        options: { ...DEFAULT_SEGMENTATION_OPTIONS },
+      },
+      realTransport(),
+      context(),
+    );
+    expect(postsReceived).toBe(before + 1); // 请求真的离开了调用方
+    expect(expectFailure(result).code).toBe("LLM_AUTHENTICATION_FAILED");
+  });
+
+  it("rejects http on a non-loopback host before any request leaves", async () => {
+    const transport = {
+      async send() {
+        throw new Error("transport must not see a non-loopback http request");
+      },
+    };
+    const result = await locatePartsWithLlm(
+      {
+        asset: { assetId: "fixture", revision: 1 },
+        image: LOCATE_IMAGE,
+        provider: {
+          endpoint: "http://relay.example.com:8787/chat/completions",
+          model: "glm-4v-flash",
+          apiKey: API_KEY,
+          timeoutMs: 4_000,
+          maxResponseBytes: 65_536,
+          maxOutputTokens: 1_024,
+        },
+        userConsent: true,
+        options: { ...DEFAULT_SEGMENTATION_OPTIONS },
+      },
+      transport,
+      context(),
+    );
+    const error = expectFailure(result);
+    expect(error.code).toBe("LLM_CONFIGURATION_INVALID");
+  });
+});

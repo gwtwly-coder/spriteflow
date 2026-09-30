@@ -349,6 +349,41 @@ describe("consent and configuration gates", () => {
     expect(requests).toHaveLength(0);
   });
 
+  // 契约 :331 明文允许的开发 localhost 例外（2026-10-01 RC 走查回归锁）：
+  // http scheme 仅在 loopback authority 上放行，且放行后必须真的发起一次
+  // transport 请求——校验层不得在 fetch 前把 localhost http 端点短路掉。
+  it.each([
+    "http://localhost:8787/chat/completions", // RC 真浏览器场景的精确形状
+    "http://127.0.0.1:8787/chat/completions",
+    "http://[::1]:8787/chat/completions",
+  ])("accepts loopback http endpoint %s and sends exactly one request", async (endpoint) => {
+    const { transport, requests } = scriptedTransport([chatResponse(VALID_JSON)]);
+    const result = await locatePartsWithLlm(
+      { ...locateRequest(), provider: { ...PROVIDER, endpoint } },
+      transport,
+      context(),
+    );
+    expect(result.ok, JSON.stringify(result)).toBe(true);
+    expect(requests).toHaveLength(1); // 请求确实发出，未被校验拒绝
+    expect(requests[0]?.endpoint).toBe(endpoint);
+  });
+
+  it("rejects http on loopback-prefixed remote hosts without sending", async () => {
+    const { transport, requests } = scriptedTransport([chatResponse(VALID_JSON)]);
+    const result = await locatePartsWithLlm(
+      {
+        ...locateRequest(),
+        provider: { ...PROVIDER, endpoint: "http://localhost.evil.com/chat/completions" },
+      },
+      transport,
+      context(),
+    );
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.error.code).toBe("LLM_CONFIGURATION_INVALID");
+    expect(requests).toHaveLength(0);
+  });
+
   it("caps maxResponseBytes against context limits", async () => {
     const { transport } = scriptedTransport([]);
     const provider = { ...PROVIDER, maxResponseBytes: 2_048 };
