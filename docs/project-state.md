@@ -49,7 +49,7 @@
 5. 安排安全证据的针对性独立复核，随 v3 实现补 BYOK、模型完整性、LLM JSON 等实际防护与验证。资源不足保留待验收，不以用户亲自找错替代。
 6. 发布前核对本轮基线、CI、独立验收与部署条件，给出有范围的结论；发布由用户决定。
 
-- **SAM 模型选型（调研完成 2026-09-30，`docs/research/2026-09-30-sam2-onnx-model-sources.md`）**：Geo-IA/evo-sam2.1-onnx（Apache-2.0 权重+开源转换脚本+logit parity 校验），四产物哈希已 RC 本机冻结（fp16 encoder/decoder + fp32 回退对，暂存 D:\projects\tools\sam2.1-onnx-staging\）。**Pages 单资产 25MiB 硬限 → 模型必须托管 R2**（需产品主账号动作，操作卡待选型后给齐）。**待产品主裁定：模型档位**——RC 推荐 A）SAM2.1 fp16（~73MB 一次性下载，质量最优，契约 maxModelBytes 40→80MiB minor 修订）；备选 B）q4f16（~32MB 不动契约，4-bit 边缘质量风险）；C）MobileSAM（~40MB，质量低）。segment/browser 适配器实现中（manifest 四条目+准入门禁+WebGPU→WASM 回退+编排+BYOK 传输，哈希已冻结注入）。
+- **SAM 模型选型：✅ 已裁定（2026-09-30 产品主选 A = fp16 主档）**。落地：契约 **0.2.1-r3**（maxModelBytes 40→80MiB，版本头注记变更依据）；architecture-v3 §6 权重预算行同步（fp32 回退档 128MiB 的会话内存表现待真模型冒烟实测后修订峰值）；研究文档已记裁定。**代码同步待办**：packages/segment/src/defaults.ts 的 DEFAULT_CHARACTER_LIMITS.maxModelBytes 41_943_040→83_886_080 + defaults.test.ts 断言（等 browser 验收代理跑完再动，避免污染其工作树）。**R2 操作卡已交产品主**（桶+上传 4 文件+公共 r2.dev+CORS）；r2.dev 域名返回后替换 manifest 占位 URL 并做真模型冒烟。CSP connect-src 的 R2/BYOK 放开待办已记入 security-review。
 
 - **segment 验收登记的 4 项 P2（不阻断；随 browser 适配增量触碰 llm.ts 时清理）**：①null image/provider 抛未约定 TypeError 而非 CharacterError（llm.ts:119/178，契约 §1"不抛未约定异常"边界）；②取消期间 transport 抛 AbortError 被归为超时且未复查 isCancelled（llm.ts:471-484）；③未闭合开场 fence 也被剥离（llm.ts:320-330，仍需严格 JSON.parse，无实质风险）；④tests tsconfig lib 含 DOM（仅测试编译，src 边界不受影响）。
 - **待产品主裁定（segment 执行者登记、验收官附建议转来的契约歧义，均不阻塞）**：①L1 返回 0 部位归类"schema 可修复错误"而非直接 NON_HUMANOID 降级——两路都进点击模式，但前者会多付一轮修复且 UI 呈现为"响应非法"而非"不像人形"提示（验收官建议产品主择机澄清契约；如改分类只动 llm.ts 一处）；②endpoint 不校验 `/chat/completions` 后缀——严格校验会误伤带 query 的端点（验收官建议用 UI 提示替代硬校验）。

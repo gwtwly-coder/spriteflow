@@ -54,7 +54,7 @@ CSP 依据产物实测制定：`dist/index.html` 仅 1 个外链 module script�
 |---|---|---|
 | WAF/限流定制未配 | 低 | 静态站无自有 API 可打；Cloudflare 平台默认防护在位。国内可达 CDN（上线三件套）落地时一并评估 |
 | CSP report-only 观察期未设 | 低 | 已用真浏览器全链路验证替代；后续大改前端时可用 `Content-Security-Policy-Report-Only` 过渡 |
-| v3 新攻击面（BYOK key 存储、SAM 模型文件完整性、LLM 返回 JSON） | — | 随 v3.0-alpha 交付做增量复核（协议 §6.1）；模型文件冻结 revision+SHA-256 已写入 architecture-v3 |
+| v3 新攻击面（BYOK key 存储、SAM 模型文件完整性、LLM 返回 JSON） | — | 随 v3.0-alpha 交付做增量复核（协议 §6.1）；模型文件冻结 revision+SHA-256 已写入 architecture-v3。**部署侧待办（v3 UI 落地时同步执行并记录）**：①CSP `connect-src` 需追加模型 R2 源（最小放开）；②BYOK 用户自配 endpoint 属任意 https 源，`connect-src` 须放开为 `'self' https:` 并接受其残余风险（XSS sink 为 0 的前提下属可接受降级，理由与实测随 v3 部署核验记录）；③模型哈希门禁已在 segment/browser manifest 实现（坏哈希 fail-closed），真模型冒烟待 R2 就绪 |
 
 ## 当前状态与发布判定（流程 v3.1）
 

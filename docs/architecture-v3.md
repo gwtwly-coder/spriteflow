@@ -120,7 +120,7 @@ PRD §8 的验收口径优先：参考桌面设备、模型已缓存、key 可�
 | 调度与帧间隔余量 | 3 s | Worker 消息、进度刷新、取消检查；UI 心跳需持续响应 |
 | **合计** | **30 s** | 门禁统计使用 P50；阶段值是分配建议，实测后与 PM 同步，不代表已达成 |
 
-SAM 工作图默认最大边 2048、原 RGBA 16 MiB。模型输入最大边 1024；预处理 RGB float tensor 峰值 12 MiB（1024²×3×4），模型权重预算≤40 MiB，session scratch/cache 上限 160 MiB，embedding≤16 MiB，bitset mask≤0.5 MiB/2048²/部件。12 个部件 bitset≤6 MiB。部位导出串行编码，一个 tight-crop RGBA 输出上限按工作图 16 MiB 计、再加一个 PNG 编码缓冲和一个 ZIP 缓冲；严格计入 M1 archive 限制，不同时保留多份整图副本。SAM 峰值目标≤320 MiB（不含浏览器本身和 M1 原图重复驻留）；超限时返回可恢复 `MEMORY_LIMIT` 并释放临时张量，不自动降尺寸、不悄悄转服务端。模型大小和 session scratch 是预算/准入上限，未对实际所选 artifact 测量前不得宣称满足。4K/8K 输入按 M1 预检及用户授权降采样规则处理；mask 与 bbox 始终对应实际工作图，不能将 2048 上限绕过后仍沿用旧坐标。
+SAM 工作图默认最大边 2048、原 RGBA 16 MiB。模型输入最大边 1024；预处理 RGB float tensor 峰值 12 MiB（1024²×3×4），模型权重预算≤80 MiB（2026-09-30 模型档位 A 定版：fp16 encoder 实测 64.2 MiB + decoder 8.4 MiB，见 `docs/research/2026-09-30-sam2-onnx-model-sources.md`；fp32 WASM 回退档 encoder 128.2 MiB 超此预算，其会话内存表现待真模型冒烟实测后修订本行），session scratch/cache 上限 160 MiB，embedding≤16 MiB，bitset mask≤0.5 MiB/2048²/部件。12 个部件 bitset≤6 MiB。部位导出串行编码，一个 tight-crop RGBA 输出上限按工作图 16 MiB 计、再加一个 PNG 编码缓冲和一个 ZIP 缓冲；严格计入 M1 archive 限制，不同时保留多份整图副本。SAM 峰值目标≤320 MiB（fp16 主档口径，不含浏览器本身和 M1 原图重复驻留；fp32 回退档峰值另行实测）；超限时返回可恢复 `MEMORY_LIMIT` 并释放临时张量，不自动降尺寸、不悄悄转服务端。模型大小和 session scratch 是预算/准入上限，未对实际所选 artifact 测量前不得宣称满足。4K/8K 输入按 M1 预检及用户授权降采样规则处理；mask 与 bbox 始终对应实际工作图，不能将 2048 上限绕过后仍沿用旧坐标。
 
 部位导出吞吐单列测量：tight crop、像素断言、PNG 编码、parts.json/README 生成、ZIP 归档各记时和峰值缓冲；固定输入 RGBA hash、部件数、mask 密度及压缩器版本。导出计入“可导出”功能校验，但 PRD 的 30 秒终点是部位审校就绪，不把 ZIP 下载纳入门禁。非人形锚点也须验证降级路径，但不进入 10 例人形配额。
 

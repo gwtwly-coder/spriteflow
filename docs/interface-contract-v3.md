@@ -1,6 +1,6 @@
 # SpriteFlow v3 segment / rig 公共接口契约
 
-> 版本：0.2.0-r2；日期：2026-09-29；状态：按 PRD v3.0-alpha 对齐，既有 Gate 1 文档验收已通过；当前实现范围与接续见 project-state.md。本文技术条款未因流程迁移而修改。
+> 版本：0.2.1-r3；日期：2026-09-30；状态：按 PRD v3.0-alpha 对齐，既有 Gate 1 文档验收已通过；当前实现范围与接续见 project-state.md。**r3 变更（产品主 2026-09-30 选定模型档位 A 后授权）**：`maxModelBytes` 默认值 41,943,040（40 MiB）→ 83,886,080（80 MiB），依据=实测 SAM 2.1 Hiera-Tiny fp16 encoder 67,313,499 字节（`docs/research/2026-09-30-sam2-onnx-model-sources.md`）；其余条款未变。
 >
 > 本文件定义 `@spriteflow/segment`、`@spriteflow/segment/browser` 与 `@spriteflow/rig` 的公共 API；代码标识符为英文，本文说明为中文。文中代码块是完整的接口声明/调用形状，不是功能实现。
 >
@@ -68,7 +68,7 @@ export interface CharacterLimits {
 export declare const DEFAULT_CHARACTER_LIMITS: Readonly<CharacterLimits>;
 ```
 
-字段默认值：`maxWorkingDimension=2048`、`maxWorkingPixels=4_194_304`、`maxParts=32`、`maxPromptsPerPart=16`、`maxMotionFrames=120`、`maxRenderPixels=67_108_864`、`maxModelBytes=41_943_040`、`maxLlmResponseBytes=1_048_576`、`maxArchiveBytes=268_435_456`（仅 `maxArchiveBytes` 沿用 M1 desktop 上限，其余为 v3 新增限制）。限制对象不可在运行时改变。
+字段默认值：`maxWorkingDimension=2048`、`maxWorkingPixels=4_194_304`、`maxParts=32`、`maxPromptsPerPart=16`、`maxMotionFrames=120`、`maxRenderPixels=67_108_864`、`maxModelBytes=83_886_080`、`maxLlmResponseBytes=1_048_576`、`maxArchiveBytes=268_435_456`（仅 `maxArchiveBytes` 沿用 M1 desktop 上限，其余为 v3 新增限制；`maxModelBytes` 于 r3 自 40 MiB 上调，见版本头注）。限制对象不可在运行时改变。
 
 ```ts
 export interface CharacterProgressEvent {

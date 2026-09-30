@@ -37,9 +37,11 @@ URL（暂用 hf-mirror 占位，正式托管待 R2 就绪替换）：`https://hf
 
 [Pages 官方限制](https://developers.cloudflare.com/pages/platform/limits/)：**单静态资产上限 25 MiB** → 任何 SAM2 encoder（64/128MB）都放不进 Pages。[R2 限制](https://developers.cloudflare.com/r2/platform/limits/)：单对象 5 TiB → 无障碍。浏览器 fetch 需桶配 CORS。先例：WebSAM = Pages 应用 + R2 权重。
 
-## 7. 对架构假设的修正（待产品主裁定）
+## 7. 对架构假设的修正（✅ 已裁定）
 
 technical-design-v3/architecture-v3 的"模型 ~40MB 级"假设与 SAM2.1-Tiny 现实冲突：**fp16 已 64.2MiB（+decoder 8.4MiB ≈ 73MB）**。契约 `maxModelBytes=41,943,040`（40MiB）会拒绝 fp16 encoder。选项：
 - **A（RC 推荐）**：fp16 为主档（约 73MB 一次性下载、CacheAPI 长缓存），质量最优；契约 maxModelBytes 修订 40→80MiB（minor，附本调研）。
 - B：onnx-community q4f16（encoder 27.5MB 达标不动契约），4-bit 质量损失（边缘蒙版质量风险，恰是产品卖点），且外部数据双文件增加缓存复杂度。
 - C：MobileSAM（fp32 原生 ~40MB 达标），质量明显低于 SAM2。
+
+**裁定（2026-09-30 产品主）：选 A。** 已落地：契约 0.2.1-r3（maxModelBytes=83,886,080）；architecture-v3 §6 权重预算行同步；fp16 为主档、fp32 为 WASM 回退档（manifest 四条目哈希已冻结）。R2 托管操作卡已交产品主（见 project-state）。
