@@ -256,6 +256,8 @@ const zh = {
   "model.retry": "重试加载",
   "parts.editor.title": "审校部位",
   "parts.editor.summary": "{count} 个部位",
+  // a11y 画布可访问名（验收 P2-6：替换硬编码英文；登记补录 copy-v3）。
+  "parts.editor.canvas": "部位画布",
   "part.list.title": "部位列表",
   "part.selected": "已选部位：{part}",
   "part.size": "{width}×{height} px",
@@ -620,6 +622,7 @@ Object.assign(en, {
   "model.retry": "Retry loading",
   "parts.editor.title": "Review parts",
   "parts.editor.summary": "{count} parts",
+  "parts.editor.canvas": "Part canvas",
   "part.list.title": "Part list",
   "part.selected": "Selected part: {part}",
   "part.size": "{width}×{height} px",

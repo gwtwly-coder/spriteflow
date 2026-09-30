@@ -6,7 +6,7 @@
 import type { PipelineClient } from "@spriteflow/pipeline";
 import type { BitMask, PartAsset, PartExportResult, SegmentationResult } from "@spriteflow/segment";
 import { CharacterErrorCode, PartKind, SegmentationDegradedReason } from "@spriteflow/segment";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, vi } from "vitest";
 import { App } from "../src/app/App";
@@ -18,6 +18,7 @@ const characterMock = vi.hoisted(() => {
     behavior: {
       run: undefined as (() => unknown) | undefined,
       refine: undefined as (() => unknown) | undefined,
+      prepare: undefined as (() => unknown) | undefined,
     },
     client: undefined as ReturnType<typeof makeFakeCharacterClient> | undefined,
   };
@@ -34,12 +35,15 @@ function makeFakeCharacterClient() {
       if (characterMock.behavior.run) return characterMock.behavior.run();
       return { ok: true as const, result: semanticResult() };
     }),
-    prepare: vi.fn(async () => ({
-      ok: true as const,
-      provider: "wasm" as const,
-      cachedModel: true,
-      webgpuFallback: false,
-    })),
+    prepare: vi.fn(async () => {
+      if (characterMock.behavior.prepare) return characterMock.behavior.prepare();
+      return {
+        ok: true as const,
+        provider: "wasm" as const,
+        cachedModel: true,
+        webgpuFallback: false,
+      };
+    }),
     refine: vi.fn(async () => {
       if (characterMock.behavior.refine) return characterMock.behavior.refine();
       return {
@@ -166,6 +170,7 @@ beforeEach(() => {
   window.sessionStorage.clear();
   characterMock.behavior.run = undefined;
   characterMock.behavior.refine = undefined;
+  characterMock.behavior.prepare = undefined;
   characterMock.client = undefined;
   usePartsStore.getState().resetAll();
   usePartsStore.temporal.getState().clear();
@@ -219,18 +224,10 @@ describe("v3 parts workspace", () => {
     expect(screen.getByText("还没有部位。用“新增部位”点击图中区域。")).toBeTruthy();
     // 加区域 → 画布点击 → refine 正点 → 列表 +1（part_000 起默认名）。
     await user.click(screen.getByRole("button", { name: /新增部位/ }));
-    console.log("TOOL", usePartsStore.getState().tool);
-    const canvas = screen.getByLabelText("Part editor");
+    const canvas = screen.getByLabelText("部位画布");
     const { fireEvent } = await import("@testing-library/react");
     fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
     fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
-    console.log(
-      "REFINE",
-      characterMock.client?.refine.mock.calls.length,
-      JSON.stringify(characterMock.client?.refine.mock.calls[0]),
-      "PARTS",
-      JSON.stringify(usePartsStore.getState().parts.map((p) => p.name)),
-    );
     await screen.findByText("部位 1");
     expect(screen.getByText("部位 1")).toBeTruthy();
     expect((screen.getByRole("button", { name: "导出" }) as HTMLButtonElement).disabled).toBe(
@@ -247,7 +244,7 @@ describe("v3 parts workspace", () => {
     const user = userEvent.setup();
     await reachReviewByClickMode(user);
     await user.click(screen.getByRole("button", { name: /新增部位/ }));
-    const canvas = screen.getByLabelText("Part editor");
+    const canvas = screen.getByLabelText("部位画布");
     const { fireEvent } = await import("@testing-library/react");
     fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
     fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
@@ -272,6 +269,42 @@ describe("v3 parts workspace", () => {
       screen.getByText("可以配置 API Key 自动命名部位，或直接用本地点击模式拆件。"),
     ).toBeTruthy();
     expect(screen.getAllByText("配置语义定位").length).toBeGreaterThan(0);
+  });
+
+  it("returns to the W2 path card instead of a fake progress screen after the key is cleared and rerun (P1-1)", async () => {
+    const user = userEvent.setup();
+    await reachReviewByClickMode(user);
+    // 存 key → 清除 Key（store.byok 仍在、key 已清）。
+    await user.click(firstOf(await screen.findAllByText("配置语义定位")));
+    await user.type(await screen.findByLabelText("API Key"), "sk-test");
+    await user.click(screen.getByRole("button", { name: "保存" }));
+    await user.click(firstOf(await screen.findAllByText("配置语义定位")));
+    await screen.findByText("语义定位设置");
+    await user.click(screen.getByRole("button", { name: "清除 Key" }));
+    // 重新拆件 → 同意 → 不得停在假"正在拆部位"：应回路径选择卡（AC-V06-B）。
+    await user.click(screen.getByRole("button", { name: "重新拆件" }));
+    await screen.findByText("重新拆件并替换当前部位？");
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "重新拆件" }));
+    await screen.findByText("语义定位会把这张图片发送到你配置的 GLM-4V。");
+    await user.click(screen.getByRole("button", { name: "同意并开始拆件" }));
+    await screen.findByText("配置 API Key 后可自动命名部位；不配置也能用本地点击模式拆件。");
+    expect(screen.getByRole("button", { name: "使用点击模式" })).toBeTruthy();
+    expect(characterMock.client?.run).not.toHaveBeenCalled();
+  });
+
+  it("surfaces the WASM fallback hint when prepare reports no WebGPU (P1-2 / AC-V03-B)", async () => {
+    characterMock.behavior.prepare = () => ({
+      ok: true as const,
+      provider: "wasm" as const,
+      cachedModel: true,
+      webgpuFallback: true,
+    });
+    const user = userEvent.setup();
+    await reachReviewByClickMode(user);
+    // 回退提示在审校横幅区持续在场（性能差异，非错误弹出）。
+    expect(
+      screen.getByText("当前浏览器不支持 WebGPU，已切换到兼容模式，速度会慢一些。"),
+    ).toBeTruthy();
   });
 
   it("surfaces non-humanoid degradation verbatim and lands in click mode", async () => {
@@ -357,7 +390,7 @@ describe("v3 parts workspace", () => {
     await user.click(await screen.findByText("使用点击模式"));
     await screen.findByText("审校部位");
     await user.click(screen.getByRole("button", { name: /新增部位/ }));
-    const canvas = screen.getByLabelText("Part editor");
+    const canvas = screen.getByLabelText("部位画布");
     const { fireEvent } = await import("@testing-library/react");
     fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
     fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
@@ -375,7 +408,7 @@ describe("v3 parts workspace", () => {
     const user = userEvent.setup();
     await reachReviewByClickMode(user);
     await user.click(screen.getByRole("button", { name: /新增部位/ }));
-    const canvas = screen.getByLabelText("Part editor");
+    const canvas = screen.getByLabelText("部位画布");
     const { fireEvent } = await import("@testing-library/react");
     fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
     fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
@@ -396,7 +429,7 @@ describe("v3 parts workspace", () => {
     const user = userEvent.setup();
     await reachReviewByClickMode(user);
     await user.click(screen.getByRole("button", { name: /新增部位/ }));
-    const canvas = screen.getByLabelText("Part editor");
+    const canvas = screen.getByLabelText("部位画布");
     const { fireEvent } = await import("@testing-library/react");
     fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
     fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
@@ -417,7 +450,7 @@ describe("v3 parts workspace", () => {
     await user.click(await screen.findByText("使用点击模式"));
     await screen.findByText("审校部位");
     await user.click(screen.getByRole("button", { name: /新增部位/ }));
-    const canvas = screen.getByLabelText("Part editor");
+    const canvas = screen.getByLabelText("部位画布");
     const { fireEvent } = await import("@testing-library/react");
     fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
     fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });

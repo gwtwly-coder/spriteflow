@@ -17,6 +17,8 @@ interface Props {
   sourceSize: { width: number; height: number } | null;
   tool: PartsTool;
   busy: boolean;
+  /** 画布可访问名（i18n 词条，避免硬编码英文）。 */
+  canvasLabel: string;
   canvasBackground: string;
   onImageClick(point: { x: number; y: number }): void;
 }
@@ -146,6 +148,7 @@ export function PartsCanvas({
   sourceSize,
   tool,
   busy,
+  canvasLabel,
   canvasBackground,
   onImageClick,
 }: Props) {
@@ -348,7 +351,7 @@ export function PartsCanvas({
     >
       <canvas
         ref={canvasRef}
-        aria-label="Part editor"
+        aria-label={canvasLabel}
         style={{ cursor }}
         onPointerDown={onDown}
         onPointerMove={onMove}

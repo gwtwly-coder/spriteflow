@@ -40,7 +40,7 @@ export interface PartsSessionState {
   pan: { x: number; y: number };
   mode: PartsMode;
   degraded: PartsDegraded;
-  humanoidWarning: boolean;
+  wasmFallbackWarning: boolean;
   file: PartsFileMeta | null;
   asset: { assetId: string; revision: number } | null;
   preview: PixelBuffer | null;
@@ -87,7 +87,7 @@ const cloneSession = (): PartsSessionState => ({
   pan: { x: 0, y: 0 },
   mode: null,
   degraded: null,
-  humanoidWarning: false,
+  wasmFallbackWarning: false,
   file: null,
   asset: null,
   preview: null,
@@ -132,7 +132,7 @@ export const usePartsStore = create<PartsStore>()(
             selectedPartId: null,
             nextClickIndex: 0,
             mode: result.mode,
-            humanoidWarning: result.warnings.some(
+            wasmFallbackWarning: result.warnings.some(
               (entry) => entry.code === "WEBGPU_FALLBACK_TO_WASM",
             ),
           };

@@ -393,7 +393,9 @@ export function PartsWorkspace({
     setLlmFailure(null);
     const llm = buildLlmConfig();
     if (!llm || !store.byok) {
-      // key 已被清除：回到未配置路径卡片（诚实呈现，不发请求）。
+      // key 已被清除/未配置（AC-V06-B）：撤销 store 里的残留配置，让 W2 路径
+      // 选择卡在本屏出现（两条明确路径），不发任何请求、不留在假进行中。
+      store.setByok(null);
       store.setDegraded("no-key");
       store.setMode("click");
       setBusy(null);
@@ -660,6 +662,7 @@ export function PartsWorkspace({
           modelError={modelError}
           llmFailure={llmFailure}
           semanticAvailable={store.byok !== null}
+          backendWasm={store.backendWasm || store.wasmFallbackWarning}
           onCancel={() => character().cancel()}
           onChooseClick={prepareClick}
           onOpenByok={() => setModal("byok")}
@@ -721,6 +724,9 @@ export function PartsWorkspace({
             store.setByok(config);
             setModal(null);
             notify(t(locale, "llm.saved"));
+            // W2 路径卡上保存后直接交接外发告知（同意 → 拆件），
+            // 不留在无任务的 W2 过程屏（P1-1 同源场景）。
+            if (store.screen === "process" && file !== null) setModal("consent");
           }}
         />
       )}
@@ -737,7 +743,13 @@ export function PartsWorkspace({
           size={store.file?.size ?? null}
           downscale={downscale}
           setDownscale={setDownscale}
-          onClose={() => setModal(null)}
+          onClose={() => {
+            // 同意框取消且无任务在跑（路径卡保存后反悔）：回 W1 定义态，
+            // 不留在无任务的 W2 过程屏。
+            if (modal === "consent" && store.screen === "process" && busy === null)
+              store.setScreen("upload");
+            setModal(null);
+          }}
           onConfirm={() => {
             if (modal === "oversize" || modal === "memory") {
               setModal(null);
@@ -899,6 +911,7 @@ function PartsProcessing({
   modelError,
   llmFailure,
   semanticAvailable,
+  backendWasm,
   onCancel,
   onChooseClick,
   onOpenByok,
@@ -913,6 +926,7 @@ function PartsProcessing({
   modelError: CharacterError | null;
   llmFailure: LlmFailureReason | null;
   semanticAvailable: boolean;
+  backendWasm: boolean;
   onCancel(): void;
   onChooseClick(): void;
   onOpenByok(): void;
@@ -978,9 +992,7 @@ function PartsProcessing({
           <>
             {semanticAvailable && (
               <p className={`phase ${inLlm ? "current" : ""}`}>
-                {inLlm
-                  ? t(locale, "parts.detect.llm", { provider: providerLabel })
-                  : t(locale, "parts.detect.llm", { provider: providerLabel })}
+                {t(locale, "parts.detect.llm", { provider: providerLabel })}
               </p>
             )}
             <p className={`phase ${inModel ? "current" : ""}`}>
@@ -994,6 +1006,10 @@ function PartsProcessing({
             <p className={`phase ${inFinal ? "current" : ""}`}>
               {t(locale, "parts.detect.finalizing")}
             </p>
+            {backendWasm && (
+              // AC-V03-B：WebGPU 不可用回退须提示性能差异，不作为错误弹出。
+              <p className="muted">{t(locale, "model.backend_wasm")}</p>
+            )}
             <progress
               value={progress?.totalUnits === null ? undefined : percent}
               max="100"
@@ -1176,11 +1192,18 @@ function PartsReview({
               </button>
             </div>
           )}
+          {(store.backendWasm || store.wasmFallbackWarning) && (
+            // AC-V03-B：回退提示在审校屏持续在场（性能差异，非错误）。
+            <div className="warning-banner">
+              <span>{t(locale, "model.backend_wasm")}</span>
+            </div>
+          )}
           <PartsCanvas
             preview={preview}
             sourceSize={store.workingSize}
             tool={store.tool}
             busy={busy || !modelReady}
+            canvasLabel={t(locale, "parts.editor.canvas")}
             canvasBackground="var(--parts-canvas-bg, var(--bg-0))"
             onImageClick={onCanvasClick}
           />
@@ -1201,7 +1224,6 @@ function PartsReview({
               />{" "}
               {t(locale, "parts.mask_highlight")}
             </label>
-            {store.humanoidWarning && <small>{t(locale, "model.backend_wasm")}</small>}
           </section>
           <section>
             <h2>{t(locale, "part.list.title")}</h2>
