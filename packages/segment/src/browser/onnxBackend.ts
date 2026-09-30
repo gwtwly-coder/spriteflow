@@ -320,7 +320,9 @@ export class OnnxSamBackend implements SamInferenceBackend {
     // floats; labels are int64.
     const scaleX = decoderManifest.inputSize.width / embedding.assetWidth;
     const scaleY = decoderManifest.inputSize.height / embedding.assetHeight;
-    const box: Rect | null = prompt.type === "box" ? prompt.box : null;
+    // Both branches narrow the SamPrompt discriminant so `.box` is accessible on
+    // every member; a points prompt may carry an optional accompanying box.
+    const box: Rect | null = prompt.type === "box" ? prompt.box : prompt.box;
     const scaled = (value: number, scale: number) => value * scale;
     type PromptPoint = {
       point: { x: number; y: number };
