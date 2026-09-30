@@ -422,7 +422,7 @@ describe("consent and configuration gates", () => {
     ["empty api key", { ...PROVIDER, apiKey: "" }],
     ["api key over 4096 chars", { ...PROVIDER, apiKey: "k".repeat(4_097) }],
     ["timeout below range", { ...PROVIDER, timeoutMs: 999 }],
-    ["timeout above range", { ...PROVIDER, timeoutMs: 8_001 }],
+    ["timeout above range", { ...PROVIDER, timeoutMs: 120_001 }],
     ["fractional timeout", { ...PROVIDER, timeoutMs: 4_000.5 }],
     ["maxResponseBytes zero", { ...PROVIDER, maxResponseBytes: 0 }],
     ["maxResponseBytes over cap", { ...PROVIDER, maxResponseBytes: 1_048_577 }],

@@ -215,7 +215,10 @@ export function PartsWorkspace({
       endpoint: store.byok.endpoint,
       model: store.byok.model,
       apiKey: stored.key,
-      timeoutMs: 8000,
+      // r5 (2026-10-01): measured GLM-4V-flash round trips on golden payloads run
+      // 12-23 s; the contract cap was raised to 120 s and the app default to 60 s
+      // so real VLM calls are no longer aborted at 8 s.
+      timeoutMs: 60_000,
       maxResponseBytes: 1_048_576,
       // 契约上限 4,096 为默认；glm-4v-flash 等服务商上限更低的模型取实测档
       // （2026-10-01 RC 走查 P1：固定 4,096 被 z.ai 快速 400/1210 拒绝，

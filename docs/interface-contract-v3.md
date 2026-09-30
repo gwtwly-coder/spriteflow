@@ -1,6 +1,6 @@
 # SpriteFlow v3 segment / rig 公共接口契约
 
-> 版本：0.2.2-r4；日期：2026-09-30；状态：按 PRD v3.0-alpha 对齐，既有 Gate 1 文档验收已通过；当前实现范围与接续见 project-state.md。**r3 变更（产品主 2026-09-30 选定模型档位 A 后授权）**：`maxModelBytes` 默认值 41,943,040（40 MiB）→ 83,886,080（80 MiB），依据=实测 SAM 2.1 Hiera-Tiny fp16 encoder 67,313,499 字节（`docs/research/2026-09-30-sam2-onnx-model-sources.md`）。**r4 变更（browser 适配独立验收 P1 裁定，RC 2026-09-30）**：①`mergePromptMask` 移出 v3.0-alpha 公共表面（推迟至有真实调用方的版本）——alpha 交互流由 `SamSession.segment` 重推理返回整幅替换蒙版 + `applyMaskEdits` 手工像素编辑完全覆盖，该函数语义未定义且无调用方；②§10 `messageKey` 枚举补 `character.degradation.<REASON>`（`SegmentationDegradation` 专用，与 error/warning 三者并列）。供给策略同步定版：**fp16 单档上架**（WASM 回退沿用 fp16 工件，PRD AC-V03-B 只要求回退可用），fp32 工件不上架（哈希仍记录于研究文档）。
+> 版本：0.2.2-r5；日期：2026-10-01；状态：按 PRD v3.0-alpha 对齐，既有 Gate 1 文档验收已通过；当前实现范围与接续见 project-state.md。**r3 变更（产品主 2026-09-30 选定模型档位 A 后授权）**：`maxModelBytes` 默认值 41,943,040（40 MiB）→ 83,886,080（80 MiB），依据=实测 SAM 2.1 Hiera-Tiny fp16 encoder 67,313,499 字节（`docs/research/2026-09-30-sam2-onnx-model-sources.md`）。**r4 变更（browser 适配独立验收 P1 裁定，RC 2026-09-30）**：①`mergePromptMask` 移出 v3.0-alpha 公共表面（推迟至有真实调用方的版本）——alpha 交互流由 `SamSession.segment` 重推理返回整幅替换蒙版 + `applyMaskEdits` 手工像素编辑完全覆盖，该函数语义未定义且无调用方；②§10 `messageKey` 枚举补 `character.degradation.<REASON>`（`SegmentationDegradation` 专用，与 error/warning 三者并列）。供给策略同步定版：**fp16 单档上架**（WASM 回退沿用 fp16 工件，PRD AC-V03-B 只要求回退可用），fp32 工件不上架（哈希仍记录于研究文档）。**r5 变更（RC 2026-10-01，真浏览器走查实测依据）**：§3 `timeoutMs` 上限 8,000→120,000ms——GLM-4V-flash 对黄金人物载荷实测往返 12–23s（relay 日志留痕），旧上限把每次真实调用都在 8s 中止并误判为网络类；应用默认 60s。
 >
 > 本文件定义 `@spriteflow/segment`、`@spriteflow/segment/browser` 与 `@spriteflow/rig` 的公共 API；代码标识符为英文，本文说明为中文。文中代码块是完整的接口声明/调用形状，不是功能实现。
 >
@@ -418,7 +418,7 @@ export declare function locatePartsWithLlm(
 
 响应必须是单个符合 `LlmLocateDocument` 的 JSON 对象；parser 可剥离首尾一组 Markdown code fence，但不能从任意自然语言中猜字段。`schemaVersion`、coordinateSpace、封闭 `PartKind`、confidence [0,1]、框坐标/范围、部位数、重复部位组合任一校验失败，都算一次可修复的 JSON/schema 错误。第一次输出无法 parse/validate 时，最多发一次修复请求：保留 model/温度/token 上限，只包含 schema、原始文本截断片段和字段错误摘要；不得再次发送图像。第二次仍非法返回 `LLM_INVALID_RESPONSE`。401/403、429、5xx、网络/CORS、timeout、cancel、响应超限不触发 JSON 修复；不自动重试收费请求。错误不得带 authorization、key、图像 dataUrl 或未经截断的 provider body。
 
-`timeoutMs` 有效范围 1,000…8,000，`maxResponseBytes` 为 1…1,048,576 且不超过 context 限制，`maxOutputTokens` 为 128…4,096；endpoint 总长≤2,048 个字符、model 非空且≤128、apiKey 非空且≤4,096。请求 endpoint 是完整 `/chat/completions` URL。`userConsent` 只有字面量 true 合法；`SemanticSegmentationRequest.llmConsent=false` 时 `segmentSemantically` 不得调用 LlmTransport，直接进入 click mode，并返回 `LLM_UNAVAILABLE` degradation。未经同意缺失/配置不合法不会发送网络请求。
+`timeoutMs` 有效范围 1,000…120,000（r5：自 8,000 上调——2026-10-01 实测 GLM-4V-flash 对黄金人物载荷的往返为 12–23s，旧上限必然中止真实调用），`maxResponseBytes` 为 1…1,048,576 且不超过 context 限制，`maxOutputTokens` 为 128…4,096；endpoint 总长≤2,048 个字符、model 非空且≤128、apiKey 非空且≤4,096。请求 endpoint 是完整 `/chat/completions` URL。`userConsent` 只有字面量 true 合法；`SemanticSegmentationRequest.llmConsent=false` 时 `segmentSemantically` 不得调用 LlmTransport，直接进入 click mode，并返回 `LLM_UNAVAILABLE` degradation。未经同意缺失/配置不合法不会发送网络请求。
 
 人形置信低于 `minimumPartConfidence`、显式判断 `non-humanoid` 或 LLM 任一最终失败时，不生成伪语义部件；返回 `mode="click"` 和相应 degradation，让用户以 SAM 点击建立匿名/手工命名部件。局部合法部位在整份 LLM 结果验证前不能部分覆盖旧结果。
 

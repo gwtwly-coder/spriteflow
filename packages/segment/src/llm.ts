@@ -29,7 +29,9 @@ import {
 // --- Contract ranges (section 3, :421) ----------------------------------------
 
 const TIMEOUT_MS_MIN = 1_000;
-const TIMEOUT_MS_MAX = 8_000;
+// r5 (2026-10-01): raised from 8_000 — measured GLM-4V-flash round trips on the
+// golden character payload run 12-23 s; the old cap aborted every real call.
+const TIMEOUT_MS_MAX = 120_000;
 const MAX_RESPONSE_BYTES_MIN = 1;
 const MAX_RESPONSE_BYTES_MAX = 1_048_576;
 const MAX_OUTPUT_TOKENS_MIN = 128;

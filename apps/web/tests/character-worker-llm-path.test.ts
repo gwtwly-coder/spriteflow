@@ -247,7 +247,7 @@ function llmConfig(model: string) {
     endpoint: "http://localhost:8787/chat/completions",
     model,
     apiKey: "zai-key-unit-test",
-    timeoutMs: 8000,
+    timeoutMs: 60_000,
     maxResponseBytes: 1_048_576,
     maxOutputTokens: maxOutputTokensForModel(model),
   };
