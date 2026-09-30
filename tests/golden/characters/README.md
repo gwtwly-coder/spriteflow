@@ -33,5 +33,5 @@
 ## Ground truth 标注（状态）
 
 - [x] 素材入库与机械验收（本 README）
-- [x] 每例 `ground-truth.json`：期望部位集合（name/kind/bbox 容差）+ 期望路径（正常拆件 / 非人形降级）——已标注（本轮）；口径 = PRD 像素不变量三断言与 AC-V07，部位 kind 取 interface-contract PartKind 24 值，bbox 经 PIL 行投影/x-run 机械校准
+- [x] 每例 `ground-truth.json`：期望部位集合（name/kind/bbox 容差）+ 期望路径（正常拆件 / 非人形降级）——已标注（本轮）；复核裁决 PASS（docs/acceptance/golden-characters-truth-verdict-1.md），3×P1+4×P2 已修复（05 腿部左右互换、10 腿框下移、10 head/note 一致性、01 腿段校准、09/03 措辞）；口径 = PRD 像素不变量三断言与 AC-V07，kind 取 interface-contract PartKind 24 值，bbox 经 PIL 行投影/x-run 机械校准
 - [ ] 回归 harness 接入（断言：容差内部位匹配 + 三断言 + 锚点降级路径）

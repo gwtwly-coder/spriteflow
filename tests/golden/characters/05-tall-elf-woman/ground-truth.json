@@ -131,30 +131,42 @@
       "name": "thigh-right",
       "kind": "thigh-right",
       "bbox": {
-        "x": 543,
-        "y": 543,
-        "width": 158,
-        "height": 358
-      },
-      "tolerance": 100,
-      "note": "高开衩处裸露前腿"
-    },
-    {
-      "name": "thigh-left",
-      "kind": "thigh-left",
-      "bbox": {
         "x": 638,
         "y": 578,
         "width": 125,
         "height": 323
       },
       "tolerance": 100,
-      "note": "几乎完全被裙衩内衬遮挡，bbox 按裙下位置估标",
+      "note": "几乎完全被裙衩内衬遮挡（隐藏腿），bbox 按裙下位置估标",
       "visible": false
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 543,
+        "y": 543,
+        "width": 158,
+        "height": 358
+      },
+      "tolerance": 100,
+      "note": "高开衩处裸露前腿；复核实测其前脚（踝 x≈623–687）在双脚中偏画面右，属解剖学左腿"
     },
     {
       "name": "shin-right",
       "kind": "shin-right",
+      "bbox": {
+        "x": 545,
+        "y": 850,
+        "width": 156,
+        "height": 341
+      },
+      "tolerance": 110,
+      "note": "大部分被裙摆/前腿遮挡，仅足部自裙后画面左侧探出（实测 x≈567–620，y≈1027–1090）"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
       "bbox": {
         "x": 533,
         "y": 858,
@@ -162,20 +174,8 @@
         "height": 396
       },
       "tolerance": 110,
-      "note": "赤足/便鞋，胫骨裸露"
-    },
-    {
-      "name": "shin-left",
-      "kind": "shin-left",
-      "bbox": {
-        "x": 628,
-        "y": 858,
-        "width": 150,
-        "height": 396
-      },
-      "tolerance": 110,
-      "note": "被前腿与裙摆部分遮挡，下段与足可见"
+      "note": "赤足/便鞋，胫骨裸露；前脚连本腿（踝 x≈623–687），足尖延伸至图底"
     }
   ],
-  "rationale": "标准绑骨件 14 件：hair 独立拆分（验证例之二）；礼服为 other；被遮挡的左大腿标 visible:false。"
+  "rationale": "标准绑骨件 14 件：hair 独立拆分；礼服为 other。修订（复核第1轮 P1-1）：开衩裸腿实为解剖学左腿——双脚未交叉，前脚中心 x≈655 在画面偏右＝解剖学左，探出后脚 x≈594 偏左＝解剖学右；四腿框已左右互换，shin-right 按实测重测为 x545–700/y850–1190 以罩住唯一可见的探出脚。"
 }

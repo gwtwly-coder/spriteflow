@@ -98,7 +98,7 @@
         "x": 460,
         "y": 860,
         "width": 151,
-        "height": 211
+        "height": 135
       },
       "tolerance": 96
     },
@@ -109,7 +109,7 @@
         "x": 660,
         "y": 860,
         "width": 151,
-        "height": 211
+        "height": 135
       },
       "tolerance": 96
     },
@@ -118,9 +118,9 @@
       "kind": "shin-right",
       "bbox": {
         "x": 455,
-        "y": 1050,
+        "y": 985,
         "width": 141,
-        "height": 141
+        "height": 205
       },
       "tolerance": 90,
       "note": "含白色袜/护腿"
@@ -130,9 +130,9 @@
       "kind": "shin-left",
       "bbox": {
         "x": 675,
-        "y": 1050,
+        "y": 985,
         "width": 141,
-        "height": 141
+        "height": 205
       },
       "tolerance": 90,
       "note": "含黑色袜/护腿"
@@ -142,9 +142,9 @@
       "kind": "foot-right",
       "bbox": {
         "x": 465,
-        "y": 1165,
+        "y": 1155,
         "width": 136,
-        "height": 89
+        "height": 98
       },
       "tolerance": 80,
       "note": "黑色短靴"
@@ -154,13 +154,13 @@
       "kind": "foot-left",
       "bbox": {
         "x": 660,
-        "y": 1165,
+        "y": 1155,
         "width": 141,
-        "height": 89
+        "height": 98
       },
       "tolerance": 80,
       "note": "黑色短靴"
     }
   ],
-  "rationale": "Q版粗拆：标准绑骨件 head/hair/torso/双臂/双手/双腿/双脚 13 件；五官并入 head，配饰并入 hair，袖内前臂并入上臂。"
+  "rationale": "Q版粗拆：标准绑骨件 head/hair/torso/双臂/双手/双腿/双脚 13 件；五官并入 head，配饰并入 hair，袖内前臂并入上臂。 修订（复核第1轮 P2-1）：腿部三段框按 20px 带实测整体校准——shin 上缘 1050→985 对齐袜口（白袜实测 y≈975–1060）、foot 上缘 1165→1155 对齐靴顶、thigh 下缘 1070→995，改动幅度 10–85px。"
 }

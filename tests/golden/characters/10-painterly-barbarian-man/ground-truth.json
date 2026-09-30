@@ -13,13 +13,13 @@
       "name": "head",
       "kind": "head",
       "bbox": {
-        "x": 535,
+        "x": 500,
         "y": 5,
-        "width": 241,
-        "height": 206
+        "width": 306,
+        "height": 361
       },
-      "tolerance": 80,
-      "note": "长发+络腮胡并入 head（面部毛发不单独拆）"
+      "tolerance": 120,
+      "note": "长发+络腮胡并入 head（面部毛发不单独拆）；修订：框下延 y211→365 以含垂至胸前的双辫与披发（实测发梢 y≈300–350），容差 80→120，使按 note 拆框的预测可匹配"
     },
     {
       "name": "fur-mantle",
@@ -50,12 +50,12 @@
       "kind": "other",
       "bbox": {
         "x": 423,
-        "y": 538,
+        "y": 500,
         "width": 425,
-        "height": 365
+        "height": 403
       },
       "tolerance": 110,
-      "note": "破烂腰布/裙甲；PartKind 无裙装类，按契约用 other"
+      "note": "破烂腰布/裙甲；PartKind 无裙装类，按契约用 other；修订：上缘 538→500 对齐实测腰带下缘露出的布顶（y≈465–505）"
     },
     {
       "name": "upper-arm-right",
@@ -133,50 +133,50 @@
       "name": "thigh-right",
       "kind": "thigh-right",
       "bbox": {
-        "x": 373,
-        "y": 798,
-        "width": 200,
-        "height": 235
+        "x": 428,
+        "y": 668,
+        "width": 158,
+        "height": 238
       },
       "tolerance": 100,
-      "note": "裸露大腿"
+      "note": "裸露大腿；修订：框上移 y798–1033→668–905（原上缘落在膝盖、约7成罩在靴毛口上；实测画面左裸腿自腰布破烂下缘 y≈620–690 至膝 y≈850–870）"
     },
     {
       "name": "thigh-left",
       "kind": "thigh-left",
       "bbox": {
-        "x": 628,
-        "y": 798,
-        "width": 250,
-        "height": 235
+        "x": 655,
+        "y": 668,
+        "width": 201,
+        "height": 238
       },
       "tolerance": 100,
-      "note": "裸露大腿，部分被腰布遮挡"
+      "note": "裸露大腿，部分被腰布遮挡；修订：框上移同 thigh-right（实测画面右裸腿 y≈640–870）"
     },
     {
       "name": "shin-right",
       "kind": "shin-right",
       "bbox": {
         "x": 328,
-        "y": 968,
-        "width": 220,
-        "height": 286
+        "y": 840,
+        "width": 233,
+        "height": 414
       },
       "tolerance": 110,
-      "note": "毛口皮绑腿靴，脚并入靴"
+      "note": "毛口皮绑腿靴，脚并入靴；修订：上缘 968→840 对齐实测靴毛口顶缘（y≈840–850），x 放宽至 560 以含毛口外缘（实测 y880–960 段 x381–561）"
     },
     {
       "name": "shin-left",
       "kind": "shin-left",
       "bbox": {
-        "x": 698,
-        "y": 968,
-        "width": 225,
-        "height": 286
+        "x": 635,
+        "y": 840,
+        "width": 291,
+        "height": 414
       },
       "tolerance": 110,
-      "note": "毛口皮绑腿靴，脚并入靴"
+      "note": "毛口皮绑腿靴，脚并入靴；修订：上缘 968→840 同 shin-right，x698→635 以含毛口外缘（实测 y880–960 段 x637–866）"
     }
   ],
-  "rationale": "标准绑骨件 14 件：hair/胡须并入 head；毛皮披为 accessory、腰布为 other；脚并入靴。"
+  "rationale": "标准绑骨件 14 件：hair/胡须并入 head；毛皮披为 accessory、腰布为 other；脚并入靴。修订（复核第1轮 P1-2/P1-3/P2-2/P2-4）：双大腿框上移 130px 至 y668–905（原框罩在靴毛口上、对正确输出超差 108–158）；双小腿框上缘 968→840 对齐靴毛口顶缘；head 框下延至 y365 并放宽容差至 120 以与“长发并入 head”的 note 一致；loincloth 上缘 538→500。"
 }
