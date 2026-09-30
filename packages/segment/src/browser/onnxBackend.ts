@@ -95,6 +95,14 @@ function loadError(code: Code, details: CharacterError["details"]): SamModelLoad
   return new SamModelLoadError(characterError(code, Stage.ModelInitialize, { details }));
 }
 
+// RC-measured decoder details not expressible in the contract manifest shape
+// (2026-09-30, real fp16 artifacts): the mask-refinement memory grid is fixed
+// at 256×256; v3.0 never feeds a previous mask so input_masks is always zeros
+// with has_mask_input=0. object_score_logits [1,1] is produced but unused.
+const SAM_MASK_GRID = 256;
+const SAM_DECODER_MASKS_INPUT = "input_masks";
+const SAM_DECODER_HAS_MASK_INPUT = "has_mask_input";
+
 function inferenceError(stage: Stage, details?: CharacterError["details"]): SamModelLoadError {
   return new SamModelLoadError(characterError(Code.InferenceUnavailable, stage, { details }));
 }
@@ -305,20 +313,28 @@ export class OnnxSamBackend implements SamInferenceBackend {
     embedding: EmbeddingState,
     decoderManifest: SamModelManifest,
   ): Promise<Record<string, OrtTensorLike>> {
+    // RC-measured decoder graph (2026-09-30, real fp16 artifacts): the prompt
+    // travels entirely through input_points/input_labels — there is no
+    // dedicated box input. A box is encoded as its two corners with SAM labels
+    // 2 (top-left) and 3 (bottom-right). Coordinates are 1024-grid absolute
+    // floats; labels are int64.
     const scaleX = decoderManifest.inputSize.width / embedding.assetWidth;
     const scaleY = decoderManifest.inputSize.height / embedding.assetHeight;
     const box: Rect | null = prompt.type === "box" ? prompt.box : prompt.box;
     const scaled = (value: number, scale: number) => value * scale;
-    const rawPoints = [...prompt.points];
-    if (box !== null && rawPoints.length === 0) {
-      // SAM convention: a box prompt is the two corners (top-left, bottom-right)
-      // when no explicit points accompany it.
+    type PromptPoint = {
+      point: { x: number; y: number };
+      label: "positive" | "negative" | "boxTopLeft" | "boxBottomRight";
+    };
+    const rawPoints: PromptPoint[] = [...prompt.points];
+    if (box !== null) {
+      // Inclusive corners of the half-open rect: pixel indices run x..x+width-1,
+      // so the bottom-right corner is conservative at x+width-1 (never exceeds
+      // the box's true extent; the measured corner-point runs reached coverage
+      // 1.000 on the synthetic square).
       rawPoints.push(
-        { point: { x: box.x, y: box.y }, label: "positive" },
-        {
-          point: { x: box.x + box.width - 1, y: box.y + box.height - 1 },
-          label: "positive",
-        },
+        { point: { x: box.x, y: box.y }, label: "boxTopLeft" },
+        { point: { x: box.x + box.width - 1, y: box.y + box.height - 1 }, label: "boxBottomRight" },
       );
     }
     const count = Math.max(1, rawPoints.length);
@@ -329,7 +345,14 @@ export class OnnxSamBackend implements SamInferenceBackend {
       if (entry === undefined) continue;
       pointData[index * 2] = scaled(entry.point.x, scaleX);
       pointData[index * 2 + 1] = scaled(entry.point.y, scaleY);
-      labelData[index] = entry.label === "positive" ? 1n : 0n;
+      labelData[index] =
+        entry.label === "positive"
+          ? 1n
+          : entry.label === "boxTopLeft"
+            ? 2n
+            : entry.label === "boxBottomRight"
+              ? 3n
+              : 0n;
     }
     if (rawPoints.length === 0) {
       // No points and no box: feed the origin so the decoder sees a valid tensor.
@@ -337,24 +360,26 @@ export class OnnxSamBackend implements SamInferenceBackend {
       pointData[1] = 0;
       labelData[0] = 1n;
     }
-    const boxData = new Float32Array(4);
-    if (box !== null) {
-      boxData[0] = scaled(box.x, scaleX);
-      boxData[1] = scaled(box.y, scaleY);
-      boxData[2] = scaled(box.x + box.width - 1, scaleX);
-      boxData[3] = scaled(box.y + box.height - 1, scaleY);
-    }
     const feeds: Record<string, OrtTensorLike> = { ...embedding.outputs };
     feeds[decoderManifest.promptInputNames.points] = new makeTensor("float32", pointData, [
+      1,
       1,
       count,
       2,
     ]);
     feeds[decoderManifest.promptInputNames.pointLabels] = new makeTensor("int64", labelData, [
       1,
+      1,
       count,
     ]);
-    feeds[decoderManifest.promptInputNames.box] = new makeTensor("float32", boxData, [1, 4]);
+    // Mask-refinement memory: v3.0 never feeds a previous mask, so every run
+    // sends zeros together with has_mask_input=0 (measured first-run semantic).
+    feeds[SAM_DECODER_MASKS_INPUT] = new makeTensor(
+      "float32",
+      new Float32Array(SAM_MASK_GRID * SAM_MASK_GRID),
+      [1, 1, SAM_MASK_GRID, SAM_MASK_GRID],
+    );
+    feeds[SAM_DECODER_HAS_MASK_INPUT] = new makeTensor("float32", new Float32Array([0]), [1]);
     return feeds;
   }
 

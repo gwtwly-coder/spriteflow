@@ -123,6 +123,7 @@ export interface FakeOrtHandle {
   module: OrtModuleLike;
   created: Array<{ providers: string[]; numThreads: number | undefined }>;
   released: number;
+  encoderFeeds: Array<Record<string, OrtTensorLike>>;
   decoderFeeds: Array<Record<string, OrtTensorLike>>;
 }
 
@@ -131,6 +132,7 @@ export function fakeOrt(options: FakeOrtOptions = {}): FakeOrtHandle {
     module: null as unknown as OrtModuleLike,
     created: [],
     released: 0,
+    encoderFeeds: [],
     decoderFeeds: [],
   };
   let successfulCreates = 0;
@@ -139,28 +141,44 @@ export function fakeOrt(options: FakeOrtOptions = {}): FakeOrtHandle {
       async run(feeds: Record<string, OrtTensorLike>) {
         if (sessionIndex === 0) {
           if (options.encoderRunError) throw options.encoderRunError;
-          // Encoder: echo one embedding output for the decoder feeds.
+          handle.encoderFeeds.push(feeds);
+          // Encoder outputs carry the RC-measured names (2026-09-30); spatial
+          // dims are shrunk for tests, the backend passes all three through.
           return {
-            image_embeddings: new FakeTensor(
+            "image_embeddings.0": new FakeTensor(
               "float32",
-              new Float32Array([0.1, 0.2, 0.3]),
-              [1, 1, 3],
+              new Float32Array([0.1, 0.2, 0.3, 0.4]),
+              [1, 4, 1, 1],
             ),
+            "image_embeddings.1": new FakeTensor(
+              "float32",
+              new Float32Array([0.5, 0.6]),
+              [1, 2, 1, 1],
+            ),
+            "image_embeddings.2": new FakeTensor("float32", new Float32Array([0.7]), [1, 1, 1, 1]),
           };
         }
         if (options.decoderRunError) throw options.decoderRunError;
+        // Fail fast when the backend does not supply the full measured feed set.
+        const required = ["input_points", "input_labels", "input_masks", "has_mask_input"];
+        const missing = required.filter((key) => feeds[key] === undefined);
+        if (missing.length > 0) throw new Error(`decoder feeds missing: ${missing.join(",")}`);
         handle.decoderFeeds.push(feeds);
         const grid = options.decoderGrid ?? { width: 4, height: 4 };
         const logits = options.decoderLogits ?? [];
-        const scores = options.scores ?? [0.9];
+        const baseScores = options.scores ?? [0.9];
+        // Real decoder emits 4 mask hypotheses [1,4,256,256]; the fake repeats
+        // the scripted logits on every plane so argmax always agrees.
+        const count = Math.max(1, baseScores.length);
+        const scores = Float32Array.from({ length: count }, (_, index) => baseScores[index] ?? 0);
+        const plane = Float32Array.from(
+          logits.length > 0 ? logits : new Float32Array(grid.width * grid.height),
+        );
+        const masksData = new Float32Array(count * plane.length);
+        for (let index = 0; index < count; index++) masksData.set(plane, index * plane.length);
         return {
-          masks: new FakeTensor("float32", Float32Array.from(logits), [
-            1,
-            1,
-            grid.height,
-            grid.width,
-          ]),
-          iou_predictions: new FakeTensor("float32", Float32Array.from(scores), [1, scores.length]),
+          pred_masks: new FakeTensor("float32", masksData, [1, count, grid.height, grid.width]),
+          iou_scores: new FakeTensor("float32", scores, [1, count]),
         };
       },
       async release() {
@@ -199,6 +217,7 @@ export function syntheticManifest(
   byteLength: number,
   sha256: string,
 ): SamModelManifest {
+  // Tensor names mirror the RC-measured real fp16 graphs (2026-09-30).
   return {
     modelId,
     revision: "test-v1",
@@ -207,9 +226,9 @@ export function syntheticManifest(
     byteLength,
     inputSize: { width: 4, height: 4 },
     maxSourceDimension: 8,
-    imageInputName: "image",
-    promptInputNames: { box: "box_coords", points: "point_coords", pointLabels: "point_labels" },
-    outputNames: { masks: "masks", scores: "iou_predictions" },
+    imageInputName: "pixel_values",
+    promptInputNames: { box: "input_points", points: "input_points", pointLabels: "input_labels" },
+    outputNames: { masks: "pred_masks", scores: "iou_scores" },
     licenseId: "apache-2.0",
   };
 }

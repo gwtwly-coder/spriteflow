@@ -6,6 +6,7 @@ import { getMaskBit } from "../src/bitmask.js";
 import {
   createOnnxSamBackendWithDeps,
   type OnnxSamBackendDeps,
+  type OrtTensorLike,
 } from "../src/browser/onnxBackend.js";
 import { createSamSession } from "../src/session.js";
 import { CharacterWarningCode, CharacterErrorCode as Code } from "../src/types.js";
@@ -135,14 +136,38 @@ describe("OnnxSamBackend embed and infer", () => {
     }
     const feeds = ort.decoderFeeds[0];
     expect(feeds).toBeDefined();
-    const points = feeds?.point_coords;
+    // Measured decoder feed set: three passthrough embeddings + prompt tensors
+    // + first-run mask memory.
+    expect(Object.keys(feeds as Record<string, OrtTensorLike>).sort()).toEqual([
+      "has_mask_input",
+      "image_embeddings.0",
+      "image_embeddings.1",
+      "image_embeddings.2",
+      "input_labels",
+      "input_masks",
+      "input_points",
+    ]);
+    const points = feeds?.input_points;
     expect(points?.data).toBeInstanceOf(Float32Array);
-    expect(Array.from(points?.data as Float32Array)).toEqual([3, 2]);
-    const labels = feeds?.point_labels;
-    expect(Array.from(labels?.data as BigInt64Array)).toEqual([1n]);
+    expect(points?.dims).toEqual([1, 1, 1, 2]); // measured [1,1,N,2] grid coords
+    expect(Array.from(points?.data as Float32Array)).toEqual([3, 2]); // (6,4) scaled to the 4x4 grid
+    const labels = feeds?.input_labels;
+    expect(labels?.dims).toEqual([1, 1, 1]);
+    expect(Array.from(labels?.data as BigInt64Array)).toEqual([1n]); // int64 positive label
+    const maskMemory = feeds?.input_masks;
+    expect(maskMemory?.dims).toEqual([1, 1, 256, 256]);
+    expect(Array.from(maskMemory?.data as Float32Array).every((v) => v === 0)).toBe(true);
+    const hasMask = feeds?.has_mask_input;
+    expect(hasMask?.dims).toEqual([1]);
+    expect(Array.from(hasMask?.data as Float32Array)).toEqual([0]);
+    // The encoder was fed through the measured pixel_values input.
+    const encoderFeeds = ort.encoderFeeds[0];
+    expect(Object.keys(encoderFeeds as Record<string, OrtTensorLike>)).toEqual(["pixel_values"]);
+    expect(encoderFeeds?.pixel_values?.dims).toEqual([1, 3, 4, 4]);
+    expect(encoderFeeds?.pixel_values?.data).toBeInstanceOf(Float32Array);
   });
 
-  it("sends box corners when a box prompt has no explicit points", async () => {
+  it("sends box corners with SAM labels 2/3 when a box prompt has no explicit points", async () => {
     const model = await syntheticModel();
     const ort = fakeOrt({ decoderLogits: HALF_POSITIVE_LOGITS, scores: [0.5] });
     const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
@@ -153,8 +178,35 @@ describe("OnnxSamBackend embed and infer", () => {
       context(),
     );
     const feeds = ort.decoderFeeds[0];
-    const points = Array.from(feeds?.point_coords?.data as Float32Array);
-    expect(points).toEqual([1, 1, 2.5, 2.5]);
+    const points = feeds?.input_points;
+    expect(points?.dims).toEqual([1, 1, 2, 2]);
+    // Inclusive half-open corners (2,2)..(5,5) scaled to the 4x4 grid.
+    expect(Array.from(points?.data as Float32Array)).toEqual([1, 1, 2.5, 2.5]);
+    expect(Array.from(feeds?.input_labels?.data as BigInt64Array)).toEqual([2n, 3n]);
+  });
+
+  it("appends box corners after explicit points with labels 2/3", async () => {
+    const model = await syntheticModel();
+    const ort = fakeOrt({ decoderLogits: HALF_POSITIVE_LOGITS, scores: [0.9, 0.1] });
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    await backend.create(model.encoderManifest, "wasm");
+    await backend.embed(asset(8, 8), model.encoderManifest, context());
+    await backend.infer(
+      {
+        type: "points",
+        points: [
+          { point: { x: 1, y: 1 }, label: "positive" },
+          { point: { x: 6, y: 6 }, label: "negative" },
+        ],
+        box: { x: 2, y: 2, width: 4, height: 4 },
+      },
+      context(),
+    );
+    const feeds = ort.decoderFeeds[0];
+    const points = feeds?.input_points;
+    expect(points?.dims).toEqual([1, 1, 4, 2]);
+    expect(Array.from(points?.data as Float32Array)).toEqual([0.5, 0.5, 3, 3, 1, 1, 2.5, 2.5]);
+    expect(Array.from(feeds?.input_labels?.data as BigInt64Array)).toEqual([1n, 0n, 2n, 3n]);
   });
 
   it("maps decoder failures to INFERENCE_UNAVAILABLE", async () => {

@@ -81,6 +81,18 @@ describe("getApprovedSamManifest", () => {
     expect(getApprovedSamManifest("sam2.1-hiera-tiny-decoder-fp16")).not.toBeNull();
   });
 
+  it("carries the RC-measured tensor names (2026-09-30, real fp16 artifacts)", () => {
+    const encoder = getApprovedSamManifest("sam2.1-hiera-tiny-encoder-fp16");
+    expect(encoder?.imageInputName).toBe("pixel_values");
+    const decoder = getApprovedSamManifest("sam2.1-hiera-tiny-decoder-fp16");
+    expect(decoder?.promptInputNames).toEqual({
+      box: "input_points", // no dedicated box input: corners ride input_points
+      points: "input_points",
+      pointLabels: "input_labels",
+    });
+    expect(decoder?.outputNames).toEqual({ masks: "pred_masks", scores: "iou_scores" });
+  });
+
   it("returns null for unknown model ids", () => {
     expect(getApprovedSamManifest("no-such-model")).toBeNull();
     expect(getApprovedSamManifest("")).toBeNull();

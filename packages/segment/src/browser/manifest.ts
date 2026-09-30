@@ -40,19 +40,37 @@ export interface SamRegistryEntry {
 /** License IDs audited in docs/architecture-v3.md (SAM 2 checkpoints: Apache-2.0). */
 export const APPROVED_SAM_LICENSE_IDS: ReadonlySet<string> = new Set(["apache-2.0"]);
 
-// Tensor/input names must be verified against the actual ONNX graphs in the
-// real-model smoke increment; a mismatch fails closed at session run time.
+// Tensor/input names and shapes below are RC-measured facts from the real fp16
+// artifacts (2026-09-30, Node WASM, R2 originals) — no longer conventions:
+//  - encoder input  `pixel_values`        [1,3,1024,1024] float32 (RGB [0,1] NCHW)
+//  - encoder output  `image_embeddings.0`  [1,32,256,256]  float32
+//  - encoder output  `image_embeddings.1`  [1,64,128,128]  float32
+//  - encoder output  `image_embeddings.2`  [1,256,64,64]   float32 (all three
+//    passthrough decoder feeds)
+//  - decoder input   `input_points`        [1,1,N,2] float32, 1024 absolute grid coords
+//  - decoder input   `input_labels`        [1,1,N]   int64 (1 positive / 0 negative;
+//    box prompts ride the points tensor as two corners with SAM labels 2/3)
+//  - decoder input   `image_embeddings.0/1/2` (encoder passthrough)
+//  - decoder input   `input_masks`         [1,1,256,256] float32 — previous-frame mask
+//    logits; first run feeds zeros together with has_mask_input=0
+//  - decoder input   `has_mask_input`      [1] float32 (0/1)
+//  - decoder output  `iou_scores`          [1,4] → argmax selects the mask hypothesis
+//  - decoder output  `pred_masks`          [1,4,256,256] → threshold >0 on the best plane
+//  - decoder output  `object_score_logits` [1,1] (unused by v3.0 segmentation)
 const SAM2_TINY_INPUT_SIZE = Object.freeze({ width: 1024, height: 1024 });
 const SAM2_TINY_MAX_SOURCE_DIMENSION = 2048;
-const SAM2_TINY_IMAGE_INPUT_NAME = "image";
+const SAM2_TINY_IMAGE_INPUT_NAME = "pixel_values";
+// The measured decoder has no dedicated box input: a box prompt is encoded as
+// two corner points (SAM labels 2/3) through the same input_points tensor, so
+// the contract's promptInputNames.box field carries that tensor name.
 const SAM2_TINY_PROMPT_INPUT_NAMES = Object.freeze({
-  box: "box_coords",
-  points: "point_coords",
-  pointLabels: "point_labels",
+  box: "input_points",
+  points: "input_points",
+  pointLabels: "input_labels",
 });
 const SAM2_TINY_OUTPUT_NAMES = Object.freeze({
-  masks: "masks",
-  scores: "iou_predictions",
+  masks: "pred_masks",
+  scores: "iou_scores",
 });
 const SAM2_TINY_REVISION = "v0";
 const SAM2_TINY_LICENSE_ID = "apache-2.0";
