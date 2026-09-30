@@ -1,9 +1,13 @@
 // 真实 PartExportCodec 单元测试（契约 §2 :248-328 的 codec 要求）：
 // PNG RGBA8 双向（含全部 5 种 filter 解码）、ZIP 结构（PNG store / JSON·文本
 // deflate / 条目路径排序 / mtime 1980-01-01 / 无权限位）与 inspectZip。
+// 另有规范级（spec-level）IDAT 测试：zlib 头、手算 adler32 尾校验、以及用与
+// encoder 不同源的 node:zlib 解码路径逐字节复验像素——防再度回归"裸 deflate
+// IDAT 自产自销自洽、独立解码器拒读"。
 
+import { inflateSync as nodeInflateSync } from "node:zlib";
 import type { PixelBuffer } from "@spriteflow/pipeline";
-import { deflateSync, unzipSync } from "fflate";
+import { unzipSync, zlibSync } from "fflate";
 import { describe, expect, it } from "vitest";
 import { createPartExportCodec, decodePngSync, encodePngSync } from "../src/character/part-codec";
 
@@ -29,6 +33,47 @@ const crc32 = (bytes: Uint8Array): number => {
   let crc = 0xffffffff;
   for (const byte of bytes) crc = (table[(crc ^ byte) & 0xff] ?? 0) ^ (crc >>> 8);
   return (crc ^ 0xffffffff) >>> 0;
+};
+
+/** RFC 1950 的 adler32（独立手算，不复用 encoder 路径）。 */
+const adler32 = (bytes: Uint8Array): number => {
+  let a = 1;
+  let b = 0;
+  for (const byte of bytes) {
+    a = (a + byte) % 65521;
+    b = (b + a) % 65521;
+  }
+  return ((b << 16) | a) >>> 0;
+};
+
+/** 从 PNG 字节流里解析出 IDAT chunk 的 data（测试自用极简 chunk 解析器）。 */
+const idatOf = (encoded: ArrayBuffer): Uint8Array => {
+  const bytes = new Uint8Array(encoded);
+  const view = new DataView(encoded);
+  let offset = 8;
+  while (offset + 12 <= bytes.length) {
+    const length = view.getUint32(offset);
+    const type = String.fromCharCode(
+      bytes[offset + 4] ?? 0,
+      bytes[offset + 5] ?? 0,
+      bytes[offset + 6] ?? 0,
+      bytes[offset + 7] ?? 0,
+    );
+    if (type === "IDAT") return bytes.subarray(offset + 8, offset + 8 + length);
+    offset += 12 + length;
+  }
+  throw new Error("IDAT chunk not found");
+};
+
+/** encoder 手搓的 filter-0 未压缩 scanline 流（与 encodePngSync 的 raw 一致）。 */
+const filterZeroRaw = (source: PixelBuffer): Uint8Array => {
+  const stride = source.width * 4;
+  const raw = new Uint8Array((stride + 1) * source.height);
+  for (let row = 0; row < source.height; row++) {
+    raw[row * (stride + 1)] = 0;
+    raw.set(source.data.subarray(row * stride, (row + 1) * stride), row * (stride + 1) + 1);
+  }
+  return raw;
 };
 
 /** 用全部 5 种 filter 手工构造 PNG（filter per-row 0..4 循环），验证解码。 */
@@ -64,7 +109,7 @@ const buildFilteredPng = (width: number, height: number): ArrayBuffer => {
       raw[y * (stride + 1) + 1 + x] = filtered;
     }
   }
-  const idat = deflateSync(raw, { level: 6 });
+  const idat = zlibSync(raw, { level: 6 });
   const ihdr = new Uint8Array(13);
   const view = new DataView(ihdr.buffer);
   view.setUint32(0, width);
@@ -104,6 +149,42 @@ describe("part export codec", () => {
       expect(decoded.width).toBe(width);
       expect(decoded.height).toBe(height);
       expect(Array.from(decoded.data)).toEqual(Array.from(source.data));
+    }
+  });
+
+  it("emits spec-compliant zlib IDAT (0x7x header + hand-checked adler32)", () => {
+    const source = pixels(11, 7, 5);
+    const encoded = encodePngSync(source);
+    const idat = idatOf(encoded);
+    expect(idat.length).toBeGreaterThan(6);
+    // RFC 1950/RFC 2083：zlib 头 CMF=0x7x（CM=8 deflate、CINFO<=7）、
+    // (CMF<<8|FLG) % 31 == 0。裸 deflate 的首字节高半字节不是 0x7。
+    const cmf = idat[0] ?? 0;
+    const flg = idat[1] ?? 0;
+    expect(cmf >> 4).toBe(7);
+    expect(cmf & 0x0f).toBe(8);
+    expect(((cmf << 8) | flg) % 31).toBe(0);
+    // adler32 尾校验：手算未压缩 scanline 流的 adler32，与 zlib 流末 4 字节
+    // （大端）比对。
+    const expected = adler32(filterZeroRaw(source));
+    const idatView = new DataView(idat.buffer, idat.byteOffset, idat.byteLength);
+    expect(idatView.getUint32(idat.length - 4)).toBe(expected);
+  });
+
+  it("IDAT inflates via the independent node:zlib decoder to the exact input pixels", () => {
+    const source = pixels(13, 9, 9);
+    const idat = idatOf(encodePngSync(source));
+    // node:zlib 与 fflate encoder 不同源，且默认校验 zlib 头与 adler32——
+    // 裸 deflate 在这里直接抛 "incorrect header check"。
+    const raw = nodeInflateSync(idat);
+    expect(Array.from(raw)).toEqual(Array.from(filterZeroRaw(source)));
+    // 再显式逐行比对输入像素（filter 字节 + RGBA 字节）。
+    const stride = source.width * 4;
+    for (let row = 0; row < source.height; row++) {
+      expect(raw[row * (stride + 1)]).toBe(0);
+      expect(
+        Array.from(raw.subarray(row * (stride + 1) + 1, row * (stride + 1) + 1 + stride)),
+      ).toEqual(Array.from(source.data.subarray(row * stride, (row + 1) * stride)));
     }
   });
 

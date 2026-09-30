@@ -1,7 +1,10 @@
 // 真实 PartExportCodec（契约 §2 :248-328，apps/web 内 fflate 实现）。
-// encodePng/decodePng：RGBA8 真 PNG 双向——编码写 IHDR/IDAT/IEND（zlib deflate、
-// filter 0），解码支持全部 5 种 scanline filter（None/Sub/Up/Average/Paeth）与
-// 色彩类型 6/2、位深 8、非隔行。
+// encodePng/decodePng：RGBA8 真 PNG 双向——编码写 IHDR/IDAT/IEND（filter 0）。
+// IDAT 必须是标准 zlib 流（RFC 2083：2 字节头 + deflate + adler32），用 fflate
+// zlibSync 生成、unzlibSync 解析（强校验 zlib 头）；曾因误用裸 deflateSync/
+// inflateSync 导致自洽但独立解码器（PIL）拒读。解码支持全部 5 种 scanline
+// filter（None/Sub/Up/Average/Paeth）与色彩类型 6/2、位深 8、非隔行。
+// 注意：ZIP 条目（method 8）按 PKZIP 规范用裸 deflate，与 PNG IDAT 不同。
 // encodeZip：PNG 条目 store（method 0）、JSON/文本 deflate level 6、条目按路径
 // 排序、mtime 固定 1980-01-01、无权限位/绝对路径；inspectZip 解析中央目录。
 
@@ -11,7 +14,7 @@ import type {
   PartExportCodec,
   PartExportFileEntry,
 } from "@spriteflow/segment";
-import { deflateSync, inflateSync } from "fflate";
+import { deflateSync, inflateSync, unzlibSync, zlibSync } from "fflate";
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] as const;
 const CRC_TABLE = (() => {
@@ -77,7 +80,8 @@ export function encodePngSync(pixels: PixelBuffer): ArrayBuffer {
     raw[row * (stride + 1)] = 0;
     raw.set(data.subarray(row * stride, (row + 1) * stride), row * (stride + 1) + 1);
   }
-  const idat = deflateSync(raw, { level: 6 });
+  // PNG 规范要求 IDAT 为 zlib 流（0x78 头 + deflate + adler32），不能用裸 deflate。
+  const idat = zlibSync(raw, { level: 6 });
   const ihdr = new Uint8Array(13);
   const ihdrView = new DataView(ihdr.buffer);
   ihdrView.setUint32(0, width);
@@ -132,7 +136,8 @@ export function decodePngSync(bytes: ArrayBuffer): PixelBuffer {
       idatOffset += chunk.data.length;
     }
   }
-  const raw = inflateSync(idat);
+  // unzlibSync 校验 zlib 头并剥掉 adler32 尾（裸 deflate 会在此抛错）。
+  const raw = unzlibSync(idat);
   const stride = width * channels;
   if (raw.length < (stride + 1) * height) throw new Error("truncated PNG pixel data");
   const out = new Uint8ClampedArray(width * height * 4);
