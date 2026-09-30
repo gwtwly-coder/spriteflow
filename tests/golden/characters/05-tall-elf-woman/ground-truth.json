@@ -1,0 +1,181 @@
+{
+  "sample": "05-tall-elf-woman",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 505,
+        "y": 20,
+        "width": 256,
+        "height": 146
+      },
+      "tolerance": 70,
+      "note": "含精灵长耳"
+    },
+    {
+      "name": "hair",
+      "kind": "hair",
+      "bbox": {
+        "x": 430,
+        "y": 0,
+        "width": 451,
+        "height": 511
+      },
+      "tolerance": 120,
+      "note": "垂至髋部的白色长发；额饰并入 hair"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 510,
+        "y": 195,
+        "width": 261,
+        "height": 236
+      },
+      "tolerance": 90,
+      "note": "抹胸礼服上衣+金蓝腰饰"
+    },
+    {
+      "name": "gown-skirt",
+      "kind": "other",
+      "bbox": {
+        "x": 255,
+        "y": 380,
+        "width": 651,
+        "height": 871
+      },
+      "tolerance": 126,
+      "note": "白蓝大礼服裙；PartKind 无裙装类，按契约用 other"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 413,
+        "y": 215,
+        "width": 100,
+        "height": 176
+      },
+      "tolerance": 80,
+      "note": "裸露上臂"
+    },
+    {
+      "name": "forearm-right",
+      "kind": "forearm-right",
+      "bbox": {
+        "x": 348,
+        "y": 340,
+        "width": 160,
+        "height": 236
+      },
+      "tolerance": 90,
+      "note": "透纱广袖"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 343,
+        "y": 503,
+        "width": 95,
+        "height": 115
+      },
+      "tolerance": 80
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 753,
+        "y": 215,
+        "width": 106,
+        "height": 176
+      },
+      "tolerance": 80,
+      "note": "裸露上臂"
+    },
+    {
+      "name": "forearm-left",
+      "kind": "forearm-left",
+      "bbox": {
+        "x": 773,
+        "y": 340,
+        "width": 140,
+        "height": 236
+      },
+      "tolerance": 90,
+      "note": "透纱广袖"
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 823,
+        "y": 503,
+        "width": 95,
+        "height": 115
+      },
+      "tolerance": 80
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 543,
+        "y": 543,
+        "width": 158,
+        "height": 358
+      },
+      "tolerance": 100,
+      "note": "高开衩处裸露前腿"
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 638,
+        "y": 578,
+        "width": 125,
+        "height": 323
+      },
+      "tolerance": 100,
+      "note": "几乎完全被裙衩内衬遮挡，bbox 按裙下位置估标",
+      "visible": false
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 533,
+        "y": 858,
+        "width": 168,
+        "height": 396
+      },
+      "tolerance": 110,
+      "note": "赤足/便鞋，胫骨裸露"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 628,
+        "y": 858,
+        "width": 150,
+        "height": 396
+      },
+      "tolerance": 110,
+      "note": "被前腿与裙摆部分遮挡，下段与足可见"
+    }
+  ],
+  "rationale": "标准绑骨件 14 件：hair 独立拆分（验证例之二）；礼服为 other；被遮挡的左大腿标 visible:false。"
+}

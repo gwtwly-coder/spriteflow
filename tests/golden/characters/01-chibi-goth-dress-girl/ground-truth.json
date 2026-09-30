@@ -1,0 +1,166 @@
+{
+  "sample": "01-chibi-goth-dress-girl",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 335,
+        "y": 75,
+        "width": 621,
+        "height": 406
+      },
+      "tolerance": 90,
+      "note": "含脸部五官；Q版五官过小不单独拆 eye/mouth"
+    },
+    {
+      "name": "hair",
+      "kind": "hair",
+      "bbox": {
+        "x": 180,
+        "y": 0,
+        "width": 931,
+        "height": 801
+      },
+      "tolerance": 110,
+      "note": "长发垂至髋部；蝴蝶结/缎带/玫瑰配饰并入（配饰非绑骨标准件）"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 400,
+        "y": 460,
+        "width": 471,
+        "height": 441
+      },
+      "tolerance": 100,
+      "note": "连衣裙连裙摆一体（裙撑到 y~900）"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 380,
+        "y": 480,
+        "width": 166,
+        "height": 201
+      },
+      "tolerance": 90,
+      "note": "泡泡袖包住肘部，上臂/前臂并为一体"
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 730,
+        "y": 480,
+        "width": 161,
+        "height": 201
+      },
+      "tolerance": 90,
+      "note": "泡泡袖包住肘部，上臂/前臂并为一体"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 330,
+        "y": 730,
+        "width": 101,
+        "height": 101
+      },
+      "tolerance": 90
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 850,
+        "y": 730,
+        "width": 111,
+        "height": 111
+      },
+      "tolerance": 90
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 460,
+        "y": 860,
+        "width": 151,
+        "height": 211
+      },
+      "tolerance": 96
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 660,
+        "y": 860,
+        "width": 151,
+        "height": 211
+      },
+      "tolerance": 96
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 455,
+        "y": 1050,
+        "width": 141,
+        "height": 141
+      },
+      "tolerance": 90,
+      "note": "含白色袜/护腿"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 675,
+        "y": 1050,
+        "width": 141,
+        "height": 141
+      },
+      "tolerance": 90,
+      "note": "含黑色袜/护腿"
+    },
+    {
+      "name": "foot-right",
+      "kind": "foot-right",
+      "bbox": {
+        "x": 465,
+        "y": 1165,
+        "width": 136,
+        "height": 89
+      },
+      "tolerance": 80,
+      "note": "黑色短靴"
+    },
+    {
+      "name": "foot-left",
+      "kind": "foot-left",
+      "bbox": {
+        "x": 660,
+        "y": 1165,
+        "width": 141,
+        "height": 89
+      },
+      "tolerance": 80,
+      "note": "黑色短靴"
+    }
+  ],
+  "rationale": "Q版粗拆：标准绑骨件 head/hair/torso/双臂/双手/双腿/双脚 13 件；五官并入 head，配饰并入 hair，袖内前臂并入上臂。"
+}

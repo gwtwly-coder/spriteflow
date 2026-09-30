@@ -1,0 +1,179 @@
+{
+  "sample": "02-painterly-adventurer-girl",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 475,
+        "y": 95,
+        "width": 276,
+        "height": 191
+      },
+      "tolerance": 72
+    },
+    {
+      "name": "hair",
+      "kind": "hair",
+      "bbox": {
+        "x": 415,
+        "y": 0,
+        "width": 381,
+        "height": 476
+      },
+      "tolerance": 100,
+      "note": "高马尾+侧编发辫"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 470,
+        "y": 255,
+        "width": 346,
+        "height": 316
+      },
+      "tolerance": 90,
+      "note": "白衬衫+束腰+腰带"
+    },
+    {
+      "name": "cloak",
+      "kind": "accessory",
+      "bbox": {
+        "x": 425,
+        "y": 255,
+        "width": 381,
+        "height": 191
+      },
+      "tolerance": 100,
+      "note": "绿色短披风，经典 accessory 部位"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 420,
+        "y": 365,
+        "width": 131,
+        "height": 181
+      },
+      "tolerance": 80
+    },
+    {
+      "name": "forearm-right",
+      "kind": "forearm-right",
+      "bbox": {
+        "x": 365,
+        "y": 485,
+        "width": 151,
+        "height": 196
+      },
+      "tolerance": 80,
+      "note": "皮护臂"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 348,
+        "y": 620,
+        "width": 108,
+        "height": 146
+      },
+      "tolerance": 80,
+      "note": "露指手套"
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 738,
+        "y": 365,
+        "width": 131,
+        "height": 181
+      },
+      "tolerance": 80
+    },
+    {
+      "name": "forearm-left",
+      "kind": "forearm-left",
+      "bbox": {
+        "x": 752,
+        "y": 485,
+        "width": 154,
+        "height": 196
+      },
+      "tolerance": 80,
+      "note": "皮护臂"
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 798,
+        "y": 610,
+        "width": 118,
+        "height": 156
+      },
+      "tolerance": 80,
+      "note": "露指手套"
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 438,
+        "y": 760,
+        "width": 148,
+        "height": 171
+      },
+      "tolerance": 80,
+      "note": "绿裤"
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 638,
+        "y": 760,
+        "width": 178,
+        "height": 171
+      },
+      "tolerance": 80,
+      "note": "绿裤"
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 405,
+        "y": 898,
+        "width": 191,
+        "height": 356
+      },
+      "tolerance": 100,
+      "note": "高筒靴，脚并入靴"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 648,
+        "y": 898,
+        "width": 218,
+        "height": 356
+      },
+      "tolerance": 100,
+      "note": "高筒靴，脚并入靴"
+    }
+  ],
+  "rationale": "标准绑骨件 14 件：head/hair/torso/披风(accessory)/双臂六段/双腿四段；脚并入高筒靴。"
+}

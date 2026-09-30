@@ -1,0 +1,158 @@
+{
+  "sample": "04-pixel-ranger-boy",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 465,
+        "y": 20,
+        "width": 341,
+        "height": 251
+      },
+      "tolerance": 90,
+      "note": "兜帽连头部一体；像素风五官过小并入 head"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 425,
+        "y": 245,
+        "width": 406,
+        "height": 516
+      },
+      "tolerance": 100,
+      "note": "围巾+束腰外衣+腰带+衣摆一体"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 388,
+        "y": 315,
+        "width": 118,
+        "height": 191
+      },
+      "tolerance": 90,
+      "note": "绿袖"
+    },
+    {
+      "name": "forearm-right",
+      "kind": "forearm-right",
+      "bbox": {
+        "x": 353,
+        "y": 460,
+        "width": 135,
+        "height": 211
+      },
+      "tolerance": 90,
+      "note": "棕护臂"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 348,
+        "y": 620,
+        "width": 128,
+        "height": 131
+      },
+      "tolerance": 90,
+      "note": "露指手套"
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 743,
+        "y": 315,
+        "width": 126,
+        "height": 191
+      },
+      "tolerance": 90,
+      "note": "绿袖"
+    },
+    {
+      "name": "forearm-left",
+      "kind": "forearm-left",
+      "bbox": {
+        "x": 768,
+        "y": 460,
+        "width": 130,
+        "height": 211
+      },
+      "tolerance": 90,
+      "note": "棕护臂"
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 773,
+        "y": 620,
+        "width": 128,
+        "height": 131
+      },
+      "tolerance": 90,
+      "note": "露指手套"
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 438,
+        "y": 748,
+        "width": 158,
+        "height": 233
+      },
+      "tolerance": 90,
+      "note": "深色裤"
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 648,
+        "y": 748,
+        "width": 168,
+        "height": 233
+      },
+      "tolerance": 90,
+      "note": "深色裤"
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 423,
+        "y": 948,
+        "width": 145,
+        "height": 281
+      },
+      "tolerance": 100,
+      "note": "皮靴，脚并入靴"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 688,
+        "y": 948,
+        "width": 145,
+        "height": 281
+      },
+      "tolerance": 100,
+      "note": "皮靴，脚并入靴"
+    }
+  ],
+  "rationale": "像素风粗拆 12 件：不拆 hair（兜帽覆盖）、不拆五官、脚并入靴；torso 含围巾与衣摆。"
+}

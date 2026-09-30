@@ -1,0 +1,180 @@
+{
+  "sample": "03-anime-layered-gown-girl",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 505,
+        "y": 50,
+        "width": 286,
+        "height": 166
+      },
+      "tolerance": 72
+    },
+    {
+      "name": "hair",
+      "kind": "hair",
+      "bbox": {
+        "x": 400,
+        "y": 0,
+        "width": 511,
+        "height": 571
+      },
+      "tolerance": 120,
+      "note": "双肩泻地长发；头花并入 hair"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 495,
+        "y": 205,
+        "width": 296,
+        "height": 266
+      },
+      "tolerance": 90,
+      "note": "抹胸+蓝金束腰"
+    },
+    {
+      "name": "skirt-dress",
+      "kind": "other",
+      "bbox": {
+        "x": 230,
+        "y": 380,
+        "width": 791,
+        "height": 861
+      },
+      "tolerance": 126,
+      "note": "层叠大裙摆连拖尾；PartKind 无裙装类，按契约用 other"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 480,
+        "y": 225,
+        "width": 91,
+        "height": 171
+      },
+      "tolerance": 80,
+      "note": "裸露上臂"
+    },
+    {
+      "name": "forearm-right",
+      "kind": "forearm-right",
+      "bbox": {
+        "x": 395,
+        "y": 345,
+        "width": 161,
+        "height": 231
+      },
+      "tolerance": 90,
+      "note": "垂纱袖"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 398,
+        "y": 535,
+        "width": 93,
+        "height": 126
+      },
+      "tolerance": 80
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 718,
+        "y": 225,
+        "width": 93,
+        "height": 171
+      },
+      "tolerance": 80,
+      "note": "裸露上臂"
+    },
+    {
+      "name": "forearm-left",
+      "kind": "forearm-left",
+      "bbox": {
+        "x": 735,
+        "y": 345,
+        "width": 161,
+        "height": 231
+      },
+      "tolerance": 90,
+      "note": "垂纱袖"
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 785,
+        "y": 535,
+        "width": 96,
+        "height": 136
+      },
+      "tolerance": 80
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 528,
+        "y": 548,
+        "width": 153,
+        "height": 243
+      },
+      "tolerance": 90,
+      "note": "开衩处裸露前腿"
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 628,
+        "y": 560,
+        "width": 143,
+        "height": 241
+      },
+      "tolerance": 90,
+      "note": "大部分被裙摆遮挡，仅上部小片皮肤可见",
+      "visible": false
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 488,
+        "y": 728,
+        "width": 173,
+        "height": 526
+      },
+      "tolerance": 110,
+      "note": "白色长靴连金饰高跟"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 578,
+        "y": 728,
+        "width": 168,
+        "height": 526
+      },
+      "tolerance": 110,
+      "note": "白色长靴连金饰高跟，上段被前腿部分遮挡"
+    }
+  ],
+  "rationale": "标准绑骨件 14 件：hair 独立拆分（两例 hair 单拆验证之一）；裙装独立为 other；被裙摆遮蔽的左大腿标 visible:false。"
+}

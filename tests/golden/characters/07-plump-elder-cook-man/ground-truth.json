@@ -1,0 +1,178 @@
+{
+  "sample": "07-plump-elder-cook-man",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 465,
+        "y": 10,
+        "width": 321,
+        "height": 251
+      },
+      "tolerance": 80,
+      "note": "秃顶白发+大胡子并入 head（面部毛发不单独拆）"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 330,
+        "y": 245,
+        "width": 631,
+        "height": 711
+      },
+      "tolerance": 120,
+      "note": "厨师服+围裙一体（围裙系于身前，随躯干运动）"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 193,
+        "y": 368,
+        "width": 165,
+        "height": 205
+      },
+      "tolerance": 90,
+      "note": "卷起的白袖"
+    },
+    {
+      "name": "forearm-right",
+      "kind": "forearm-right",
+      "bbox": {
+        "x": 158,
+        "y": 508,
+        "width": 175,
+        "height": 205
+      },
+      "tolerance": 90,
+      "note": "裸露前臂"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 148,
+        "y": 643,
+        "width": 160,
+        "height": 190
+      },
+      "tolerance": 90
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 888,
+        "y": 368,
+        "width": 160,
+        "height": 205
+      },
+      "tolerance": 90,
+      "note": "卷起的白袖"
+    },
+    {
+      "name": "forearm-left",
+      "kind": "forearm-left",
+      "bbox": {
+        "x": 893,
+        "y": 508,
+        "width": 175,
+        "height": 205
+      },
+      "tolerance": 90,
+      "note": "裸露前臂"
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 923,
+        "y": 638,
+        "width": 175,
+        "height": 200
+      },
+      "tolerance": 90
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 333,
+        "y": 938,
+        "width": 235,
+        "height": 205
+      },
+      "tolerance": 90,
+      "note": "深色裤，上段被围裙覆盖（着衣遮挡非不可见）"
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 673,
+        "y": 938,
+        "width": 240,
+        "height": 205
+      },
+      "tolerance": 90,
+      "note": "深色裤，上段被围裙覆盖（着衣遮挡非不可见）"
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 333,
+        "y": 1098,
+        "width": 240,
+        "height": 121
+      },
+      "tolerance": 80
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 673,
+        "y": 1098,
+        "width": 240,
+        "height": 121
+      },
+      "tolerance": 80
+    },
+    {
+      "name": "foot-right",
+      "kind": "foot-right",
+      "bbox": {
+        "x": 323,
+        "y": 1168,
+        "width": 240,
+        "height": 86
+      },
+      "tolerance": 70,
+      "note": "棕皮鞋"
+    },
+    {
+      "name": "foot-left",
+      "kind": "foot-left",
+      "bbox": {
+        "x": 678,
+        "y": 1168,
+        "width": 245,
+        "height": 86
+      },
+      "tolerance": 70,
+      "note": "棕皮鞋"
+    }
+  ],
+  "rationale": "标准绑骨件 14 件：hair/胡须并入 head，围裙并入 torso；大腿着衣可见，无需 visible:false。"
+}

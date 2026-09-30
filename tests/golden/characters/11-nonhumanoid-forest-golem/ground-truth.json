@@ -1,0 +1,13 @@
+{
+  "sample": "11-nonhumanoid-forest-golem",
+  "mode": "non-humanoid-anchor",
+  "expectedPath": "click-degrade",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [],
+  "rationale": "非人形（苔藓石傀儡），L1 语义定位应判 non-humanoid 或低置信，UI 须诚实降级到点击增删模式，不得以成功语气放行伪部位；故期望部位集合为空。"
+}

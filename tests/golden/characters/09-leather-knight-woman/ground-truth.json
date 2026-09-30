@@ -1,0 +1,170 @@
+{
+  "sample": "09-leather-knight-woman",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 535,
+        "y": 5,
+        "width": 181,
+        "height": 171
+      },
+      "tolerance": 70,
+      "note": "盘发小巧并入 head（hair 单拆验证仅 01/03 两例）"
+    },
+    {
+      "name": "cape",
+      "kind": "accessory",
+      "bbox": {
+        "x": 405,
+        "y": 165,
+        "width": 416,
+        "height": 266
+      },
+      "tolerance": 110,
+      "note": "红色短披风，经典 accessory 部位"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 495,
+        "y": 245,
+        "width": 281,
+        "height": 326
+      },
+      "tolerance": 90,
+      "note": "皮甲+斜挎带+腰带"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 428,
+        "y": 288,
+        "width": 105,
+        "height": 165
+      },
+      "tolerance": 80,
+      "note": "米色内衬袖"
+    },
+    {
+      "name": "forearm-right",
+      "kind": "forearm-right",
+      "bbox": {
+        "x": 393,
+        "y": 418,
+        "width": 135,
+        "height": 200
+      },
+      "tolerance": 80,
+      "note": "皮护臂"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 383,
+        "y": 558,
+        "width": 130,
+        "height": 140
+      },
+      "tolerance": 80,
+      "note": "皮手套"
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 743,
+        "y": 288,
+        "width": 105,
+        "height": 165
+      },
+      "tolerance": 80,
+      "note": "米色内衬袖"
+    },
+    {
+      "name": "forearm-left",
+      "kind": "forearm-left",
+      "bbox": {
+        "x": 753,
+        "y": 418,
+        "width": 135,
+        "height": 200
+      },
+      "tolerance": 80,
+      "note": "皮护臂"
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 773,
+        "y": 558,
+        "width": 125,
+        "height": 145
+      },
+      "tolerance": 80,
+      "note": "皮手套"
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 493,
+        "y": 608,
+        "width": 155,
+        "height": 285
+      },
+      "tolerance": 90,
+      "note": "深色皮裤"
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 638,
+        "y": 608,
+        "width": 160,
+        "height": 285
+      },
+      "tolerance": 90,
+      "note": "深色皮裤"
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 448,
+        "y": 858,
+        "width": 170,
+        "height": 396
+      },
+      "tolerance": 100,
+      "note": "长皮靴带护膝，脚并入靴"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 663,
+        "y": 858,
+        "width": 170,
+        "height": 396
+      },
+      "tolerance": 100,
+      "note": "长皮靴带护膝，脚并入靴"
+    }
+  ],
+  "rationale": "标准绑骨件 13 件：hair 并入 head；披风为 accessory；脚并入长靴。"
+}

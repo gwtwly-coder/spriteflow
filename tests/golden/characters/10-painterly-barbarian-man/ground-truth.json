@@ -1,0 +1,182 @@
+{
+  "sample": "10-painterly-barbarian-man",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 535,
+        "y": 5,
+        "width": 241,
+        "height": 206
+      },
+      "tolerance": 80,
+      "note": "长发+络腮胡并入 head（面部毛发不单独拆）"
+    },
+    {
+      "name": "fur-mantle",
+      "kind": "accessory",
+      "bbox": {
+        "x": 338,
+        "y": 118,
+        "width": 575,
+        "height": 325
+      },
+      "tolerance": 120,
+      "note": "肩部毛皮披"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 445,
+        "y": 200,
+        "width": 356,
+        "height": 371
+      },
+      "tolerance": 100,
+      "note": "裸胸+斜皮带+宽腰带"
+    },
+    {
+      "name": "loincloth-tasset",
+      "kind": "other",
+      "bbox": {
+        "x": 423,
+        "y": 538,
+        "width": 425,
+        "height": 365
+      },
+      "tolerance": 110,
+      "note": "破烂腰布/裙甲；PartKind 无裙装类，按契约用 other"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 333,
+        "y": 268,
+        "width": 150,
+        "height": 265
+      },
+      "tolerance": 90,
+      "note": "极粗壮上臂"
+    },
+    {
+      "name": "forearm-right",
+      "kind": "forearm-right",
+      "bbox": {
+        "x": 298,
+        "y": 448,
+        "width": 160,
+        "height": 235
+      },
+      "tolerance": 90,
+      "note": "皮革缠臂"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 303,
+        "y": 598,
+        "width": 150,
+        "height": 145
+      },
+      "tolerance": 90,
+      "note": "半握拳"
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 773,
+        "y": 268,
+        "width": 155,
+        "height": 265
+      },
+      "tolerance": 90,
+      "note": "极粗壮上臂"
+    },
+    {
+      "name": "forearm-left",
+      "kind": "forearm-left",
+      "bbox": {
+        "x": 808,
+        "y": 448,
+        "width": 160,
+        "height": 235
+      },
+      "tolerance": 90,
+      "note": "皮革缠臂"
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 818,
+        "y": 598,
+        "width": 145,
+        "height": 155
+      },
+      "tolerance": 90,
+      "note": "半握拳"
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 373,
+        "y": 798,
+        "width": 200,
+        "height": 235
+      },
+      "tolerance": 100,
+      "note": "裸露大腿"
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 628,
+        "y": 798,
+        "width": 250,
+        "height": 235
+      },
+      "tolerance": 100,
+      "note": "裸露大腿，部分被腰布遮挡"
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 328,
+        "y": 968,
+        "width": 220,
+        "height": 286
+      },
+      "tolerance": 110,
+      "note": "毛口皮绑腿靴，脚并入靴"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 698,
+        "y": 968,
+        "width": 225,
+        "height": 286
+      },
+      "tolerance": 110,
+      "note": "毛口皮绑腿靴，脚并入靴"
+    }
+  ],
+  "rationale": "标准绑骨件 14 件：hair/胡须并入 head；毛皮披为 accessory、腰布为 other；脚并入靴。"
+}

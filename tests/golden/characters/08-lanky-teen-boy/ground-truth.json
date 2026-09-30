@@ -1,0 +1,167 @@
+{
+  "sample": "08-lanky-teen-boy",
+  "mode": "humanoid",
+  "expectedPath": "semantic",
+  "conventions": {
+    "coordinates": "源图像素坐标，左上原点，半开区间 [x, x+width)",
+    "sides": "left/right = 角色自身解剖学左右；角色面向观众时，其左侧肢体出现在画面右侧",
+    "tolerance": "每条边的允许偏差（像素）；预测框与期望框逐边偏差 <= tolerance 即视为匹配（IoU/容差匹配，非像素级贴合）",
+    "overlap": "部位之间不互斥、不承诺覆盖全部前景（PRD §1.1）；visible 缺省为 true"
+  },
+  "parts": [
+    {
+      "name": "head",
+      "kind": "head",
+      "bbox": {
+        "x": 530,
+        "y": 15,
+        "width": 201,
+        "height": 161
+      },
+      "tolerance": 70
+    },
+    {
+      "name": "hair",
+      "kind": "hair",
+      "bbox": {
+        "x": 503,
+        "y": 0,
+        "width": 255,
+        "height": 151
+      },
+      "tolerance": 80,
+      "note": "蓬乱短发"
+    },
+    {
+      "name": "torso",
+      "kind": "torso",
+      "bbox": {
+        "x": 458,
+        "y": 183,
+        "width": 345,
+        "height": 300
+      },
+      "tolerance": 100,
+      "note": "宽松白衬衫+系带"
+    },
+    {
+      "name": "upper-arm-right",
+      "kind": "upper-arm-right",
+      "bbox": {
+        "x": 443,
+        "y": 268,
+        "width": 105,
+        "height": 225
+      },
+      "tolerance": 90,
+      "note": "细瘦上臂，挽袖"
+    },
+    {
+      "name": "forearm-right",
+      "kind": "forearm-right",
+      "bbox": {
+        "x": 438,
+        "y": 428,
+        "width": 100,
+        "height": 225
+      },
+      "tolerance": 90,
+      "note": "细瘦前臂"
+    },
+    {
+      "name": "hand-right",
+      "kind": "hand-right",
+      "bbox": {
+        "x": 428,
+        "y": 578,
+        "width": 115,
+        "height": 145
+      },
+      "tolerance": 90
+    },
+    {
+      "name": "upper-arm-left",
+      "kind": "upper-arm-left",
+      "bbox": {
+        "x": 733,
+        "y": 268,
+        "width": 105,
+        "height": 225
+      },
+      "tolerance": 90,
+      "note": "细瘦上臂，挽袖"
+    },
+    {
+      "name": "forearm-left",
+      "kind": "forearm-left",
+      "bbox": {
+        "x": 743,
+        "y": 428,
+        "width": 100,
+        "height": 225
+      },
+      "tolerance": 90,
+      "note": "细瘦前臂"
+    },
+    {
+      "name": "hand-left",
+      "kind": "hand-left",
+      "bbox": {
+        "x": 743,
+        "y": 578,
+        "width": 115,
+        "height": 145
+      },
+      "tolerance": 90
+    },
+    {
+      "name": "thigh-right",
+      "kind": "thigh-right",
+      "bbox": {
+        "x": 498,
+        "y": 458,
+        "width": 170,
+        "height": 375
+      },
+      "tolerance": 100,
+      "note": "宽大皱裤"
+    },
+    {
+      "name": "thigh-left",
+      "kind": "thigh-left",
+      "bbox": {
+        "x": 628,
+        "y": 458,
+        "width": 175,
+        "height": 375
+      },
+      "tolerance": 100,
+      "note": "宽大皱裤"
+    },
+    {
+      "name": "shin-right",
+      "kind": "shin-right",
+      "bbox": {
+        "x": 498,
+        "y": 928,
+        "width": 160,
+        "height": 326
+      },
+      "tolerance": 100,
+      "note": "高帮旧皮靴，脚并入靴"
+    },
+    {
+      "name": "shin-left",
+      "kind": "shin-left",
+      "bbox": {
+        "x": 688,
+        "y": 928,
+        "width": 195,
+        "height": 326
+      },
+      "tolerance": 100,
+      "note": "高帮旧皮靴，脚并入靴"
+    }
+  ],
+  "rationale": "标准绑骨件 13 件：非标瘦高体型，四肢细长、裤腿宽大故腿框放宽；脚并入靴。"
+}
