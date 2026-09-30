@@ -87,7 +87,8 @@ export function encodePngSync(pixels: PixelBuffer): ArrayBuffer {
   ihdr[10] = 0; // compression
   ihdr[11] = 0; // filter
   ihdr[12] = 0; // interlace
-  const total = 8 + (25 + idat.length + 12);
+  // 8 签名 + IHDR(12+13) + IDAT(12+idat) + IEND(12)。
+  const total = 8 + 25 + (12 + idat.length) + 12;
   const out = new Uint8Array(total);
   out.set(PNG_SIGNATURE);
   let offset = 8;
@@ -238,8 +239,10 @@ function collectZip(files: Array<{ path: string; mime: string; bytes: ArrayBuffe
     entryView.setUint32(20, stored.length, true);
     entryView.setUint32(24, raw.length, true);
     entryView.setUint16(28, name.length, true);
-    entryView.setUint32(38, offset, true);
-    entryView.setUint32(42, 0, true); // external attributes = 0（无权限位）
+    entryView.setUint16(30, 0, true); // extra length
+    entryView.setUint16(32, 0, true); // comment length
+    entryView.setUint32(38, 0, true); // external attributes = 0（无权限位）
+    entryView.setUint32(42, offset, true); // local header offset
     entry.set(name, 46);
     central.push(entry);
     offset += local.length + stored.length;
