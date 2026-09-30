@@ -18,5 +18,8 @@
   },
   "files": [
     "dist"
-  ]
+  ],
+  "dependencies": {
+    "onnxruntime-web": "1.30.0"
+  }
 }

@@ -2,8 +2,9 @@
 //   - Parse every name@version in the pnpm-lock.yaml "packages" section.
 //   - Bidirectionally diff it against the audited allowlist (scripts/license-audit.json,
 //     generated from architecture-m1.md appendix A, audit date 2026-09-16).
-//   - Reject GPL/AGPL/LGPL anywhere and banned packages (FFmpeg/ONNX/pngquant/GIF/video
-//     demuxers are excluded from M1 by user decision).
+//   - Reject GPL/AGPL/LGPL anywhere and banned packages (FFmpeg/pngquant/GIF/video
+//     demuxers are excluded by user decision; onnxruntime was banned under the M1
+//     scope and unbanned for v3.0-alpha per docs/architecture-v3.md).
 //   - All dependency version specs must be exact (no ^ ~ * ranges); workspace links use
 //     "workspace:*" and are exempt.
 // Any lockfile change therefore requires a fresh audit - CI never auto-accepts new packages.
@@ -51,7 +52,10 @@ for (const { name, version, license } of audit.packages) {
   }
 }
 
-const BANNED = /(ffmpeg|onnxruntime|pngquant|jsquash|gifuct|gif\.js|mp4box|libwebm|webm-demux)/i;
+// onnxruntime was banned by the M1 scope decision ("belongs to v2+"); v3.0-alpha
+// unbans it per docs/architecture-v3.md (onnxruntime-web@1.30.0, MIT; dynamic
+// import allowed only from segment/browser — enforced by check-boundaries).
+const BANNED = /(ffmpeg|pngquant|jsquash|gifuct|gif\.js|mp4box|libwebm|webm-demux)/i;
 for (const entry of locked)
   if (BANNED.test(entry)) problems.push(`banned package in lockfile: ${entry}`);
 

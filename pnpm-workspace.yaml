@@ -20,3 +20,6 @@ engineStrict: true
 allowBuilds:
   esbuild: false
   fsevents: false
+  # Transitive dep of onnxruntime-web (segment/browser). Its postinstall only
+  # regenerates bundles already shipped in the published package; skipping is safe.
+  protobufjs: false
