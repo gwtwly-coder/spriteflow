@@ -32,3 +32,26 @@ describe("isValidEndpoint（BYOK 面板端点校验）", () => {
     expect(isValidEndpoint(endpoint)).toBe(false);
   });
 });
+
+// --- maxOutputTokensForModel（2026-10-01 RC 走查 P1） ------------------------------
+// z.ai glm-4v-flash 的服务商侧 max_tokens 上限实测为 [1,1024]（HTTP 400 code
+// 1210 "The max_tokens parameter is illegal.：限制数值范围[1,1024]"，<1s）。
+// 应用默认发契约上限 4,096 会被快速拒绝且（修复前）被归网络类误报"连不上
+// 服务商"；已实测档必须夹到服务商上限，未登记模型用契约上限。
+import { DEFAULT_MAX_OUTPUT_TOKENS, maxOutputTokensForModel } from "../src/character/byok";
+
+describe("maxOutputTokensForModel（语义定位输出 token 上限）", () => {
+  it("clamps the measured glm-4v-flash ceiling to 1024", () => {
+    expect(maxOutputTokensForModel("glm-4v-flash")).toBe(1_024);
+    // 大小写/首尾空白不改变判定（用户手输模型名）
+    expect(maxOutputTokensForModel("GLM-4V-FLASH")).toBe(1_024);
+    expect(maxOutputTokensForModel(" glm-4v-flash ")).toBe(1_024);
+  });
+
+  it("uses the contract ceiling 4096 for models without a known cap", () => {
+    expect(DEFAULT_MAX_OUTPUT_TOKENS).toBe(4_096);
+    expect(maxOutputTokensForModel("glm-4v")).toBe(4_096);
+    expect(maxOutputTokensForModel("gpt-4o")).toBe(4_096);
+    expect(maxOutputTokensForModel("")).toBe(4_096);
+  });
+});

@@ -37,6 +37,7 @@ function marker(auth: string): string {
   if (auth.includes("limited")) return "limited";
   if (auth.includes("broken")) return "broken";
   if (auth.includes("slow")) return "slow";
+  if (auth.includes("rejected")) return "rejected";
   return "garbage";
 }
 
@@ -80,6 +81,19 @@ beforeAll(async () => {
             res.writeHead(200, { "Content-Type": "application/json" });
             res.end("{}");
           }, 1_500);
+          return;
+        case "rejected":
+          // 2026-10-01 实测形状：z.ai glm-4v-flash 对超上限 max_tokens 的
+          // 快速拒绝（HTTP 400 code 1210，<1s）。
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({
+              error: {
+                code: "1210",
+                message: "The max_tokens parameter is illegal.：限制数值范围[1,1024]",
+              },
+            }),
+          );
           return;
         default:
           res.writeHead(200, { "Content-Type": "text/plain" });
@@ -164,6 +178,21 @@ describe("locatePartsWithLlm over the real fetch transport (browser parity)", ()
       context(),
     );
     expect(expectFailure(result).code).toBe("LLM_NETWORK_FAILED");
+  });
+
+  it("classifies a request-rejecting 400 as configuration failure, never network", async () => {
+    // RC 走查 P1（2026-10-01）：有效 key + max_tokens 超模型上限时 z.ai 回
+    // 400/1210（<1s）。修复前该形状被归 LLM_NETWORK_FAILED，横幅误报
+    // "连不上服务商，或请求超时"；现在必须归 LLM_CONFIGURATION_INVALID。
+    const result = await locatePartsWithLlm(
+      locateRequest("rejected-key-rc"),
+      realTransport(),
+      context(),
+    );
+    const error = expectFailure(result);
+    expect(error.code).toBe("LLM_CONFIGURATION_INVALID");
+    expect(error.recoveryActions).toContain("configure-key");
+    expect(JSON.stringify(error.details)).not.toContain("max_tokens parameter");
   });
 
   it("keeps 2xx + unparseable body on the one-shot repair path (LLM_INVALID_RESPONSE)", async () => {

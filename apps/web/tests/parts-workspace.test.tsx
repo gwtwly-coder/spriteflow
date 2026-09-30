@@ -375,7 +375,7 @@ describe("v3 parts workspace", () => {
     await user.click(screen.getByRole("button", { name: "同意并开始拆件" }));
     // LLM 失败不进模型失败卡：原因匹配说明 + 重试语义定位/使用点击模式两条路径。
     await screen.findByText("语义定位没成功");
-    expect(screen.getByText("API Key 无效。")).toBeTruthy();
+    expect(screen.getByText("API Key 或模型配置无效。")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: "使用点击模式" }));
     await screen.findByText("审校部位");
     // 已上传的图片保留（无需重新上传，AC-V06-C）：工作区标题栏显示文件名。

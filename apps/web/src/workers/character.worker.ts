@@ -162,7 +162,9 @@ function classifyLlmFailure(): LlmFailureReason {
   return llmFailureFromStatus(lastLlmStatus, lastLlmThrew);
 }
 
-const api: CharacterWorkerApi = {
+// api 导出仅供测试以真实 Comlink 端点 expose（生产仍走下方 expose(api)）；
+// Worker 入口本身不消费任何导入者。
+export const api: CharacterWorkerApi = {
   async load(input: CharacterLoadInput): Promise<CharacterLoadOutput> {
     const bitmap = await createImageBitmap(new Blob([input.bytes], { type: input.mime }));
     try {

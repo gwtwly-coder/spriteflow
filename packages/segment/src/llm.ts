@@ -492,16 +492,32 @@ function statusFailure(status: number, provider: string): CharacterError | null 
       details: providerDetails,
     });
   }
-  if (status === 429) {
+  if (status === 402 || status === 429) {
     return locateError(CharacterErrorCode.LlmRateLimited, {
       recoveryActions: ["retry", "continue-click-mode"],
       details: providerDetails,
     });
   }
-  if (status < 200 || status >= 300) {
-    return locateError(CharacterErrorCode.LlmNetworkFailed, {
+  if (status === 408) {
+    return locateError(CharacterErrorCode.LlmTimeout, {
       recoveryActions: ["retry", "continue-click-mode"],
       details: { ...providerDetails, actual: status },
+    });
+  }
+  if (status < 200 || status >= 300) {
+    if (status >= 500) {
+      return locateError(CharacterErrorCode.LlmNetworkFailed, {
+        recoveryActions: ["retry", "continue-click-mode"],
+        details: { ...providerDetails, actual: status },
+      });
+    }
+    // 3xx/4xx request rejections (2026-10-01 RC 走查 P1): the provider was
+    // reached and refused the request itself — e.g. z.ai glm-4v-flash answers
+    // HTTP 400 code 1210 in <1s when max_tokens exceeds its [1,1024] ceiling.
+    // That is a BYOK configuration problem, never "cannot reach the provider".
+    return locateError(CharacterErrorCode.LlmConfigurationInvalid, {
+      recoveryActions: ["configure-key", "continue-click-mode"],
+      details: { ...providerDetails, field: "http_status", actual: status },
     });
   }
   return null;
@@ -517,6 +533,27 @@ function extractBodyText(body: unknown): string | null {
     }
   }
   return null;
+}
+
+/**
+ * Model reply extraction. Chat Completions providers wrap the model output in
+ * `choices[0].message.content` (with `finish_reason` marking token-limit
+ * truncation); transports may also hand back the bare document text. Anything
+ * without a usable content string falls back to the serialized body, which the
+ * strict parser will reject into the one-shot repair path.
+ */
+function extractModelReply(body: unknown): { text: string | null; truncated: boolean } {
+  if (typeof body === "string") return { text: body, truncated: false };
+  if (isObject(body) && Array.isArray(body.choices)) {
+    const choice = body.choices[0];
+    if (isObject(choice) && isObject(choice.message)) {
+      const content = choice.message.content;
+      if (typeof content === "string") {
+        return { text: content, truncated: choice.finish_reason === "length" };
+      }
+    }
+  }
+  return { text: extractBodyText(body), truncated: false };
 }
 
 /**
@@ -551,15 +588,15 @@ async function exchange(
   if (context.isCancelled()) return { kind: "error", error: cancelledError() };
   const statusError = statusFailure(response.status, provider);
   if (statusError !== null) return { kind: "error", error: statusError };
-  const bodyText = extractBodyText(response.body);
-  if (bodyText === null) {
+  const reply = extractModelReply(response.body);
+  if (reply.text === null) {
     return {
       kind: "invalid",
       errors: ["response body: expected JSON text or object"],
       originalText: "",
     };
   }
-  if (utf8ByteLength(bodyText) > config.maxResponseBytes) {
+  if (utf8ByteLength(reply.text) > config.maxResponseBytes) {
     return {
       kind: "error",
       error: locateError(CharacterErrorCode.LlmResponseTooLarge, {
@@ -567,9 +604,14 @@ async function exchange(
       }),
     };
   }
-  const parsed = parseLocateDocument(bodyText, imageWidth, imageHeight, options);
+  const parsed = parseLocateDocument(reply.text, imageWidth, imageHeight, options);
   if (parsed.ok) return { kind: "document", document: parsed.document };
-  return { kind: "invalid", errors: parsed.errors, originalText: bodyText };
+  // Token-limit truncation (finish_reason=length) is reported as the leading
+  // field error so the one-shot repair asks for a complete document.
+  const errors = reply.truncated
+    ? ["reply was cut off by the output token limit (finish_reason=length)", ...parsed.errors]
+    : parsed.errors;
+  return { kind: "invalid", errors, originalText: reply.text };
 }
 
 /**

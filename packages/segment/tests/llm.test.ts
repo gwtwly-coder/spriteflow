@@ -201,6 +201,96 @@ describe("locatePartsWithLlm request/response exchange", () => {
     expect(requests).toHaveLength(2); // no third request
   });
 
+  // --- Chat Completions 信封与 max_tokens 截断（2026-10-01 RC 走查 P1） -----------
+
+  /** 真 Chat Completions 响应形状：choices[0].message.content 承载模型输出。 */
+  function envelope(content: string, finishReason: string): unknown {
+    return {
+      id: "chatcmpl-unit",
+      choices: [{ index: 0, finish_reason: finishReason, message: { role: "assistant", content } }],
+      usage: { total_tokens: 123 },
+    };
+  }
+
+  it("unwraps choices[0].message.content from a Chat Completions envelope", async () => {
+    const { transport, requests } = scriptedTransport([chatResponse(envelope(VALID_JSON, "stop"))]);
+    const result = await locatePartsWithLlm(locateRequest(), transport, context());
+    expect(result.ok, JSON.stringify(result)).toBe(true);
+    expect(requests).toHaveLength(1); // no wasted repair on a healthy envelope
+  });
+
+  it("repairs a finish_reason=length truncated reply, and the repair names the token cut", async () => {
+    const truncated = `${VALID_JSON.slice(0, 220)},"confiden`;
+    expect(parseLocateDocument(truncated, 64, 48, DEFAULT_SEGMENTATION_OPTIONS).ok).toBe(false); // 前置：截断文本确实解析失败
+    const { transport, requests } = scriptedTransport([
+      chatResponse(envelope(truncated, "length")),
+      chatResponse(envelope(VALID_JSON, "stop")),
+    ]);
+    const result = await locatePartsWithLlm(locateRequest(), transport, context());
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error(result.error.code);
+    expect(result.value.attempts).toBe(2);
+    expect(result.value.repaired).toBe(true);
+    expect(requests).toHaveLength(2);
+    const repairContent = requests[1]?.body.messages[1]?.content;
+    expect(
+      typeof repairContent === "string" && repairContent.includes("finish_reason=length"),
+    ).toBe(true);
+    // 修复请求不重发图像（契约 :420）
+    expect(JSON.stringify(requests[1])).not.toContain("data:image/png");
+  });
+
+  it("classifies a still-truncated repair as LLM_INVALID_RESPONSE (no third request)", async () => {
+    const truncated = `${VALID_JSON.slice(0, 220)},"confiden`;
+    const { transport, requests } = scriptedTransport([
+      chatResponse(envelope(truncated, "length")),
+      chatResponse(envelope(truncated, "length")),
+    ]);
+    const result = await locatePartsWithLlm(locateRequest(), transport, context());
+    expect(result.ok).toBe(false);
+    if (result.ok) throw new Error("unreachable");
+    expect(result.error.code).toBe("LLM_INVALID_RESPONSE");
+    expect(requests).toHaveLength(2);
+  });
+
+  it("maps request-rejecting 4xx to LLM_CONFIGURATION_INVALID without a repair", async () => {
+    // 2026-10-01 实测形状：z.ai glm-4v-flash 对超上限 max_tokens 回 400/1210
+    //（"<1s"），修复前被归 LLM_NETWORK_FAILED，横幅误报"连不上服务商"。
+    for (const status of [400, 404, 413] as const) {
+      const { transport, requests } = scriptedTransport([
+        chatResponse(
+          { error: { code: "1210", message: "The max_tokens parameter is illegal." } },
+          status,
+        ),
+      ]);
+      const result = await locatePartsWithLlm(locateRequest(), transport, context());
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error("unreachable");
+      expect(result.error.code).toBe("LLM_CONFIGURATION_INVALID");
+      expect(result.error.stage).toBe("semantic-locate");
+      expect(result.error.recoveryActions).toContain("configure-key");
+      expect(requests).toHaveLength(1); // 请求被拒不进修复路径
+      // 错误卫生：details 只带 provider host 与 status，不带服务商 body 文本
+      const serialized = JSON.stringify(result.error.details);
+      expect(serialized).not.toContain("max_tokens parameter");
+      expect(serialized).toContain('"actual":' + String(status));
+    }
+  });
+
+  it("maps 402 to rate limiting and 408 to timeout", async () => {
+    for (const [status, code] of [
+      [402, "LLM_RATE_LIMITED"],
+      [408, "LLM_TIMEOUT"],
+    ] as const) {
+      const { transport, requests } = scriptedTransport([chatResponse({}, status)]);
+      const result = await locatePartsWithLlm(locateRequest(), transport, context());
+      expect(result.ok).toBe(false);
+      if (result.ok) throw new Error("unreachable");
+      expect(result.error.code).toBe(code);
+      expect(requests).toHaveLength(1);
+    }
+  });
+
   it("does not repair on 429 and never auto-retries", async () => {
     const { transport, requests } = scriptedTransport([chatResponse({ error: "slow down" }, 429)]);
     const result = await locatePartsWithLlm(locateRequest(), transport, context());

@@ -29,6 +29,7 @@ import {
   GLM_ENDPOINT,
   isValidEndpoint,
   loadByokState,
+  maxOutputTokensForModel,
   presetEndpoint,
   saveByok,
 } from "./byok";
@@ -216,7 +217,10 @@ export function PartsWorkspace({
       apiKey: stored.key,
       timeoutMs: 8000,
       maxResponseBytes: 1_048_576,
-      maxOutputTokens: 4096,
+      // 契约上限 4,096 为默认；glm-4v-flash 等服务商上限更低的模型取实测档
+      // （2026-10-01 RC 走查 P1：固定 4,096 被 z.ai 快速 400/1210 拒绝，
+      // 又被归网络类，误报"连不上服务商"）。
+      maxOutputTokens: maxOutputTokensForModel(store.byok.model),
     };
   };
   const validateFile = async (files: FileList | File[]) => {
