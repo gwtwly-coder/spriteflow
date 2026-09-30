@@ -1,5 +1,6 @@
 # SpriteFlow M1 架构定版
 
+> 2026-09-30 迁移说明：M1 技术架构继续适用；历史角色编号仅表示原责任分工。当前任务/所有权见 project-state 与 README；§9/§10 的旧进度与整改记录仅适用于其当时基线，不恢复旧 Gate 或固定型号指令。
 > 版本：1.0.0-r2（文档修订）；日期：2026-09-16；角色：架构师 R3；状态：第 1 轮问题修复，提交 Gate 1 第 2 轮复审。  
 > 全文依据已通读的 `technical-design.md`，M1 范围以其第 9 节及本次用户明确交付要求为准。公共 API 唯一规范为 [interface-contract.md](./interface-contract.md)。本交付不包含功能实现、项目脚手架或部署。
 
@@ -88,9 +89,9 @@ M1 做静态透明 PNG/WebP、网格与 8 连通域、手动网格/矩形审校�
 
 管线包只发布 ESM + `.d.ts`，根 exports 为 `.` 和 `./browser`，`sideEffects:false`；编译输出 dist，避免前端直接引用管线源码导致测试构建语义漂移。初期不发布 npm，workspace 使用 `workspace:*`。共享类型全部属于 pipeline；前端不能复制一份 Frame/错误枚举并自行演化。
 
-R4负责packages/pipeline全部（含browser adapter）；R5负责apps/web（含Worker启动文件）；R6负责tests/golden、tests/e2e。**R7为根级唯一集成人**，除.github与部署配置外，独占维护根package.json、pnpm-workspace.yaml、pnpm-lock.yaml、tsconfig.base.json、biome.json、.npmrc、README.md、.gitignore及docs/devops.md。docs/technical-design.md与docs/agent-roles.md归产品主，其他角色只能提出修改建议或按产品主明确委托修改。这些归属已落实到[角色所有权表](./agent-roles.md)，不再作为待裁决建议。
+当前协作按 README 与运行协议 v3.1：RC 为 packages/pipeline、apps/web、tests/golden / tests/e2e 等实际任务指定负责人和文件边界；同一文件单写者。根配置、lockfile、CI、部署配置及 docs/devops.md 由指定集成人处理。有效产品/契约约束继续保留，变更按授权与影响同步，不再引用旧固定角色所有权表。
 
-R7根级工程初始化前置到Wave2开工前，完整CI/部署仍在Wave3；各包owner向R7提交依赖与共享脚本需求，禁止两人同时改写根lockfile。根.gitignore已忽略tests/golden/reports/；测试数据cases/、ground-truth和生成器仍须跟踪，报告按CI artifact保留策略处理。
+现有工程骨架直接复用，不重跑初始化波次；各包负责人将依赖与共享脚本需求交指定集成人，禁止并行改写根 lockfile。根 .gitignore 已忽略 tests/golden/reports/；测试数据 cases/、ground-truth 和生成器仍须跟踪，报告按 CI artifact 保留策略处理。
 
 ## 3. 技术栈和最小直接依赖
 
@@ -354,7 +355,7 @@ build job完整扫描lockfile的packages区和安装发布包许可，按name@ve
 4. 验收问题2采用其给出的方案（b）：当前PRD F-18/AC-F18已纳入三个角标、筛选及确认，copy-m1.md已提供review.badge.outlier、review.filter.outlier等完整双语词条；契约第8节据此明确显示离群角标，不能再写“M1离群UI不暴露”。M1仍不显示dHash数值、不自动折叠/排除/修复帧、不承诺语义质量检测。
 5. 根配置与docs/devops.md归R7、技术方案与角色权限归产品主，已在第2节及agent-roles.md落盘；根.gitignore已增加报告目录规则。
 
-ui-spec.md属于Wave2，目前尚不存在；本轮没有创建未经UI角色设计的占位规范。以下状态清单已同时写入R2角色交接要求，作为其后续ui-spec验收必查项：
+以下为 M1 当时的 UI 状态交接清单，技术行为保留；docs/ui-spec.md 现已存在并演进到 v1.3，不依据本历史段落重新创建规格或启动旧角色。
 
 | UI状态/操作 | 必须行为 | 现有copy词条 |
 |---|---|---|
@@ -364,7 +365,7 @@ ui-spec.md属于Wave2，目前尚不存在；本轮没有创建未经UI角色设
 | 尚未确认 | 展示待确认数量，导出按REVIEW_REQUIRED返回审校 | review.pending / export.review_required.* |
 | 确认后 | accepted，可导出，flags与角标继续保留，不自动修复/折叠 | review.confirmed / tool.confirm_review |
 
-这是当前PRD的设计交接，不等同于ui-spec已编写或Gate2已通过。并行双方以同一版r2接口契约开工；正式冻结后的协议更改集中回到架构师修订，经原Gate流程同步，禁止单方临时加字段。
+以上描述 M1 当时的对齐要求，不是当前进度或开工指令。现行 M1 契约为 interface-contract.md 3.0.0/r4；公共协议变更由 RC 按现行流程安排修订与独立核对，禁止单方临时加字段。
 
 ## 10. 第 1 轮验收问题整改索引
 

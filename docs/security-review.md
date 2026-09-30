@@ -1,10 +1,10 @@
 # 安全专项轮记录（SpriteFlow）
 
-> 依据 RC 运行协议 v3.0 §6 建立，增量维护。发布判定以本文为准。
+> Round 1 历史证据保留；2026-09-30 迁移按开发流程 v3.1 §5.4/§6 更新状态。本文区分历史观测、尚缺复核和本轮发布条件，本次迁移未重测产品或线上。
 
 ## 轮次信息
 
-- **Round 1**：2026-09-29。负责人＝RC（主会话 GLM-5.3-Flash）。独立审查：无——单人复核限制如实记录（协议 §6.1 允许，不得伪造审查者）。
+- **Round 1**：2026-09-29。负责人＝RC（主会话 GLM-5.3-Flash）。独立审查：无。旧流程下的单人检查记录保留；按现行 v3.1，此轮为“已有加固证据，待独立验收”，不得补造审查者。
 - 对象：M1 生产站 https://spriteflow-doa.pages.dev （纯静态前端、零服务器）+ 仓库 main 基线 666f486 + 本轮加固提交。
 - 方法：代码审计（grep 注入点/密钥/消息通道/URL 处理）→ 依赖审计 → 实际加固（部署安全头）→ 本地同头真浏览器全链路验证 → 生产头核验。
 
@@ -14,10 +14,10 @@
 |---|---|---|---|
 | 1 | DDoS/资源滥用 | 部分适用（部署侧） | 应用零服务器：无自有 API/登录/上传端点，成本入口＝Cloudflare 静态托管＋用户本地算力。v3 BYOK 的 LLM 调用花用户自己的 key，无站点侧成本路径。WAF/限流定制未配——部署待办（低风险，记录不阻塞） |
 | 2 | 缓存雪崩/击穿/穿透 | 不适用 | 无应用层缓存服务；v3 模型 CacheAPI 是客户端性能缓存，无服务端回源路径 |
-| 3 | 注入与不可信输入 | 适用，已核验 | XSS sink 全仓 grep（`innerHTML`/`dangerouslySetInnerHTML`/`eval(`/`new Function(`/`document.write`）＝**0 处**；文件名等不可信输入走 React 文本节点；Godot `.gd` 生成带 schema/路径校验（`packages/pipeline/src/export/godot.ts` "Unsafe frame path." 分支），动态量经 `JSON.stringify`；URL 仅 hash 路由判断，无注入面 |
+| 3 | 注入与不可信输入 | 适用，已有局部静态证据、待独立复核 | XSS sink 全仓 grep（`innerHTML`/`dangerouslySetInnerHTML`/`eval(`/`new Function(`/`document.write`）＝**0 处**；文件名等不可信输入走 React 文本节点；Godot `.gd` 生成带 schema/路径校验（`packages/pipeline/src/export/godot.ts` "Unsafe frame path." 分支），动态量经 `JSON.stringify`；旧记录称 URL 用于 hash 路由判断；该搜索结果只覆盖列举的 sink，不能据此判定无注入面，文件名/导出脚本/外部响应等需按实际路径核验 |
 | 4 | 越权与数据隔离 | 不适用 | 无账号/无服务器/无跨用户数据，素材全程本地。v3 BYOK key 本地存储、只进用户配置的服务商请求（PRD AC-V02-E）——v3.0-alpha 交付时按此复核 |
 | 5 | 字典/暴力/枚举 | 不适用 | 无登录/验证码/token 入口 |
-| 6 | 会话/密钥/供应链 | 适用，已核验＋本轮加固 | 仓库无密钥（`git grep`＝0；`BIGMODEL_API_KEY` 仅 .env（gitignored）＋用户环境变量）；HTTPS＝Cloudflare 默认；依赖精确版本＋CI 三门禁（boundaries/licenses/bundle-budget）＋**pnpm audit（官方 registry，2026-09-29）"No known vulnerabilities"**。注意：本机 npmmirror 镜像无 audit 端点，须 `--registry=https://registry.npmjs.org` |
+| 6 | 会话/密钥/供应链 | 适用，历史检查＋已记录加固、待独立复核 | 仓库无密钥（`git grep`＝0；`BIGMODEL_API_KEY` 仅 .env（gitignored）＋用户环境变量）；HTTPS＝Cloudflare 默认；依赖精确版本＋CI 三门禁（boundaries/licenses/bundle-budget）＋**pnpm audit（官方 registry，2026-09-29）"No known vulnerabilities"**。注意：本机 npmmirror 镜像无 audit 端点，须 `--registry=https://registry.npmjs.org` |
 | 7 | 业务与 AI 风险 | 设计期约束（v3 实现期验收） | L1 返回 JSON 必须严格 schema 校验后才进入渲染/导出（防提示注入落地）；无交易/投票类幂等需求。写入 v3 Wave 2 验收清单 |
 
 ## 实际加固（Round 1）
@@ -56,6 +56,17 @@ CSP 依据产物实测制定：`dist/index.html` 仅 1 个外链 module script�
 | CSP report-only 观察期未设 | 低 | 已用真浏览器全链路验证替代；后续大改前端时可用 `Content-Security-Policy-Report-Only` 过渡 |
 | v3 新攻击面（BYOK key 存储、SAM 模型文件完整性、LLM 返回 JSON） | — | 随 v3.0-alpha 交付做增量复核（协议 §6.1）；模型文件冻结 revision+SHA-256 已写入 architecture-v3 |
 
-## 发布判定
+## 当前状态与发布判定（流程 v3.1）
 
-**不阻塞**：无已知严重/高危可利用问题；关键适用防护（本轮安全头）代码已加固、测试环境已验证、生产已核实。
+旧 Round 1 曾判定“不阻塞”，依据为当时的安全头加固、局部静态检查、本地兼容路径与生产头观测。该历史结论不等于当前 v3 已完成安全验收。
+
+**当前：待独立验收；本轮发布条件尚未满足。** 保留既有证据，不无差别重跑。由 RC 指定生产者之外的适配上下文检查其基线与范围，并定向补缺；正常开发可继续。未确认存在新漏洞，本次修订纠正的是证据范围和验收状态。
+
+本轮需要处理的具体缺口：
+
+- 验收者读取原始攻击面、实际实现与证据，记录平台/实际型号/工具；不能由原作者的 PASS 替代。
+- DataTransfer 注入上传只证明该输入路径；旧执行记录中的真实点击失败若未复测，保留失败/未验证，不由 DOM click 绕过结果覆盖。现有 CSP 冒烟仅支持所测功能与策略兼容。
+- 纯本地图像处理也评估输入尺寸/解码内存/并发、Worker 超时与取消、导出文件名/脚本等适用边界；不把“无自有服务器”当作全部资源滥用不适用。
+- v3 增量检查 BYOK 逐次同意与密钥生命周期、端点/重定向边界、模型 revision/hash/来源、LLM JSON 与蒙版/ZIP 资源上限。M1 的 connect-src 'self' 与未来外部 BYOK/模型通道可能存在兼容问题，需在实现时明确验证并采用最小必要策略，不能为跑通直接放开所有来源。
+- 旧角色记录称 key 曾出现在对话；本次未读取或验证密钥。保留既有联调决定，安全负责人核实暴露及轮换状态并给具体建议，不自动撤销或扩大使用。
+- 各类适用性结论随实际实现核对，部署证据核对当前发布基线；未完成/无权限写未验证。满足上述适用条件后再给独立结论，不能因规则迁移抹掉历史成果或自动放行。

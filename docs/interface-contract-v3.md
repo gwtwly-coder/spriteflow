@@ -1,6 +1,6 @@
-# SpriteFlow v3 segment / rig 公共接口契约（候选）
+# SpriteFlow v3 segment / rig 公共接口契约
 
-> 版本：0.2.0-r2；日期：2026-09-29；状态：按 PRD v3.0-alpha 对齐的架构候选。
+> 版本：0.2.0-r2；日期：2026-09-29；状态：按 PRD v3.0-alpha 对齐，既有 Gate 1 文档验收已通过；当前实现范围与接续见 project-state.md。本文技术条款未因流程迁移而修改。
 >
 > 本文件定义 `@spriteflow/segment`、`@spriteflow/segment/browser` 与 `@spriteflow/rig` 的公共 API；代码标识符为英文，本文说明为中文。文中代码块是完整的接口声明/调用形状，不是功能实现。
 >
