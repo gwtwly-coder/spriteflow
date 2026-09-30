@@ -935,3 +935,35 @@ kbd {
 .parts-shell .dropzone strong {
   font-size: 20px;
 }
+/* 视觉调节面板（ui-spec §13.3，仅开发构建入口）。 */
+.dev-visual {
+  width: 400px;
+  max-height: 82vh;
+  overflow-y: auto;
+}
+.dev-visual .dev-visual-row {
+  display: grid;
+  grid-template-columns: 96px 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+.dev-visual input[type="color"] {
+  width: 48px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--border-2);
+  border-radius: 4px;
+  background: var(--bg-2);
+}
+.dev-visual .dev-visual-json {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  color: var(--text-1);
+  background: var(--bg-0);
+  border: 1px solid var(--border-1);
+  border-radius: 6px;
+  resize: vertical;
+}
