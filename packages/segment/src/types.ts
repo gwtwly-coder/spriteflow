@@ -1,7 +1,7 @@
 // Public declarations transcribed from docs/interface-contract-v3.md (0.2.0-r2),
 // sections 1-5 and 10. Only types/enums that the v3.0-alpha root entry needs are
 // declared here; the root index exports exactly the contract surface.
-import type { AssetRef, Point, Rect, Size } from "./m1.js";
+import type { AssetRef, InputAsset, Point, Rect, Size } from "./m1.js";
 
 // --- Section 1: shared rules and package entry -------------------------------
 
@@ -251,6 +251,82 @@ export interface SamMaskResult {
   sourceRect: Rect;
   predictedIou: number;
   provider: SamExecutionProvider;
+}
+
+// --- Section 4: SAM model manifest, session and prompts -------------------------
+
+export interface SamModelManifest {
+  modelId: ModelId;
+  revision: string;
+  artifactUrl: string;
+  sha256: string;
+  byteLength: number;
+  inputSize: Size;
+  maxSourceDimension: number;
+  imageInputName: string;
+  promptInputNames: {
+    box: string;
+    points: string;
+    pointLabels: string;
+  };
+  outputNames: {
+    masks: string;
+    scores: string;
+  };
+  licenseId: string;
+}
+
+export interface SamRuntimeOptions {
+  provider: "auto" | SamExecutionProvider;
+  wasmThreads: 1;
+  useModelCache: boolean;
+}
+
+export interface SamPoint {
+  point: Point;
+  label: "positive" | "negative";
+}
+
+export type SamPrompt =
+  | { type: "box"; box: Rect; points: SamPoint[] }
+  | { type: "points"; points: SamPoint[]; box: Rect | null };
+
+export interface SamSessionInfo {
+  sessionId: SessionId;
+  modelId: ModelId;
+  revision: string;
+  provider: SamExecutionProvider;
+  cachedModel: boolean;
+  asset: AssetRef | null;
+  state: "ready" | "image-ready" | "disposed";
+  warnings: CharacterWarning[];
+}
+
+export interface SamInferenceBackend {
+  create(manifest: SamModelManifest, provider: SamExecutionProvider): Promise<void>;
+  embed(
+    asset: InputAsset,
+    manifest: SamModelManifest,
+    context: CharacterExecutionContext,
+  ): Promise<void>;
+  infer(
+    prompt: SamPrompt,
+    context: CharacterExecutionContext,
+  ): Promise<{ mask: BitMask; sourceRect: Rect; predictedIou: number }>;
+  dispose(): Promise<void>;
+}
+
+export interface SamSession {
+  initialize(context: CharacterExecutionContext): Promise<CharacterOutcome<SamSessionInfo>>;
+  setImage(
+    asset: InputAsset,
+    context: CharacterExecutionContext,
+  ): Promise<CharacterOutcome<SamSessionInfo>>;
+  segment(
+    prompt: SamPrompt,
+    context: CharacterExecutionContext,
+  ): Promise<CharacterOutcome<SamMaskResult>>;
+  dispose(): Promise<void>;
 }
 
 // --- Section 5 (referenced from section 2): mask edits -------------------------

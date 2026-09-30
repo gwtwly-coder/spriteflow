@@ -472,6 +472,7 @@ function classifyTransportFailure(error: unknown): CharacterErrorCode {
   const candidate = error as { name?: unknown; code?: unknown } | null;
   if (typeof candidate === "object" && candidate !== null) {
     if (candidate.code === "LLM_RESPONSE_TOO_LARGE") return CharacterErrorCode.LlmResponseTooLarge;
+    if (candidate.code === "CANCELLED") return CharacterErrorCode.Cancelled;
     if (
       candidate.code === "LLM_TIMEOUT" ||
       candidate.name === "TimeoutError" ||

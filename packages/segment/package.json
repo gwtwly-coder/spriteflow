@@ -2,18 +2,22 @@
   "name": "@spriteflow/segment",
   "version": "0.1.0",
   "private": true,
-  "description": "Pure TypeScript character segmentation core: bit masks, part assets, pixel-invariant pixel extraction, L1 locate document parsing. Root entry is DOM-free (ES2022 + TypedArray only, Node testable). Browser-only SAM runtime and fetch transport arrive in a later increment via the ./browser subentry.",
+  "description": "Pure TypeScript character segmentation core: bit masks, part assets, pixel-invariant pixel extraction, L1 locate parsing, SAM session orchestration. Root entry is DOM-free (ES2022 + TypedArray only, Node testable); ./browser hosts the fetch LLM transport, the approved SAM model registry and the onnxruntime-web backend.",
   "type": "module",
   "sideEffects": false,
   "scripts": {
     "test": "vitest run",
-    "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.tests.json --noEmit"
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.browser.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.browser.json --noEmit && tsc -p tsconfig.tests.json --noEmit"
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "default": "./dist/browser/index.js"
     }
   },
   "files": [

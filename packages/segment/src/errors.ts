@@ -12,7 +12,7 @@ import type {
 export type CharacterErrorOptions = {
   recoverable?: boolean;
   recoveryActions?: CharacterRecoveryAction[];
-  details?: CharacterError["details"];
+  details?: CharacterError["details"] | undefined;
 };
 
 export function characterError(

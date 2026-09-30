@@ -1,6 +1,7 @@
-// Contract constants (docs/interface-contract-v3.md section 1 line 71 and
-// section 2 line 224). Objects are frozen: limits/options must not change at runtime.
-import type { CharacterLimits, SegmentationOptions } from "./types.js";
+// Contract constants (docs/interface-contract-v3.md section 1 line 71, section 2
+// line 224 and section 4 line 461). Objects are frozen: limits/options must not
+// change at runtime.
+import type { CharacterLimits, SamRuntimeOptions, SegmentationOptions } from "./types.js";
 
 export const V3_CONTRACT_VERSION = "3.0.0" as const;
 export const V3_PROTOCOL_VERSION = 1 as const;
@@ -25,4 +26,10 @@ export const DEFAULT_SEGMENTATION_OPTIONS: Readonly<SegmentationOptions> = Objec
   minimumMaskConfidence: 0.5,
   modelInputMaxDimension: 1024,
   preserveSmallParts: true,
+});
+
+export const DEFAULT_SAM_RUNTIME_OPTIONS: Readonly<SamRuntimeOptions> = Object.freeze({
+  provider: "auto",
+  wasmThreads: 1 as const,
+  useModelCache: true,
 });
