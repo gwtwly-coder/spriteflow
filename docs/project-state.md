@@ -13,7 +13,7 @@
 ## 当前工作与接续
 
 - **文档对齐验收已通过**：【历史记录】docs/acceptance/gate1-v3-verdict-1.md 在基线 666f486 对 PRD、架构和契约给出 PASS。原 RC 记录把产品主“继续”理解为开工确认，并已开始实现。本次沿用已有开工状态，不新增用户确认，也不因迁移重开 Gate 1。裁决只覆盖其基线和文档范围。
-- **segment 纯逻辑增量：已交付并推送（7355afb，2026-09-30）**。执行者＝宿主子代理（型号未知，继承父会话，已披露），完成被打断 WIP 的收尾：修 4 处编译错误、按契约核语义、补 5 个测试文件 74 用例全绿；门禁全绿（segment build/typecheck/test + 根 lint/typecheck/test:unit，RC 以真实退出码复跑）。范围＝契约 §1-§3 根入口；fetch/ORT/SAM 会话/ZIP 导出/segmentSemantically 编排属后续 ./browser 与导出增量。**独立验收进行中**（生产者外子代理，裁决将落 docs/acceptance/segment-core-verdict-1.md）。执行者登记的两项契约歧义待产品主裁定（不阻塞，见挂起项）。
+- **segment 纯逻辑增量：已交付、已独立验收通过、放行（7355afb，2026-09-30）**。执行者＝宿主子代理（型号未知，继承父会话，已披露）；收尾被打断 WIP：修 4 处编译错误、按契约核语义、补 5 个测试文件 74 用例。**独立验收＝PASS**（`docs/acceptance/segment-core-verdict-1.md`，同族独立上下文已披露；含 2 例受控负例证明像素断言与修复断言真实有效；6 项登记歧义全部裁定接受，其中两项附 P2 建议转产品主择机裁定）。验收新增 4 项 P2 见挂起项，随下次触碰 llm.ts 的增量（browser 适配）一并清理。范围＝契约 §1-§3 根入口；fetch/ORT/SAM 会话/ZIP 导出/segmentSemantically 编排属后续 ./browser 与导出增量。
 - **README 有既存未提交改动**：【迁移核验】本次在读取的工作树版本上修改入口，保留原环境、命令、CI 与部署内容；所有原始文件已备份，未 reset、提交或推送。
 - **SAM 浏览器适配、拆件 UI**：【历史计划】后续独立增量，当前是否有新增工作以实际仓库为准，不凭此记录宣称未做或已做。
 - **黄金人物集**：【历史预检】3/11 合格，缺 7 人形 + 1 非人形，见 docs/inspections/v3-golden-precheck-2026-09-29.md。接续先核对 D:\桌面\素材\v3立绘\ 是否已有新素材，不重复要求用户生成。缺素材只阻塞依赖它的验收，不阻塞可独立推进的实现。
@@ -49,7 +49,8 @@
 
 ## 挂起项
 
-- **待产品主裁定（segment 执行者登记的契约歧义，均不阻塞、不影响结果路径）**：①L1 返回 0 部位时归类为"schema 可修复错误"而非直接 NON_HUMANOID 降级（两条路最终都进点击模式，差别是多一轮修复尝试；裁定后如改分类，只动 llm.ts 一处）；②endpoint 不校验 `/chat/completions` 路径后缀（按 HTTPS/长度/userinfo/fragment 校验，容忍带 query 的合法端点；若要求严格后缀校验须改 llm.ts 配置校验）。
+- **segment 验收登记的 4 项 P2（不阻断；随 browser 适配增量触碰 llm.ts 时清理）**：①null image/provider 抛未约定 TypeError 而非 CharacterError（llm.ts:119/178，契约 §1"不抛未约定异常"边界）；②取消期间 transport 抛 AbortError 被归为超时且未复查 isCancelled（llm.ts:471-484）；③未闭合开场 fence 也被剥离（llm.ts:320-330，仍需严格 JSON.parse，无实质风险）；④tests tsconfig lib 含 DOM（仅测试编译，src 边界不受影响）。
+- **待产品主裁定（segment 执行者登记、验收官附建议转来的契约歧义，均不阻塞）**：①L1 返回 0 部位归类"schema 可修复错误"而非直接 NON_HUMANOID 降级——两路都进点击模式，但前者会多付一轮修复且 UI 呈现为"响应非法"而非"不像人形"提示（验收官建议产品主择机澄清契约；如改分类只动 llm.ts 一处）；②endpoint 不校验 `/chat/completions` 后缀——严格校验会误伤带 query 的端点（验收官建议用 UI 提示替代硬校验）。
 - M1 原记录遗留 P1：Firefox 快捷键实测、dialog 可访问名称、CI 视觉基线落地；需先核对有无后续修复。
 - 自定义域名/国内可达 CDN、Lemon Squeezy、landing page；pages.dev 国内可达性属于历史反馈。
 - Worker 网络专用提示、Image To Slice 许可查证、两张多帧表转 M1 病例的入库判定。
