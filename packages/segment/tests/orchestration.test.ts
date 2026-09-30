@@ -133,6 +133,41 @@ describe("segmentSemantically LLM failure and humanoid gates", () => {
     expect(result.warnings.map((warning) => warning.code)).toContain("LLM_FALLBACK_TO_CLICK");
   });
 
+  it("threads the exchange's authentic error code through the degrade warning", async () => {
+    // 2026-09-30 RC P1: the degraded result used to drop the LLM error entirely,
+    // forcing UI layers to re-guess the reason from an HTTP-status side-channel
+    // whose catch-all rendered a 401 as "unparseable response".
+    const auth = await segmentSemantically(
+      semanticRequest(),
+      {
+        async send() {
+          return okResponse({ error: { code: "401", message: "令牌已过期或验证不正确" } }, 401);
+        },
+      },
+      fakeBackend().backend,
+      context(),
+    );
+    const authResult = value(auth);
+    const authWarning = authResult.warnings.find((entry) => entry.code === "LLM_FALLBACK_TO_CLICK");
+    expect(authWarning?.llmErrorCode).toBe("LLM_AUTHENTICATION_FAILED");
+
+    const invalid = await segmentSemantically(
+      semanticRequest(),
+      {
+        async send() {
+          return okResponse("not json at all");
+        },
+      },
+      fakeBackend().backend,
+      context(),
+    );
+    const invalidResult = value(invalid);
+    const invalidWarning = invalidResult.warnings.find(
+      (entry) => entry.code === "LLM_FALLBACK_TO_CLICK",
+    );
+    expect(invalidWarning?.llmErrorCode).toBe("LLM_INVALID_RESPONSE");
+  });
+
   it("returns a click-mode result after an unrepairable LLM reply", async () => {
     const outcome = await segmentSemantically(
       semanticRequest(),

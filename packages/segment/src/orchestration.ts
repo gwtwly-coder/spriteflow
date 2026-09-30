@@ -127,8 +127,13 @@ function cancelled(stage: CharacterStage): CharacterError {
   return orchestrationError(Code.Cancelled, stage, {});
 }
 
-function warning(code: WarningCode, partIds: string[]): CharacterWarning {
-  return { code, messageKey: `character.warning.${code}`, partIds };
+function warning(code: WarningCode, partIds: string[], llmErrorCode?: Code): CharacterWarning {
+  return {
+    code,
+    messageKey: `character.warning.${code}`,
+    partIds,
+    ...(llmErrorCode !== undefined ? { llmErrorCode } : {}),
+  };
 }
 
 function degradationMessageKey(reason: SegmentationDegradedReason): string {
@@ -317,10 +322,13 @@ export async function segmentSemantically(
   if (context.isCancelled()) return failure(cancelled(Stage.SemanticLocate));
   if (!located.ok) {
     reporter.complete(0, 0);
+    // The exchange's own classification travels with the degrade (LLM_FALLBACK_
+    // TO_CLICK.llmErrorCode) so UI layers never have to re-guess the reason from
+    // an HTTP-status side-channel. Code constant only — no key/data/body text.
     return {
       ok: true,
       value: clickModeResult(assetRef, null, DegradedReason.LlmFailed, [
-        warning(WarningCode.LlmFallbackToClick, []),
+        warning(WarningCode.LlmFallbackToClick, [], located.error.code),
       ]),
     };
   }

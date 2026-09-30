@@ -35,6 +35,7 @@ import {
 import { getCharacterClient, resetCharacterClient } from "./character-client";
 import type { CharacterPrepareOutput, LlmFailureReason } from "./character-protocol";
 import { buildExportNames, partDisplayName } from "./kind-display";
+import { llmFailureFromLlmCode } from "./llm-failure";
 import { imageRectOfPart, PartsCanvas, partAtPoint } from "./PartsCanvas";
 import { type ByokConfig, type PartsDegraded, usePartsStore } from "./parts-store";
 
@@ -108,17 +109,7 @@ const DEFAULT_MODELS: Record<ByokConfig["provider"], string> = {
   custom: "",
 };
 
-/** L1 错误码 → 失败原因（AC-V02-C 的四类说明：key 无效/网络/额度/无法解析）。 */
-const LLM_REASON_BY_CODE: Partial<Record<CharacterError["code"], LlmFailureReason>> = {
-  LLM_AUTHENTICATION_FAILED: "unauthorized",
-  LLM_RATE_LIMITED: "rate_limited",
-  LLM_NETWORK_FAILED: "network",
-  LLM_TIMEOUT: "network",
-  LLM_INVALID_RESPONSE: "bad_response",
-  LLM_RESPONSE_TOO_LARGE: "bad_response",
-  LLM_CONFIGURATION_INVALID: "bad_response",
-  LLM_CONSENT_REQUIRED: "bad_response",
-};
+/** L1 失败卡（AC-V02-C 四分类）的唯一映射：llm-failure.ts（错误码权威，status 兜底）。 */
 
 export function PartsWorkspace({
   locale,
@@ -371,8 +362,12 @@ export function PartsWorkspace({
       }
       // LLM 失败（AC-V02-C）：原因匹配的失败说明 + 重试语义定位/使用点击模式，
       // 不进模型失败卡（模型与 LLM 是两类故障）；已上传图片与已有部位保留。
+      // 权威来源是错误码（exchange 的 HTTP status 优先分类），worker 的
+      // llmFailure（错误码优先、status 兜底）仅作补充——顺序不能反。
       const reason =
-        output.llmFailure ?? (output.error ? LLM_REASON_BY_CODE[output.error.code] : undefined);
+        (output.error ? llmFailureFromLlmCode(output.error.code) : null) ??
+        output.llmFailure ??
+        undefined;
       if (reason) {
         setLlmFailure(reason);
       } else {
@@ -387,7 +382,9 @@ export function PartsWorkspace({
     const result = output.result;
     store.applySegmentResult(result);
     if (result.degraded) {
-      store.setDegraded(DEGRADED_MAP[result.degraded.reason], output.llmFailure);
+      // 显式传 null：低置信/非人形等非 LLM 失败不得沿用上一次运行的失败原因
+      //（否则旧分类会串到新横幅上）。
+      store.setDegraded(DEGRADED_MAP[result.degraded.reason], output.llmFailure ?? null);
       store.setScreen("review");
       setBusy(null);
       setProgress(null);
@@ -1135,14 +1132,10 @@ function PartsReview({
         : degraded === "llm-failed" || degraded === "low-confidence"
           ? DEGRADED_BANNER.LLM_FAILED
           : null;
-  const reasonKey =
-    llmFailure === "network"
-      ? "llm.error.network"
-      : llmFailure === "unauthorized"
-        ? "llm.error.unauthorized"
-        : llmFailure === "rate_limited"
-          ? "llm.error.rate_limited"
-          : "llm.error.bad_response";
+  // 四分类词条（copy-v3）：仅在确有分类时渲染 reason；null 不得兜底成
+  // "无法解析的结果"（2026-09-30 RC P1 的 UI 侧根因之一），低置信降级
+  // 用自己的中性文案（LLM 其实成功解析了）。
+  const reasonText = llmFailure === null ? null : t(locale, `llm.error.${llmFailure}` as never);
   const toolButton = (
     tool: "add-region" | "remove-region" | "add-part" | "select" | "pan",
     key: Parameters<typeof translate>[1],
@@ -1218,9 +1211,7 @@ function PartsReview({
               <strong>{t(locale, bannerKey.title)}</strong>
               <span>
                 {degraded === "llm-failed" || degraded === "low-confidence"
-                  ? t(locale, bannerKey.body, {
-                      reason: t(locale, reasonKey as never),
-                    })
+                  ? (reasonText ?? t(locale, "parts.fallback.low_confidence.body"))
                   : t(locale, bannerKey.body)}
               </span>
               {degraded === "llm-failed" && (

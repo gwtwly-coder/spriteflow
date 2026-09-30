@@ -221,6 +221,17 @@ export interface CharacterWarning {
   code: CharacterWarningCode;
   messageKey: string;
   partIds: PartId[];
+  /**
+   * Authentic LLM error code carried on LLM_FALLBACK_TO_CLICK when the degrade
+   * was caused by a locatePartsWithLlm failure. The exchange's own
+   * HTTP-status-first classification is authoritative; UI layers must derive
+   * the failure card reason from this code instead of re-guessing from a
+   * recorded HTTP status side-channel (2026-09-30 RC P1: a 401 was rendered as
+   * "unparseable response" because the side-channel fell through to
+   * bad_response). Constant enum value only — never key material, image data
+   * or provider output.
+   */
+  llmErrorCode?: CharacterErrorCode;
 }
 
 export interface SegmentationResult {

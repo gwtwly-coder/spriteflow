@@ -287,6 +287,8 @@ const zh = {
   "parts.fallback.nokey.body": "可以配置 API Key 自动命名部位，或直接用本地点击模式拆件。",
   "parts.fallback.llm_failed.title": "语义定位没成功",
   "parts.fallback.llm_failed.body": "{reason}",
+  "parts.fallback.low_confidence.body":
+    "语义定位的置信度偏低。已切到点击模式，可重试或手动点出部位。",
   "parts.fallback.use_click": "使用点击模式",
   "parts.fallback.retry_llm": "重试语义定位",
   "llm.error.network": "连不上服务商，或请求超时。",
@@ -655,6 +657,8 @@ Object.assign(en, {
     "Add an API key for automatic part naming, or split parts with local click mode.",
   "parts.fallback.llm_failed.title": "Semantic detection failed",
   "parts.fallback.llm_failed.body": "{reason}",
+  "parts.fallback.low_confidence.body":
+    "Semantic confidence was low. Switched to click mode — retry or place parts manually.",
   "parts.fallback.use_click": "Use click mode",
   "parts.fallback.retry_llm": "Retry semantic detection",
   "llm.error.network": "Couldn't reach the provider, or the request timed out.",

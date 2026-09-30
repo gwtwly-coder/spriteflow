@@ -48,6 +48,11 @@ import type {
   CharacterWorkerApi,
   LlmFailureReason,
 } from "../character/character-protocol";
+import {
+  llmFailureFromError,
+  llmFailureFromLlmCode,
+  llmFailureFromStatus,
+} from "../character/llm-failure";
 import { createPartExportCodec } from "../character/part-codec";
 
 // 审批清单（packages/segment 冻结注册表）中的产品模型档位 id（fp16 单档）。
@@ -147,12 +152,14 @@ function classifyingTransport(): LlmTransport {
   };
 }
 
+/**
+ * 降级路径（orchestration 只回传结果不回传错误）的错误码兜底：segment 在
+ * LLM_FALLBACK_TO_CLICK 上透传 exchange 的权威分类（llmErrorCode）；仅当
+ * 旁路没有错误码可读时才退回 lastLlmStatus 启发式——顺序不能反，否则
+ * status 记录缺口会把认证失败渲染成"无法解析"（2026-09-30 RC P1）。
+ */
 function classifyLlmFailure(): LlmFailureReason {
-  if (lastLlmThrew) return "network";
-  if (lastLlmStatus === 401 || lastLlmStatus === 403) return "unauthorized";
-  if (lastLlmStatus === 429) return "rate_limited";
-  if (lastLlmStatus >= 500) return "network";
-  return "bad_response";
+  return llmFailureFromStatus(lastLlmStatus, lastLlmThrew);
 }
 
 const api: CharacterWorkerApi = {
@@ -222,13 +229,33 @@ const api: CharacterWorkerApi = {
         context("character-run", entry, onProgress),
       );
       if (!located.ok) {
-        return { ok: false, error: located.error, llmFailure: classifyLlmFailure() };
+        // 权威分类优先：exchange 的错误码（stage=semantic-locate）→ 四分类；
+        // 非 LLM 失败（模型/校验）不附带 llmFailure，UI 走模型失败卡而非
+        // 把一切渲染成"无法解析的结果"（2026-09-30 RC P1 同类）。
+        const reason = llmFailureFromError(located.error);
+        return {
+          ok: false,
+          error: located.error,
+          ...(reason !== null ? { llmFailure: reason } : {}),
+        };
       }
       const degradedLlm = located.value.degraded?.reason === "LLM_FAILED";
+      let degradedReason: LlmFailureReason | undefined;
+      if (degradedLlm) {
+        // 降级路径丢掉了错误对象，读透传的 llmErrorCode（权威），
+        // 旁路 status 仅作兜底。
+        const threadedCode = located.value.warnings.find(
+          (entry) => entry.llmErrorCode !== undefined,
+        )?.llmErrorCode;
+        degradedReason =
+          threadedCode !== undefined
+            ? (llmFailureFromLlmCode(threadedCode) ?? classifyLlmFailure())
+            : classifyLlmFailure();
+      }
       return {
         ok: true,
         result: located.value,
-        ...(degradedLlm ? { llmFailure: classifyLlmFailure() } : {}),
+        ...(degradedReason !== undefined ? { llmFailure: degradedReason } : {}),
       };
     } catch {
       return { ok: false, error: busyError("INTERNAL_ERROR") };
