@@ -1,0 +1,20 @@
+=== dev-server smoke (acceptance, 2026-09-30T21:10:10+08:00) ===
+server: pnpm --filter @spriteflow/web run dev (vite 7.3.1) http://localhost:5173/
+browser-use channel: UNAVAILABLE in this subagent runtime (error: 'Browser is not available in subagent')
+
+--- GET / -> 200, html shell (doctype + #root + /src/main.tsx)
+status=200 type=text/html
+--- vite dev runtime transform of v3 module graph (HTTP 200 = compiles in dev)
+/src/main.tsx -> 200 (7605 B)
+/src/app/App.tsx -> 200 (273961 B)
+/src/character/PartsWorkspace.tsx -> 200 (230629 B)
+/src/character/PartsCanvas.tsx -> 200 (51828 B)
+/src/character/dev-visual-panel.tsx -> 200 (31854 B)
+/src/character/part-codec.ts -> 200 (40789 B)
+/src/workers/character.worker.ts -> 200 (34253 B)
+/src/i18n/index.ts -> 200 (107946 B)
+--- transformed PartsWorkspace.tsx still carries import.meta.env.DEV guards: 2
+--- transformed i18n carries v3 entries: 5 occurrences of 拆部位
+
+note: size_download reported 0B in one curl invocation variant due to Git Bash arg-conversion interference;
+byte counts above are from wc -c on the actual response bodies.
