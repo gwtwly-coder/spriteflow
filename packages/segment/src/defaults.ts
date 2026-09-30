@@ -15,7 +15,10 @@ export const DEFAULT_CHARACTER_LIMITS: Readonly<CharacterLimits> = Object.freeze
   maxMotionFrames: 120,
   /** v3.5 reserved — no v3.0-alpha stage reads or enforces this limit. */
   maxRenderPixels: 67_108_864,
-  maxModelBytes: 41_943_040,
+  // r3: raised from 41,943,040 (40 MiB) to fit the measured SAM 2.1 Hiera-Tiny
+  // fp16 encoder at 67,313,499 bytes
+  // (docs/research/2026-09-30-sam2-onnx-model-sources.md, contract line 71).
+  maxModelBytes: 83_886_080,
   maxLlmResponseBytes: 1_048_576,
   maxArchiveBytes: 268_435_456,
 });

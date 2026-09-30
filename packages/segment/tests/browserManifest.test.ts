@@ -8,6 +8,7 @@ import {
   loadVerifiedArtifact,
   manifestMatchesEntry,
   resolveApprovedEntry,
+  SAM_MODEL_REGISTRY,
   SamModelLoadError,
   type SamRegistryEntry,
   setSamModelArtifactUrlOverride,
@@ -15,22 +16,18 @@ import {
 import { CharacterErrorCode as Code } from "../src/types.js";
 import { fakeCache, fakeFetch, syntheticManifest, syntheticModel } from "./samHelpers.js";
 
+// Contract r4 ruling: fp16 single-tier serving. The fp32 artifacts are not in
+// the registry (their records live in docs/research/2026-09-30-sam2-onnx-model-sources.md).
 const RC_FROZEN_SHA256 = {
   "sam2.1-hiera-tiny-encoder-fp16":
     "f4ca896cf99816ad0cb7062e9ebef44a211e6f0d0a0656a7eb13349204cb6caa",
   "sam2.1-hiera-tiny-decoder-fp16":
     "f362ed5bbcfbece283ce970a2162486da9f018645a382b927755677b9d267e6d",
-  "sam2.1-hiera-tiny-encoder-fp32":
-    "276054aed484eca872f3a6c7b705abf554033de6d5d3e13c1b3b8f84e1866584",
-  "sam2.1-hiera-tiny-decoder-fp32":
-    "40bd6810e8a6a432ebae892635480489300ab1a65f01964df0a46ac31c179d93",
 } as const;
 
 const RC_FROZEN_BYTES = {
   "sam2.1-hiera-tiny-encoder-fp16": 67_313_499,
   "sam2.1-hiera-tiny-decoder-fp16": 8_755_200,
-  "sam2.1-hiera-tiny-encoder-fp32": 134_429_092,
-  "sam2.1-hiera-tiny-decoder-fp32": 17_068_058,
 } as const;
 
 function cacheKeyFor(manifest: { modelId: string; revision: string; sha256: string }): string {
@@ -57,7 +54,7 @@ function loaderDeps(
 }
 
 describe("getApprovedSamManifest", () => {
-  it("exposes exactly the four RC-frozen artifacts", () => {
+  it("exposes exactly the two RC-frozen fp16 artifacts", () => {
     for (const modelId of Object.keys(RC_FROZEN_SHA256)) {
       const manifest = getApprovedSamManifest(modelId);
       expect(manifest, modelId).not.toBeNull();
@@ -68,6 +65,20 @@ describe("getApprovedSamManifest", () => {
       expect(manifest?.inputSize).toEqual({ width: 1024, height: 1024 });
       expect(manifest?.artifactUrl.startsWith("https://")).toBe(true);
     }
+  });
+
+  it("serves a single fp16 family that covers both roles (r4 fp16-only ruling)", () => {
+    expect(SAM_MODEL_REGISTRY).toHaveLength(2);
+    const families = new Set(SAM_MODEL_REGISTRY.map((entry) => entry.family));
+    expect([...families]).toEqual(["sam2.1-hiera-tiny-fp16"]);
+    expect(SAM_MODEL_REGISTRY.map((entry) => entry.role).sort()).toEqual(["decoder", "encoder"]);
+    expect(SAM_MODEL_REGISTRY.every((entry) => entry.frozen)).toBe(true);
+    // The WASM fallback reuses the fp16 artifacts: both providers resolve the
+    // same two ids, and the fp32 tier is intentionally absent.
+    expect(getApprovedSamManifest("sam2.1-hiera-tiny-encoder-fp32")).toBeNull();
+    expect(getApprovedSamManifest("sam2.1-hiera-tiny-decoder-fp32")).toBeNull();
+    expect(getApprovedSamManifest("sam2.1-hiera-tiny-encoder-fp16")).not.toBeNull();
+    expect(getApprovedSamManifest("sam2.1-hiera-tiny-decoder-fp16")).not.toBeNull();
   });
 
   it("returns null for unknown model ids", () => {

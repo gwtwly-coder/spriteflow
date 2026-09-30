@@ -18,7 +18,8 @@ describe("contract constants", () => {
       maxPromptsPerPart: 16,
       maxMotionFrames: 120,
       maxRenderPixels: 67_108_864,
-      maxModelBytes: 41_943_040,
+      // r3: 40 MiB → 80 MiB to fit the measured fp16 encoder (67,313,499 bytes).
+      maxModelBytes: 83_886_080,
       maxLlmResponseBytes: 1_048_576,
       maxArchiveBytes: 268_435_456,
     });

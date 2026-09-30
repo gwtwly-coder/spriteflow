@@ -81,9 +81,14 @@ function sam2TinyManifest(
 }
 
 /**
- * RC-frozen v0 registry (all four artifact hashes frozen). The fp32 entries are
- * the WASM fallback tier; the artifact URLs keep the hf-mirror placeholder origin
- * until the production R2 domain is configured (see setSamModelArtifactUrlOverride).
+ * RC-frozen v0 registry, fp16 single tier (contract r4 ruling): both artifact
+ * hashes are frozen, and the WASM fallback reuses the same fp16 artifacts —
+ * PRD AC-V03-B only requires the fallback to be available, not fast, which also
+ * spares fallback users a 128 MB download. The fp32 artifacts are NOT served;
+ * their measured URL/byte-size/SHA-256 records live in
+ * docs/research/2026-09-30-sam2-onnx-model-sources.md. Artifact URLs keep the
+ * hf-mirror placeholder origin until the production R2 domain is configured
+ * (see setSamModelArtifactUrlOverride).
  */
 export const SAM_MODEL_REGISTRY: readonly SamRegistryEntry[] = Object.freeze([
   {
@@ -106,28 +111,6 @@ export const SAM_MODEL_REGISTRY: readonly SamRegistryEntry[] = Object.freeze([
     ),
     role: "decoder",
     family: "sam2.1-hiera-tiny-fp16",
-    frozen: true,
-  },
-  {
-    manifest: sam2TinyManifest(
-      "sam2.1-hiera-tiny-encoder-fp32",
-      "vision_encoder.onnx",
-      134_429_092,
-      "276054aed484eca872f3a6c7b705abf554033de6d5d3e13c1b3b8f84e1866584",
-    ),
-    role: "encoder",
-    family: "sam2.1-hiera-tiny-fp32",
-    frozen: true,
-  },
-  {
-    manifest: sam2TinyManifest(
-      "sam2.1-hiera-tiny-decoder-fp32",
-      "prompt_encoder_mask_decoder.onnx",
-      17_068_058,
-      "40bd6810e8a6a432ebae892635480489300ab1a65f01964df0a46ac31c179d93",
-    ),
-    role: "decoder",
-    family: "sam2.1-hiera-tiny-fp32",
     frozen: true,
   },
 ] as const);
