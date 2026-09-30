@@ -6,6 +6,7 @@
   "type": "module",
   "dependencies": {
     "@spriteflow/pipeline": "workspace:*",
+    "@spriteflow/segment": "workspace:*",
     "comlink": "4.4.2",
     "fflate": "0.8.3",
     "react": "19.3.0",

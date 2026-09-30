@@ -16,6 +16,9 @@ import {
 } from "@spriteflow/pipeline";
 import { createPipelineClient } from "@spriteflow/pipeline/browser";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { resetCharacterClient } from "../character/character-client";
+import { PartsWorkspace } from "../character/PartsWorkspace";
+import { usePartsStore } from "../character/parts-store";
 import { CanvasEditor } from "../editor/CanvasEditor";
 import { type Locale, translate } from "../i18n";
 import { type Store, useEditorStore } from "../store/editor-store";
@@ -40,6 +43,7 @@ type ActiveTask = { cancel(): Promise<unknown> };
 type SubmittedTask = ActiveTask & {
   result: Promise<{ outcome: { ok: boolean; value?: unknown; error?: PipelineError } }>;
 };
+type Workspace = "slicer" | "parts";
 const COPY = (
   locale: Locale,
   key: Parameters<typeof translate>[1],
@@ -70,7 +74,7 @@ export function DetectionMethod({
 }) {
   return COPY(locale, methodCopyKey[strategy]);
 }
-const errorCopy = (error: PipelineError, locale: Locale) =>
+export const errorCopy = (error: PipelineError, locale: Locale) =>
   error.code === PipelineErrorCode.OpaqueInput
     ? [COPY(locale, "error.opaque.title"), COPY(locale, "error.opaque.body")]
     : error.code === PipelineErrorCode.DecodeFailed
@@ -86,8 +90,129 @@ const errorCopy = (error: PipelineError, locale: Locale) =>
           ? [COPY(locale, "memory.runtime.title"), COPY(locale, "memory.runtime.body")]
           : [COPY(locale, "error.unknown.title"), COPY(locale, "error.unknown.body")];
 
+/**
+ * 应用外壳：顶层工作区状态机（切帧 | 拆部位，ui-spec §13.1）。
+ * 切换保护（AC-V01-C）：任一工作区存在未完成工作时弹确认；确认后 v3 会话
+ * 状态整体清空（部位与编辑记录），M1 会话保留（只隐藏）。
+ */
 export function App() {
   const [locale, setLocale] = useState<Locale>("zh");
+  const [workspace, setWorkspace] = useState<Workspace>("slicer");
+  const [pendingSwitch, setPendingSwitch] = useState<Workspace | null>(null);
+  const [slicerDirty, setSlicerDirty] = useState(false);
+  const [partsDirty, setPartsDirty] = useState(false);
+  useEffect(() => {
+    document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+  }, [locale]);
+  const requestSwitch = (target: Workspace) => {
+    if (target === workspace) return;
+    if (slicerDirty || partsDirty) setPendingSwitch(target);
+    else void performSwitch(target);
+  };
+  const performSwitch = async (target: Workspace) => {
+    setPendingSwitch(null);
+    // v3 会话状态随切换清空：取消进行中任务 + 清 BYOK key + 重置 v3 store。
+    if (usePartsStore.getState().asset !== null || usePartsStore.getState().parts.length > 0) {
+      await resetCharacterClient();
+    }
+    usePartsStore.getState().resetAll();
+    setWorkspace(target);
+  };
+  return (
+    <>
+      {workspace === "slicer" ? (
+        <SlicerWorkspace
+          locale={locale}
+          setLocale={setLocale}
+          active={workspace === "slicer"}
+          onSwitchRequest={requestSwitch}
+          onDirtyChange={setSlicerDirty}
+        />
+      ) : (
+        <PartsWorkspace
+          locale={locale}
+          setLocale={setLocale}
+          onSwitchRequest={requestSwitch}
+          onDirtyChange={setPartsDirty}
+        />
+      )}
+      {pendingSwitch !== null && (
+        <div className="modal-wrap">
+          <dialog open className="modal" aria-modal="true">
+            <h1>
+              {COPY(locale, "confirm.switch_mode.title", {
+                mode:
+                  pendingSwitch === "slicer"
+                    ? COPY(locale, "nav.mode.slicer")
+                    : COPY(locale, "nav.mode.parts"),
+              })}
+            </h1>
+            <p>{COPY(locale, "confirm.switch_mode.body")}</p>
+            <footer>
+              <button type="button" className="secondary" onClick={() => setPendingSwitch(null)}>
+                {COPY(locale, "action.cancel")}
+              </button>
+              <button
+                type="button"
+                className="primary"
+                onClick={() => void performSwitch(pendingSwitch)}
+              >
+                {COPY(locale, "confirm.switch_mode.action")}
+              </button>
+            </footer>
+          </dialog>
+        </div>
+      )}
+    </>
+  );
+}
+
+/** 顶栏工作区分段控件（ui-spec §13.1：切帧 | 拆部位）。 */
+export function ModeSwitch({
+  locale,
+  workspace,
+  onSwitchRequest,
+}: {
+  locale: Locale;
+  workspace: Workspace;
+  onSwitchRequest(target: Workspace): void;
+}) {
+  const t = (key: Parameters<typeof translate>[1]) => COPY(locale, key);
+  return (
+    <nav className="mode-switch" aria-label={t("parts.workspace.title")}>
+      <button
+        type="button"
+        className={workspace === "slicer" ? "mode active" : "mode"}
+        aria-pressed={workspace === "slicer"}
+        onClick={() => onSwitchRequest("slicer")}
+      >
+        {t("nav.mode.slicer")}
+      </button>
+      <button
+        type="button"
+        className={workspace === "parts" ? "mode active" : "mode"}
+        aria-pressed={workspace === "parts"}
+        onClick={() => onSwitchRequest("parts")}
+      >
+        {t("nav.mode.parts")}
+      </button>
+    </nav>
+  );
+}
+
+function SlicerWorkspace({
+  locale,
+  setLocale,
+  active,
+  onSwitchRequest,
+  onDirtyChange,
+}: {
+  locale: Locale;
+  setLocale(locale: Locale): void;
+  active: boolean;
+  onSwitchRequest(target: Workspace): void;
+  onDirtyChange(dirty: boolean): void;
+}) {
   const [screen, setScreen] = useState<Screen>("upload");
   const [file, setFile] = useState<File | null>(null);
   const [asset, setAsset] = useState<{ assetId: string; revision: number } | null>(null);
@@ -158,9 +283,6 @@ export function App() {
     },
     [],
   );
-  useEffect(() => {
-    document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
-  }, [locale]);
   const submit = async (
     command: "load" | "detect" | "normalize" | "pack" | "export" | "release",
     payload: unknown,
@@ -454,6 +576,7 @@ export function App() {
     }, 300);
   };
   useEffect(() => {
+    if (!active) return;
     const onKey = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (
@@ -558,7 +681,7 @@ export function App() {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [screen, store]);
+  }, [active, screen, store]);
   const activeFrames = useMemo(
     () =>
       store.drafts.map((draft, index) => ({
@@ -568,10 +691,16 @@ export function App() {
       })),
     [store.drafts, store.normalized],
   );
+  // 切换保护（AC-V01-C）：有帧数据、进行中任务或未在空状态时视为未完成工作。
+  const dirty = screen !== "upload" || store.drafts.length > 0 || currentTask !== null;
+  useEffect(() => {
+    onDirtyChange(dirty);
+  }, [dirty, onDirtyChange]);
   return (
-    <main className="app-shell">
+    <main className="app-shell" hidden={!active}>
       <header className="topbar">
         <strong>SpriteFlow</strong>
+        <ModeSwitch locale={locale} workspace="slicer" onSwitchRequest={onSwitchRequest} />
         {screen === "review" && (
           <>
             <span className="mono muted">{file?.name}</span>

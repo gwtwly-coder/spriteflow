@@ -843,3 +843,95 @@ kbd {
     padding: 0 6px;
   }
 }
+
+/* --- v3 拆部位工作区（ui-spec §13；视觉系统完全复用第 4 节令牌） -------------- */
+.app-shell[hidden] {
+  display: none;
+}
+.mode-switch {
+  display: flex;
+  border: 1px solid var(--border-1);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.mode-switch .mode {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-2);
+  min-height: 28px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.mode-switch .mode + .mode {
+  border-left: 1px solid var(--border-1);
+}
+.mode-switch .mode.active {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.mode-switch .mode:hover {
+  background: var(--bg-2);
+  color: var(--text-1);
+}
+.parts-review {
+  grid-template-rows: 48px minmax(0, 1fr) 28px;
+}
+.parts-sidebar {
+  width: var(--parts-sidebar-width, 292px);
+}
+.part-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--parts-list-gap, 8px);
+}
+.part-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  border: 1px solid var(--parts-card-border, var(--border-1));
+  border-radius: var(--parts-card-radius, 6px);
+  background: var(--bg-2);
+  color: var(--text-1);
+}
+.part-card:hover {
+  border-color: var(--border-2);
+}
+.part-card.active {
+  background: var(--accent-dim);
+  border-color: var(--accent);
+}
+.part-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.kind-badge {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--bg-3);
+  color: var(--text-2);
+}
+.part-card .occluded {
+  font-size: 11px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #f0b13ee6;
+  color: #0e1116;
+}
+.parts-shell .dropzone strong {
+  font-size: 20px;
+}

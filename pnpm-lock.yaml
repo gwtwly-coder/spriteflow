@@ -26,6 +26,9 @@ importers:
       '@spriteflow/pipeline':
         specifier: workspace:*
         version: link:../../packages/pipeline
+      '@spriteflow/segment':
+        specifier: workspace:*
+        version: link:../../packages/segment
       comlink:
         specifier: 4.4.2
         version: 4.4.2
