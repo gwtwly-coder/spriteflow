@@ -1,13 +1,13 @@
 # v3 拆部位工作区 UI 独立验收裁决 #1
 
-- **基线**：`9731938`（test(web): v3 拆部位工作区组件测试），验收对象为 `4ddba4d` + `12cf92e` + `c18d5d0` + `d34d977` + `9731938` 共 5 提交，全部位于 `apps/web/**`（4ddba4d 另含 `pnpm-lock.yaml`）。
+- **基线**：第 1 轮 `9731938`（5 提交：`4ddba4d`+`12cf92e`+`c18d5d0`+`d34d977`+`9731938`，均在 `apps/web/**`）；**第 2 轮聚焦复验基线前移至 `10159ec`**（P1 两项修复 + P2 顺手批，见文末"第 2 轮聚焦复验"）。
 - **验收人身份披露**：本验收为生产者（两个前后相继的子代理会话）之外的全新上下文；继承父会话模型，具体型号未确认，同族独立上下文，**不声称异族**。生产者回执与自报不采信，以下全部结论仅依据磁盘代码（文件+行号）、测试实测、门禁退出码与 dev-server 运行时探针。
 - **验收日期**：2026-09-30。
 - **规格依据**：`docs/ui-spec.md` §13（+§2/§4/§9 M1 复用基线）、`docs/prd-v3.md`（V-01~V-06 P0、V-09、AC-V01~V06）、`docs/copy-v3.md` §17–28、`docs/interface-contract-v3.md` :248–328（导出 codec）与 :333（BYOK）、:71（2048 工作边）。
 
-## 裁决：**PASS**（附带 2 项 P1 应修、7 项 P2 建议，均不构成 P0 阻断）
+## 裁决：**PASS**（第 1 轮附带 2 项 P1 应修、7 项 P2 建议，均不构成 P0 阻断；**第 2 轮聚焦复验：2 项 P1 修复全部通过**，最终维持 PASS）
 
-5 项 P0（V-01~V-06）全部有可核验实现并被有效测试锁定；AC-V01~V06 主路径组件级验证通过；四项门禁真实退出码全绿；诚实降级语气与 codec 真实 bug 修复均经受控负例证明受回归保护。P1 两项为边缘路径缺陷（详见问题清单），不破坏 P0 闭环。
+5 项 P0（V-01~V-06）全部有可核验实现并被有效测试锁定；AC-V01~V06 主路径组件级验证通过；四项门禁真实退出码全绿；诚实降级语气与 codec 真实 bug 修复均经受控负例证明受回归保护。P1 两项经 `10159ec` 修复并复验通过（含负例），P2 余项继续挂账不阻断。
 
 ---
 
@@ -150,3 +150,55 @@
 ## 结论
 
 v3 拆部位工作区 UI 五提交在静态契约、组件级行为、门禁与受控负例四个维度均通过独立核验：5 项 P0 全覆盖、ui-spec §13 布局/堆叠合规、i18n 无硬编码、调节面板生产无入口、35 用例真实有效（3 负例全红后恢复）。两项 P1（清 key 假进行中死屏、WASM 提示断线）与七项 P2 建议随本裁决移交修复跟踪，不阻断本批收编；真浏览器 GUI 冒烟与真模型端到端路径留作增量覆盖。
+
+---
+
+# 第 2 轮聚焦复验（2026-09-30，基线前移至 `10159ec`）
+
+- **范围**：仅复验第 1 轮裁决移交的 P1-1、P1-2 及 P2 顺手批（aria-label 词条化 / 冗余三元 / console.log 清理）。第 1 轮其余结论不重开。
+- **对象**：提交 `10159ec`（仅 `apps/web` 五文件：PartsWorkspace.tsx +34/-9、parts-store.ts +3/-3、PartsCanvas.tsx +4/-1、i18n/index.ts +3/-0、parts-workspace.test.tsx +68/-7）。
+- **方法**：修复项逐一对照第 1 轮裁决行号做代码走查 + 门禁复跑 + 2 个针对新测试的受控负例（改后恢复）。
+
+## P1-1 清 Key 死屏 — ✅ 通过
+
+| 修复声明 | 复验证据 |
+|---|---|
+| 守卫分支补 `store.setByok(null)` | PartsWorkspace.tsx:398（`runSemantic` 守卫，原第 1 轮 :395-401 同位）。走查：`setByok(null)` → `semanticAvailable={store.byok !== null}`（:664）翻转为 false → `showPathCard`（PartsProcessing，:946）在 busy=null、modelError=null、llmFailure=null 下成立 → W2 过程屏呈现路径选择卡（`llm.not_configured.title/body` + 配置语义定位 + 使用点击模式），不再假"正在拆部位"，零网络请求 |
+| BYOK 面板保存后交接外发告知模态 | PartsWorkspace.tsx:727-730（W2 过程屏保存后直接 `setModal("consent")`）；同意框在无任务过程屏取消回 W1 定义态（:746-751 `onClose`：`modal==="consent" && screen==="process" && busy===null → setScreen("upload")`）——"过程屏无任务"死态被双向封堵 |
+| 新组件测试完整复现 | parts-workspace.test.tsx "returns to the W2 path card instead of a fake progress screen after the key is cleared and rerun (P1-1)"：存 key→保存→再开面板→清除 Key→重新拆件确认→同意→断言 `llm.not_configured.body` 文案在场 + "使用点击模式"按钮在场 + **`run` 未被调用**。正是第 1 轮裁决给出的可达路径（W3→清 Key→重新拆件→同意） |
+| 受控负例（本轮新增） | 移除 `store.setByok(null)` 一行 → 该新测试**变红**（1 failed）；恢复后全绿。证明测试真正锁定修复 |
+
+## P1-2 WASM 回退提示断线 — ✅ 通过
+
+| 修复声明 | 复验证据 |
+|---|---|
+| W2 过程卡新增回退提示行 | PartsWorkspace.tsx:1009-1011（`backendWasm && <p className="muted">{model.backend_wasm}</p>`，进度区内、重拆时可见） |
+| W3 横幅区持续渲染 | PartsWorkspace.tsx:1195-1200（`store.backendWasm \|\| store.wasmFallbackWarning` → `.warning-banner` 持续提示）；原侧栏孤立小字（第 1 轮 :1204）已删除（全仓 grep `humanoidWarning` = 0 处） |
+| 数据流闭环 | 点击模式主路径：`prepareClick`/`ensureInteractive` → `setModelInfo({backendWasm})`（:420, :435）→ W2 提示行 + W3 横幅；语义路径：`applySegmentResult` → `wasmFallbackWarning`（parts-store.ts:135）→ W3 横幅。AC-V03-B 两条路径均覆盖 |
+| 字段更名 | `humanoidWarning` → `wasmFallbackWarning`（parts-store.ts:43, :90, :135），名实相符 |
+| 新组件测试 | parts-workspace.test.tsx "surfaces the WASM fallback hint when prepare reports no WebGPU (P1-2 / AC-V03-B)"：假 prepare 强制 `webgpuFallback: true` → 无 key 点击模式进审校 → 断言 `model.backend_wasm` 文案在横幅区。正是第 1 轮指出的断线路径 |
+| 受控负例（本轮新增） | W3 横幅条件回退为修复前形态（仅 `wasmFallbackWarning`，去掉 `backendWasm`）→ 该新测试**变红**；恢复后全绿 |
+
+## P2 顺手批 — ✅ 通过（1 项备注）
+
+| 项 | 复验证据 |
+|---|---|
+| canvas aria-label 词条化 | PartsCanvas.tsx:21/:151/:354（`canvasLabel` prop 注入）+ PartsWorkspace.tsx:1206 + 词条 `parts.editor.canvas`（i18n/index.ts zh"部位画布"/en"Part canvas"）；测试锚点同步改 `getByLabelText("部位画布")`；全仓 grep `"Part editor"` = 0 处 |
+| W2 冗余三元清理 | PartsWorkspace.tsx:995-997（原 :981-983 两分支同文案三元已并为单调用） |
+| 测试 console.log 清理 | 全仓 grep `console.log`（src+tests）= 0 处 |
+| 备注 | `parts.editor.canvas` 词条尚未登记进 `docs/copy-v3.md`（commit 自述"待登记"）——文案唯一来源登记滞后，不阻断，建议随下一批文档提交补录 |
+
+## 门禁复跑（10159ec，真实退出码）
+
+| 门禁 | 结果 |
+|---|---|
+| web typecheck | exit **0** |
+| web test | exit **0**，**37/37 passed**（8 文件，新增 2 例） |
+| web build | exit **0**；dist 核验：`dev-visual` JSX 0 处（入口仍无；`dev.visual.*` 死词条仍在 = 第 1 轮 P2-1 未变化，本提交未声称修它） |
+| 根 lint | exit **0**（biome + check-boundaries OK + check:contract PASS） |
+
+## 第 2 轮判定
+
+**维持 PASS，且第 1 轮移交的 2 项 P1 全部修复并通过复验**（含负例证明新测试有效锁定）。P2 清单更新：P2-4 的 console.log 子项、P2-6（硬编码 aria-label）、P2-7（冗余三元）已关闭；P2-1/2/3/5 仍未变化继续挂账；新增 1 条登记备注（`parts.editor.canvas` 待登记 copy-v3）。剩余挂账均不阻断。
+
+**修复项未通过清单：无。**
