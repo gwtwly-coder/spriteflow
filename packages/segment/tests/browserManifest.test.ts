@@ -14,7 +14,13 @@ import {
   setSamModelArtifactUrlOverride,
 } from "../src/browser/manifest.js";
 import { CharacterErrorCode as Code } from "../src/types.js";
-import { fakeCache, fakeFetch, syntheticManifest, syntheticModel } from "./samHelpers.js";
+import {
+  chunkedFakeFetch,
+  fakeCache,
+  fakeFetch,
+  syntheticManifest,
+  syntheticModel,
+} from "./samHelpers.js";
 
 // Contract r4 ruling: fp16 single-tier serving. The fp32 artifacts are not in
 // the registry (their records live in docs/research/2026-09-30-sam2-onnx-model-sources.md).
@@ -246,6 +252,80 @@ describe("loadVerifiedArtifact", () => {
     expect(cache.puts).toHaveLength(0);
     expect(load.cachedModel).toBe(false);
     expect(network.requestedUrls).toEqual([model.encoderManifest.artifactUrl]);
+  });
+});
+
+// P1 回归（2026-09-30 真浏览器挂死）：下载必须走流式 reader 循环，逐块上报
+// 字节进度，且重拼接后的字节要与 arrayBuffer() 路径完全一样地过验证、进缓存。
+describe("loadVerifiedArtifact streaming download", () => {
+  it("emits monotonic byte progress and stores the verified bytes in the Cache API", async () => {
+    const model = await syntheticModel();
+    const payload = bytesOf(model, model.encoderManifest.artifactUrl);
+    const cache = fakeCache();
+    const network = chunkedFakeFetch(model.bytes, 8); // 33-byte fixture → 5 chunks
+    const progress: Array<{ loadedBytes: number; totalBytes: number }> = [];
+    const load = await loadVerifiedArtifact(
+      model.encoderManifest,
+      loaderDeps(network.fetchImpl, cache),
+      (event) => progress.push({ ...event }),
+    );
+    expect(load.cachedModel).toBe(false);
+    expect(load.cacheAvailable).toBe(true);
+    expect(progress.length).toBeGreaterThan(1);
+    for (let index = 1; index < progress.length; index++) {
+      expect(progress[index]?.loadedBytes).toBeGreaterThan(progress[index - 1]?.loadedBytes ?? 0);
+    }
+    expect(progress[0]?.totalBytes).toBe(model.encoderManifest.byteLength);
+    expect(progress.at(-1)).toEqual({
+      loadedBytes: payload.byteLength,
+      totalBytes: payload.byteLength,
+    });
+    // Bytes landed in the Cache API…
+    expect(cache.puts).toEqual([cacheKeyFor(model.encoderManifest)]);
+    // …and a second load is served from that cache with identical bytes (and no
+    // second network request).
+    const second = await loadVerifiedArtifact(
+      model.encoderManifest,
+      loaderDeps(network.fetchImpl, cache),
+    );
+    expect(second.cachedModel).toBe(true);
+    expect(new Uint8Array(second.bytes)).toEqual(payload);
+    expect(network.requestedUrls).toHaveLength(1);
+  });
+
+  it("keeps the download alive when the progress observer throws", async () => {
+    const model = await syntheticModel();
+    const cache = fakeCache();
+    const network = chunkedFakeFetch(model.bytes, 4);
+    const load = await loadVerifiedArtifact(
+      model.encoderManifest,
+      loaderDeps(network.fetchImpl, cache),
+      () => {
+        throw new Error("observer exploded");
+      },
+    );
+    expect(new Uint8Array(load.bytes)).toEqual(bytesOf(model, model.encoderManifest.artifactUrl));
+    expect(cache.puts).toEqual([cacheKeyFor(model.encoderManifest)]);
+  });
+
+  it("maps a mid-stream failure to MODEL_DOWNLOAD_FAILED and stores nothing", async () => {
+    const model = await syntheticModel();
+    const cache = fakeCache();
+    const failingStream = (async () =>
+      new Response(
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode("partial"));
+            controller.error(new Error("connection reset mid-stream"));
+          },
+        }),
+        { status: 200 },
+      )) as unknown as typeof fetch;
+    const load = loadVerifiedArtifact(model.encoderManifest, loaderDeps(failingStream, cache));
+    await expect(load).rejects.toMatchObject({
+      characterError: { code: Code.ModelDownloadFailed },
+    });
+    expect(cache.puts).toHaveLength(0);
   });
 });
 

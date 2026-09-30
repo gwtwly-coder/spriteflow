@@ -248,6 +248,7 @@ const zh = {
   "parts.detect.success": "识别到 {count} 个部位。",
   "model.loading": "正在加载本地模型…",
   "model.downloading": "正在下载本地模型（{size} MB）…",
+  "model.progress": "已下载 {completed} / {total} MB",
   "model.ready_cached": "本地模型已就绪。",
   "model.backend_wasm": "当前浏览器不支持 WebGPU，已切换到兼容模式，速度会慢一些。",
   "model.failed.title": "本地模型加载失败",
@@ -613,6 +614,7 @@ Object.assign(en, {
   "parts.detect.success": "Found {count} parts.",
   "model.loading": "Loading the local model…",
   "model.downloading": "Downloading the local model ({size} MB)…",
+  "model.progress": "Downloaded {completed} / {total} MB",
   "model.ready_cached": "The local model is ready.",
   "model.backend_wasm":
     "WebGPU isn't available, so we switched to compatibility mode. It runs slower.",

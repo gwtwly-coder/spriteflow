@@ -222,6 +222,62 @@ function modelStageError(
   return new SamModelLoadError(characterError(code, Stage.ModelInitialize, { details }));
 }
 
+/** Concatenates streamed chunks into one exact-size ArrayBuffer. */
+function concatChunks(chunks: readonly Uint8Array[], total: number): ArrayBuffer {
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    out.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return out.buffer as ArrayBuffer;
+}
+
+/**
+ * Reads the response body chunk by chunk, emitting byte progress after every
+ * chunk. A throwing progress observer (e.g. a dead cross-thread proxy) must
+ * never fail the download, and a stream error maps to the same
+ * MODEL_DOWNLOAD_FAILED error the arrayBuffer() path produced.
+ */
+async function readBodyWithProgress(
+  response: Response,
+  manifest: SamModelManifest,
+  onProgress: SamDownloadProgressSink | null,
+): Promise<ArrayBuffer> {
+  const body = response.body;
+  if (body === null || typeof body.getReader !== "function") {
+    return response.arrayBuffer();
+  }
+  const reader = body.getReader();
+  const chunks: Uint8Array[] = [];
+  let loaded = 0;
+  try {
+    for (;;) {
+      const next = await reader.read();
+      if (next.done) break;
+      if (next.value.byteLength > 0) {
+        chunks.push(next.value);
+        loaded += next.value.byteLength;
+        if (onProgress !== null) {
+          try {
+            onProgress({ loadedBytes: loaded, totalBytes: manifest.byteLength });
+          } catch {
+            // Progress observation is best-effort; the bytes keep flowing.
+          }
+        }
+      }
+    }
+  } catch {
+    try {
+      await reader.cancel();
+    } catch {
+      // The stream may already be errored/closed; nothing left to cancel.
+    }
+    throw modelStageError(Code.ModelDownloadFailed, { modelId: manifest.modelId });
+  }
+  return concatChunks(chunks, loaded);
+}
+
 async function sha256Hex(subtle: SubtleCrypto, bytes: ArrayBuffer): Promise<string> {
   const digest = await subtle.digest("SHA-256", bytes);
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
@@ -252,6 +308,18 @@ export interface SamModelLoaderDeps {
   useModelCache: boolean;
 }
 
+/**
+ * Byte-level progress for one network artifact download. `totalBytes` is the
+ * frozen manifest size, which the byte-length gate enforces on the read bytes.
+ */
+export interface SamDownloadProgress {
+  loadedBytes: number;
+  totalBytes: number;
+}
+
+/** Consumer-side progress sink; must never be able to fail the download. */
+export type SamDownloadProgressSink = (progress: SamDownloadProgress) => void;
+
 export interface VerifiedArtifactLoad {
   bytes: ArrayBuffer;
   cachedModel: boolean;
@@ -267,11 +335,13 @@ function cacheKeyFor(manifest: SamModelManifest): string {
  * Loads one model artifact with the mandatory gate order: Cache API first (a hit
  * is verified exactly like a network download), then network fetch, byte-length
  * check, and SHA-256. Cache read/write failures degrade to network and are
- * reported via cacheAvailable; hash mismatches are never tolerated.
+ * reported via cacheAvailable; hash mismatches are never tolerated. The optional
+ * sink receives byte progress for the network path only (a cache hit is instant).
  */
 export async function loadVerifiedArtifact(
   manifest: SamModelManifest,
   deps: SamModelLoaderDeps,
+  onProgress?: SamDownloadProgressSink,
 ): Promise<VerifiedArtifactLoad> {
   let cacheAvailable = true;
   let cache: SamCacheLike | null = null;
@@ -325,8 +395,9 @@ export async function loadVerifiedArtifact(
   }
   let bytes: ArrayBuffer;
   try {
-    bytes = await response.arrayBuffer();
-  } catch {
+    bytes = await readBodyWithProgress(response, manifest, onProgress ?? null);
+  } catch (error: unknown) {
+    if (error instanceof SamModelLoadError) throw error;
     throw modelStageError(Code.ModelDownloadFailed, { modelId: manifest.modelId });
   }
   await verifyArtifactBytes(deps.subtle, bytes, manifest);

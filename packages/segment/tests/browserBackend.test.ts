@@ -12,6 +12,7 @@ import { createSamSession } from "../src/session.js";
 import { CharacterWarningCode, CharacterErrorCode as Code } from "../src/types.js";
 import { asset, context, value } from "./helpers.js";
 import {
+  chunkedFakeFetch,
   fakeBackend,
   fakeCache,
   fakeFetch,
@@ -321,6 +322,76 @@ describe("SamSession over the real backend with a fake ORT (webgpu → wasm)", (
     expect(ort.released).toBe(2);
     expect(network.requestedUrls.length).toBe(2);
     expect(cache.puts.length).toBe(2);
+  });
+});
+
+// P1 回归（2026-09-30 真浏览器挂死）：session.initialize → backend.create 必须
+// 在流式下载时逐块发出字节进度（经 setDownloadProgressSink），且两个字节的
+// 工件都要真正写进 Cache API。此前 loader 无进度通道、字节也从未进缓存。
+describe("real backend download progress protocol (streaming fetch)", () => {
+  it("forwards per-artifact byte progress during session.initialize and caches both artifacts", async () => {
+    const model = await syntheticModel();
+    const ort = fakeOrt();
+    const cache = fakeCache();
+    const network = chunkedFakeFetch(model.bytes, 8);
+    const backend = createOnnxSamBackendWithDeps({
+      loadOrtModule: async () => ort.module,
+      fetchImpl: network.fetchImpl,
+      openCache: async () => cache.cache,
+      subtle: globalThis.crypto.subtle,
+      useModelCache: true,
+      registry: model.registry,
+    });
+    const events: Array<{
+      modelId: string;
+      role: string;
+      loadedBytes: number;
+      totalBytes: number;
+    }> = [];
+    backend.setDownloadProgressSink((event) => events.push({ ...event }));
+    const session = createSamSession(
+      model.encoderManifest,
+      { provider: "wasm", wasmThreads: 1, useModelCache: true },
+      backend,
+    );
+    const info = value(await session.initialize(context()));
+    expect(info.state).toBe("ready");
+    await session.dispose();
+    // Both artifacts streamed with monotonic progress ending at the exact bytes.
+    for (const [manifest, role] of [
+      [model.encoderManifest, "encoder"],
+      [model.decoderManifest, "decoder"],
+    ] as const) {
+      const roleEvents = events.filter((event) => event.role === role);
+      expect(roleEvents.length, role).toBeGreaterThan(0);
+      for (let index = 1; index < roleEvents.length; index++) {
+        expect(roleEvents[index]?.loadedBytes).toBeGreaterThan(
+          roleEvents[index - 1]?.loadedBytes ?? 0,
+        );
+      }
+      expect(roleEvents.at(-1)).toEqual({
+        modelId: manifest.modelId,
+        role,
+        loadedBytes: manifest.byteLength,
+        totalBytes: manifest.byteLength,
+      });
+    }
+    // The verified bytes landed in the Cache API for both artifacts.
+    expect(cache.puts).toHaveLength(2);
+    expect(network.requestedUrls).toEqual([
+      model.encoderManifest.artifactUrl,
+      model.decoderManifest.artifactUrl,
+    ]);
+  });
+
+  it("stops emitting after the sink is cleared and treats null as no sink", async () => {
+    const model = await syntheticModel();
+    const ort = fakeOrt();
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    backend.setDownloadProgressSink(null);
+    // A cleared sink must behave exactly like the pre-subscription backend.
+    await backend.create(model.encoderManifest, "wasm");
+    expect(ort.created).toHaveLength(2);
   });
 });
 

@@ -25,6 +25,7 @@ import {
   manifestMatchesEntry,
   resolveApprovedEntry,
   SAM_MODEL_REGISTRY,
+  type SamArtifactRole,
   type SamCacheLike,
   SamModelLoadError,
   type SamRegistryEntry,
@@ -119,6 +120,21 @@ function cacheUnavailableWarning(): CharacterWarning {
   };
 }
 
+/**
+ * Byte-level download progress for one artifact, enriched with the registry
+ * identity so a consumer can accumulate encoder+decoder into a single bar.
+ * Non-contract protocol payload (stays inside the browser subentry).
+ */
+export interface SamModelDownloadProgress {
+  modelId: string;
+  role: SamArtifactRole;
+  loadedBytes: number;
+  totalBytes: number;
+}
+
+/** Consumer-side sink for {@link SamModelDownloadProgress} events. */
+export type SamModelDownloadSink = (progress: SamModelDownloadProgress) => void;
+
 /** Deterministic nearest-neighbor sample of the source RGBA at working coords. */
 function sourceSample(asset: InputAsset, x: number, y: number): readonly [number, number, number] {
   const offset = (y * asset.pixels.width + x) * 4;
@@ -131,10 +147,20 @@ export class OnnxSamBackend implements SamInferenceBackend {
   private embedding: EmbeddingState | null = null;
   private cacheWasUnavailable = false;
   private tensorFactory: OrtModuleLike["Tensor"] | null = null;
+  private downloadSink: SamModelDownloadSink | null = null;
   private readonly registry: readonly SamRegistryEntry[];
 
   constructor(private readonly deps: OnnxSamBackendDeps) {
     this.registry = deps.registry ?? SAM_MODEL_REGISTRY;
+  }
+
+  /**
+   * Optional non-contract protocol (same shape as describeModelLoad): subscribes
+   * a byte-level download sink so a hosting Worker can forward real download
+   * progress across the thread boundary. Pass null to unsubscribe.
+   */
+  setDownloadProgressSink(sink: SamModelDownloadSink | null): void {
+    this.downloadSink = sink;
   }
 
   async create(manifest: SamModelManifest, provider: SamExecutionProvider): Promise<void> {
@@ -199,7 +225,12 @@ export class OnnxSamBackend implements SamInferenceBackend {
       useModelCache: boolean;
     },
   ): Promise<LoadedArtifact> {
-    const load = await loadVerifiedArtifact(manifest, loaderDeps);
+    const role: SamArtifactRole =
+      this.registry.find((entry) => entry.manifest.modelId === manifest.modelId)?.role ?? "encoder";
+    const sink = this.downloadSink;
+    const load = await loadVerifiedArtifact(manifest, loaderDeps, (progress) => {
+      sink?.({ modelId: manifest.modelId, role, ...progress });
+    });
     if (!load.cacheAvailable) this.cacheWasUnavailable = true;
     return { bytes: load.bytes, cachedModel: load.cachedModel };
   }

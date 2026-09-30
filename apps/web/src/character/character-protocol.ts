@@ -18,6 +18,10 @@ import type {
 export type LlmFailureReason = "network" | "unauthorized" | "rate_limited" | "bad_response";
 export type CharacterProgressCallback = (event: CharacterProgressEvent) => void;
 
+// 注意：onProgress 必须是 Worker 方法的独立实参，不能嵌进 input 对象——
+// Comlink.proxy 只在实参顶层生效，嵌在 RAW 对象里的函数会被 structured clone
+// 拒绝（DataCloneError），消息根本到不了 Worker（2026-09-30 RC P1 根因）。
+
 export interface CharacterLoadInput {
   ref: AssetRef;
   name: string;
@@ -37,7 +41,6 @@ export interface CharacterLoadOutput {
 export interface CharacterRunInput {
   llm: LlmProviderConfig | null;
   consent: boolean;
-  onProgress: CharacterProgressCallback;
 }
 
 export interface CharacterRunOutput {
@@ -47,9 +50,8 @@ export interface CharacterRunOutput {
   llmFailure?: LlmFailureReason;
 }
 
-export interface CharacterPrepareInput {
-  onProgress: CharacterProgressCallback;
-}
+// prepare 暂无选项字段；用空对象类型留扩展位（biome 禁空 interface）。
+export type CharacterPrepareInput = Record<string, never>;
 
 export interface CharacterPrepareOutput {
   ok: boolean;
@@ -75,7 +77,6 @@ export interface CharacterRefineOutput {
 export interface CharacterExportInput {
   parts: PartAsset[];
   names: PartExportName[];
-  onProgress: CharacterProgressCallback;
 }
 
 export interface CharacterExportOutput {
@@ -88,13 +89,19 @@ export interface CharacterWorkerApi {
   /** 解码并持有工作图（预检已由 M1 管线完成，这里只做解码与几何构建）。 */
   load(input: CharacterLoadInput): Promise<CharacterLoadOutput>;
   /** L1 语义定位 + L2 SAM 精修（编排跑在 Worker 内，key 不出 Worker）。 */
-  run(input: CharacterRunInput): Promise<CharacterRunOutput>;
+  run(input: CharacterRunInput, onProgress: CharacterProgressCallback): Promise<CharacterRunOutput>;
   /** 预备本地模型会话（点击模式入口 / 审校精修前置）。 */
-  prepare(input: CharacterPrepareInput): Promise<CharacterPrepareOutput>;
+  prepare(
+    input: CharacterPrepareInput,
+    onProgress: CharacterProgressCallback,
+  ): Promise<CharacterPrepareOutput>;
   /** 点击增删：SamSession.segment 重推理，返回整幅替换蒙版。 */
   refine(input: CharacterRefineInput): Promise<CharacterRefineOutput>;
   /** 部位 ZIP 导出（含三断言与 PNG 编码后复验）。 */
-  exportParts(input: CharacterExportInput): Promise<CharacterExportOutput>;
+  exportParts(
+    input: CharacterExportInput,
+    onProgress: CharacterProgressCallback,
+  ): Promise<CharacterExportOutput>;
   /** 取消当前任务（进度/终态联动，AC-V02/AC-V03）。 */
   cancel(): void;
   /** 冻结清单的真实模型总体积（MB 展示用）。 */

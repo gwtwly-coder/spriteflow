@@ -19,6 +19,7 @@ import type {
   SamSession,
 } from "@spriteflow/segment";
 import {
+  CharacterStage,
   createSamSession,
   DEFAULT_CHARACTER_LIMITS,
   DEFAULT_SAM_RUNTIME_OPTIONS,
@@ -39,6 +40,7 @@ import type {
   CharacterLoadOutput,
   CharacterPrepareInput,
   CharacterPrepareOutput,
+  CharacterProgressCallback,
   CharacterRefineInput,
   CharacterRefineOutput,
   CharacterRunInput,
@@ -83,6 +85,22 @@ function context(
 function manifest(): ReturnType<typeof getApprovedSamManifest> {
   return getApprovedSamManifest(SAM_ENCODER_MODEL_ID);
 }
+
+// OnnxSamBackend 的非契约可选协议（镜像 session.ts 的 describeModelLoad 探测）：
+// 订阅字节级下载进度，prepare() 期间转成 CharacterProgressEvent 经 Comlink
+// 回传主线程。不订阅时下载静默跑完，进度条会恒 0（假进行中）。
+interface SamDownloadProgressLike {
+  modelId: string;
+  role: "encoder" | "decoder";
+  loadedBytes: number;
+  totalBytes: number;
+}
+type DownloadSinkBackend = SamInferenceBackend & {
+  setDownloadProgressSink?(sink: ((progress: SamDownloadProgressLike) => void) | null): void;
+};
+
+const decoderManifestBytes = (): number =>
+  getApprovedSamManifest(SAM_DECODER_MODEL_ID)?.byteLength ?? 0;
 
 /** 工作图 → LlmImage（最长边 ≤1024 的 PNG dataUrl，供语义定位外发）。 */
 async function buildLlmImage(source: InputAsset): Promise<LlmImage> {
@@ -175,7 +193,10 @@ const api: CharacterWorkerApi = {
     }
   },
 
-  async run(input: CharacterRunInput): Promise<CharacterRunOutput> {
+  async run(
+    input: CharacterRunInput,
+    onProgress: CharacterProgressCallback,
+  ): Promise<CharacterRunOutput> {
     if (asset === null) return { ok: false, error: busyError("INVALID_STATE") };
     if (activeToken !== null) return { ok: false, error: busyError("BUSY") };
     const currentManifest = manifest();
@@ -198,7 +219,7 @@ const api: CharacterWorkerApi = {
         },
         classifyingTransport(),
         backend,
-        context("character-run", entry, input.onProgress),
+        context("character-run", entry, onProgress),
       );
       if (!located.ok) {
         return { ok: false, error: located.error, llmFailure: classifyLlmFailure() };
@@ -216,15 +237,38 @@ const api: CharacterWorkerApi = {
     }
   },
 
-  async prepare(input: CharacterPrepareInput): Promise<CharacterPrepareOutput> {
+  async prepare(
+    _input: CharacterPrepareInput,
+    onProgress: CharacterProgressCallback,
+  ): Promise<CharacterPrepareOutput> {
     if (activeToken !== null) return { ok: false, error: busyError("BUSY") };
     const currentManifest = manifest();
     if (currentManifest === null) return { ok: false, error: busyError("MODEL_NOT_APPROVED") };
     const entry = token();
     backend ??= createOnnxSamBackend();
     session ??= createSamSession(currentManifest, { ...DEFAULT_SAM_RUNTIME_OPTIONS }, backend);
+    // 字节级下载进度：encoder+decoder 累计，整体体积用冻结清单的真实字节和。
+    // onProgress 是 Comlink 代理（fire-and-forget），不 await——不会反压下载。
+    const sinkBackend = backend as DownloadSinkBackend;
+    const modelTotalBytes = currentManifest.byteLength + decoderManifestBytes();
+    const downloaded = { encoder: 0, decoder: 0 };
+    sinkBackend.setDownloadProgressSink?.((progress) => {
+      downloaded[progress.role] = progress.loadedBytes;
+      const loaded = Math.min(modelTotalBytes, downloaded.encoder + downloaded.decoder);
+      const ratio = modelTotalBytes > 0 ? loaded / modelTotalBytes : 0;
+      onProgress({
+        protocolVersion: 1,
+        taskId: "character-prepare",
+        stage: CharacterStage.ModelDownload,
+        stageProgress: ratio,
+        overallProgress: ratio,
+        completedUnits: loaded,
+        totalUnits: modelTotalBytes,
+        cancellable: true,
+      });
+    });
     try {
-      const executionContext = context("character-prepare", entry, input.onProgress);
+      const executionContext = context("character-prepare", entry, onProgress);
       const initialized = await session.initialize(executionContext);
       if (!initialized.ok) return { ok: false, error: initialized.error };
       if (asset !== null) {
@@ -241,6 +285,7 @@ const api: CharacterWorkerApi = {
         webgpuFallback,
       };
     } finally {
+      sinkBackend.setDownloadProgressSink?.(null);
       activeToken = null;
     }
   },
@@ -269,7 +314,10 @@ const api: CharacterWorkerApi = {
     }
   },
 
-  async exportParts(input: CharacterExportInput): Promise<CharacterExportOutput> {
+  async exportParts(
+    input: CharacterExportInput,
+    onProgress: CharacterProgressCallback,
+  ): Promise<CharacterExportOutput> {
     if (asset === null) return { ok: false, error: busyError("INVALID_STATE") };
     if (activeToken !== null) return { ok: false, error: busyError("BUSY") };
     const entry = token();
@@ -279,7 +327,7 @@ const api: CharacterWorkerApi = {
         input.parts,
         { names: input.names },
         createPartExportCodec(),
-        context("character-export", entry, input.onProgress),
+        context("character-export", entry, onProgress),
       );
       if (!outcome.ok) return { ok: false, error: outcome.error };
       const result: PartExportResult = outcome.value;

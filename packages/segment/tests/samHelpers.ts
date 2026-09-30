@@ -308,6 +308,44 @@ export function fakeFetch(bytes: Map<string, Uint8Array>): FakeFetchHandle {
   return { fetchImpl, requestedUrls };
 }
 
+/**
+ * Fetch double that streams the payload in fixed-size chunks through a real
+ * ReadableStream body — the shape the browser's network stack actually hands
+ * the loader. Regression fixture for the P1 download hang: the streaming
+ * reader path (per-chunk progress + byte-accurate reassembly) must behave
+ * exactly like the buffered arrayBuffer() path it replaced.
+ */
+export function chunkedFakeFetch(
+  bytes: Map<string, Uint8Array>,
+  chunkSize: number,
+): FakeFetchHandle {
+  if (!Number.isInteger(chunkSize) || chunkSize < 1) {
+    throw new Error("chunkSize must be a positive integer");
+  }
+  const requestedUrls: string[] = [];
+  const fetchImpl = (async (input: RequestInfo | URL) => {
+    const url = typeof input === "string" ? input : input.toString();
+    requestedUrls.push(url);
+    const payload = bytes.get(url);
+    if (payload === undefined) {
+      return new Response("missing", { status: 404 });
+    }
+    const stream = new ReadableStream<Uint8Array>({
+      start(controller) {
+        for (let offset = 0; offset < payload.byteLength; offset += chunkSize) {
+          controller.enqueue(payload.slice(offset, offset + chunkSize));
+        }
+        controller.close();
+      },
+    });
+    return new Response(stream, {
+      status: 200,
+      headers: { "content-length": String(payload.byteLength) },
+    });
+  }) as typeof fetch;
+  return { fetchImpl, requestedUrls };
+}
+
 export interface FakeCacheHandle {
   cache: SamCacheLike;
   puts: string[];

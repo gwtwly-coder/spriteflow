@@ -11,6 +11,7 @@ import {
 import { createPipelineClient } from "@spriteflow/pipeline/browser";
 import {
   type CharacterError,
+  CharacterErrorCode,
   type CharacterProgressEvent,
   CharacterStage,
   createPartAsset,
@@ -32,7 +33,7 @@ import {
   saveByok,
 } from "./byok";
 import { getCharacterClient, resetCharacterClient } from "./character-client";
-import type { LlmFailureReason } from "./character-protocol";
+import type { CharacterPrepareOutput, LlmFailureReason } from "./character-protocol";
 import { buildExportNames, partDisplayName } from "./kind-display";
 import { imageRectOfPart, PartsCanvas, partAtPoint } from "./PartsCanvas";
 import { type ByokConfig, type PartsDegraded, usePartsStore } from "./parts-store";
@@ -63,6 +64,22 @@ const t = (
   key: Parameters<typeof translate>[1],
   values?: Record<string, string | number>,
 ) => translate(locale, key, values);
+
+/**
+ * Worker 调用在传输层意外拒绝（如 Comlink postMessage 失败）时的兜底错误。
+ * 没有这个兜底，拒绝会变成未处理的 promise rejection：busy 永不清除，UI
+ * 永久停留在假"进行中"（2026-09-30 RC P1 的渲染侧放大器）。
+ */
+function transportModelError(): CharacterError {
+  return {
+    code: CharacterErrorCode.InternalError,
+    messageKey: "character.error.INTERNAL_ERROR",
+    stage: CharacterStage.ModelInitialize,
+    recoverable: true,
+    recoveryActions: [],
+    details: {},
+  };
+}
 
 const DEGRADED_BANNER: Record<
   SegmentationDegradedReason,
@@ -401,7 +418,16 @@ export function PartsWorkspace({
       setBusy(null);
       return;
     }
-    const output = await character().run({ llm, consent: true }, setProgress);
+    // 传输层拒绝兜底（同 prepareClick）：失败卡 + busy 复位，不留假进行中。
+    let output: RunOutput;
+    try {
+      output = await character().run({ llm, consent: true }, setProgress);
+    } catch {
+      setModelError(transportModelError());
+      setBusy(null);
+      setProgress(null);
+      return;
+    }
     finishRun(output);
   };
   const prepareClick = async () => {
@@ -410,7 +436,16 @@ export function PartsWorkspace({
     store.setScreen("process");
     setProgress(null);
     setLlmFailure(null);
-    const output = await character().prepare({}, setProgress);
+    // 传输层拒绝兜底：宁可展示模型失败卡，也不留下假进行中（P1 教训）。
+    let output: CharacterPrepareOutput;
+    try {
+      output = await character().prepare({}, setProgress);
+    } catch {
+      setModelError(transportModelError());
+      setBusy(null);
+      setProgress(null);
+      return;
+    }
     if (!output.ok) {
       if (output.error === undefined) finishRun({ ok: false });
       else finishRun({ ok: false, error: output.error });
@@ -429,7 +464,13 @@ export function PartsWorkspace({
   };
   const ensureInteractive = async () => {
     if (modelReady) return;
-    const output = await character().prepare({}, () => {});
+    let output: CharacterPrepareOutput;
+    try {
+      output = await character().prepare({}, () => {});
+    } catch {
+      setModelError(transportModelError());
+      return;
+    }
     if (output.ok) {
       store.setModelInfo({
         backendWasm: output.webgpuFallback === true,
@@ -945,6 +986,14 @@ function PartsProcessing({
   const inFinal = stage === CharacterStage.Validate || stage === CharacterStage.Complete;
   const showPathCard =
     semanticAvailable === false && busy === null && modelError === null && llmFailure === null;
+  // 点击模式 prepare 的字节级下载进度（Worker 端 ModelDownload 事件，单位字节）。
+  const downloadMb =
+    progress?.stage === CharacterStage.ModelDownload && progress.totalUnits !== null
+      ? {
+          completed: (progress.completedUnits / 1_000_000).toFixed(1),
+          total: (progress.totalUnits / 1_000_000).toFixed(1),
+        }
+      : null;
   const masksLabel =
     progress?.stage === CharacterStage.PromptInference && progress.totalUnits !== null
       ? `${t(locale, "parts.detect.masks")} ${progress.completedUnits}/${progress.totalUnits}`
@@ -1001,6 +1050,16 @@ function PartsProcessing({
                 {" "}
                 · {t(locale, "model.downloading", { size: modelSizeMb })}
               </span>
+              {downloadMb !== null && (
+                <span className="mono muted">
+                  {" "}
+                  ·{" "}
+                  {t(locale, "model.progress", {
+                    completed: downloadMb.completed,
+                    total: downloadMb.total,
+                  })}
+                </span>
+              )}
             </p>
             <p className={`phase ${inMasks ? "current" : ""}`}>{masksLabel}</p>
             <p className={`phase ${inFinal ? "current" : ""}`}>
