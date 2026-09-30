@@ -75,7 +75,7 @@ const SAM2_TINY_OUTPUT_NAMES = Object.freeze({
 const SAM2_TINY_REVISION = "v0";
 const SAM2_TINY_LICENSE_ID = "apache-2.0";
 const SAM2_TINY_BASE_URL =
-  "https://hf-mirror.com/Geo-IA/evo-sam2.1-onnx/resolve/main/sam2.1_hiera_tiny";
+  "https://pub-84f26155f7ef4247b3632fcd308d941e.r2.dev";
 
 function sam2TinyManifest(
   modelId: string,
@@ -104,9 +104,9 @@ function sam2TinyManifest(
  * PRD AC-V03-B only requires the fallback to be available, not fast, which also
  * spares fallback users a 128 MB download. The fp32 artifacts are NOT served;
  * their measured URL/byte-size/SHA-256 records live in
- * docs/research/2026-09-30-sam2-onnx-model-sources.md. Artifact URLs keep the
- * hf-mirror placeholder origin until the production R2 domain is configured
- * (see setSamModelArtifactUrlOverride).
+ * docs/research/2026-09-30-sam2-onnx-model-sources.md. Artifact URLs point at
+ * the product owner's public R2 bucket (configured 2026-09-30); both files were
+ * hash-verified against these frozen values after upload.
  */
 export const SAM_MODEL_REGISTRY: readonly SamRegistryEntry[] = Object.freeze([
   {
