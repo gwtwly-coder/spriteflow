@@ -30,8 +30,20 @@ URL（暂用 hf-mirror 占位，正式托管待 R2 就绪替换）：`https://hf
 ## 5. 运行时事实（onnxruntime-web）
 
 - WebGPU EP：fp16（fp16 权重 + fp32 I/O 组合）；真实先例 [Xevion/WebSAM](https://github.com/Xevion/WebSAM)（SAM 2.1 Tiny fp32 跑通，Chrome/Edge 121+）、Labelbox/sam2-web、DiffusionStudio（ort-web 1.30 + WebGPU）。
-- WASM 回退：fp16 会被软模拟反而慢——**回退档用 fp32**。
+- WASM 回退：**r4 定版=沿用 fp16 工件**（PRD AC-V03-B 只要求回退可用；fp32 不上架省 128MB 下载）。fp32 产物哈希保留备查：encoder `276054ae…`/decoder `40bd6810…`（暂存目录可删）。
 - opset/算子不兼容：未查到公开口径；集成时以 onnx.checker/runtime 日志自证（已列入适配层验证清单）。
+
+## 5.1 真模型冒烟实测（2026-09-30 RC，Node + ort-web WASM 单线程，R2 真实工件）
+
+**端到端完整性**：R2 下载的 fp16 双件 SHA-256 与冻结值逐字节一致（`f4ca896c…`/`f362ed5b…`）——上传无损确认。
+
+**实测 IO 契约**（HF transformers 导出约定，与早期惯例假设不同）：
+- 编码器：输入 `pixel_values` [1,3,1024,1024] float32（RGB [0,1] NCHW）→ 输出 `image_embeddings.0` [1,32,256,256]、`.1` [1,64,128,128]、`.2` [1,256,64,64]（全 float32）。
+- 解码器：输入 `input_points` [1,1,N,2] float32（**1024 绝对网格**）、`input_labels` [1,1,N] **int64**（1=正点；box=两角点标签 2/3，实测覆盖 1.000）、`image_embeddings.0/1/2` 直通、`input_masks` [1,1,256,256] float32、`has_mask_input` [1] float32 → 输出 `iou_scores` [1,4]、`pred_masks` [1,4,256,256]（argmax(iou) 后阈值 >0）、`object_score_logits` [1,1]。
+- **坐标空间验证**：合成亮方块中心打点 → 覆盖率 1.000/区外 0.000/IoU 0.988（1024 网格经验钉死）。
+- 性能参考（Node WASM 单线程）：encoder 会话 666ms、推理 10.4s；浏览器 WebGPU 待实测。
+- 教训：Geo-IA 该导出为 HF transformers 风格（`pixel_values`），**没有 box_coords 输入**——box prompt 由适配器转换为两角点+标签 2/3。
+
 
 ## 6. 托管：模型必须走 Cloudflare R2
 
