@@ -11,6 +11,7 @@ export {
   V3_CONTRACT_VERSION,
   V3_PROTOCOL_VERSION,
 } from "./defaults.js";
+export { assertPartPixelInvariant, exportPartAssets } from "./exportParts.js";
 export { locatePartsWithLlm } from "./llm.js";
 export { segmentByPrompts, segmentSemantically } from "./orchestration.js";
 export {

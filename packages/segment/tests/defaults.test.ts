@@ -55,6 +55,11 @@ describe("root entry (Node import, no DOM required)", () => {
     expect(typeof segment.removePartAsset).toBe("function");
     expect(typeof segment.applyMaskEdits).toBe("function");
     expect(typeof segment.maskBounds).toBe("function");
+    expect(typeof segment.assertPartPixelInvariant).toBe("function");
+    expect(typeof segment.exportPartAssets).toBe("function");
+    expect(typeof segment.createSamSession).toBe("function");
+    expect(typeof segment.segmentSemantically).toBe("function");
+    expect(typeof segment.segmentByPrompts).toBe("function");
     expect(segment.V3_CONTRACT_VERSION).toBe("3.0.0");
     expect(segment.CharacterStage.Validate).toBe("validate");
     expect(segment.PartKind.Other).toBe("other");

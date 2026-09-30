@@ -1,7 +1,7 @@
 // Public declarations transcribed from docs/interface-contract-v3.md (0.2.0-r2),
 // sections 1-5 and 10. Only types/enums that the v3.0-alpha root entry needs are
 // declared here; the root index exports exactly the contract surface.
-import type { AssetRef, InputAsset, Point, Rect, Size } from "./m1.js";
+import type { AssetRef, InputAsset, PixelBuffer, Point, Rect, Size } from "./m1.js";
 
 // --- Section 1: shared rules and package entry -------------------------------
 
@@ -327,6 +327,70 @@ export interface SamSession {
     context: CharacterExecutionContext,
   ): Promise<CharacterOutcome<SamMaskResult>>;
   dispose(): Promise<void>;
+}
+
+// --- Section 2: part ZIP export (v3.0-alpha) ------------------------------------
+
+export interface PartExportName {
+  partId: PartId;
+  fileName: string;
+}
+
+export interface PartExportTask {
+  names: PartExportName[];
+}
+
+export interface PartsManifestEntry {
+  id: PartId;
+  name: string;
+  kind: PartKind;
+  file: string;
+  bbox: Rect;
+}
+
+export interface PartsManifest {
+  schemaVersion: "spriteflow-parts/1";
+  coordinateSystem: "top-left-half-open-working-pixels";
+  asset: AssetRef;
+  sourceSize: Size;
+  parts: PartsManifestEntry[];
+}
+
+export interface PartExportFile {
+  path: string;
+  mime: "image/png" | "application/json" | "text/plain";
+  bytes: ArrayBuffer;
+}
+
+export interface PartExportFileEntry {
+  path: string;
+  mime: PartExportFile["mime"];
+  byteLength: number;
+}
+
+export interface PartExportResult {
+  fileName: string;
+  mime: "application/zip";
+  archive: ArrayBuffer;
+  files: PartExportFileEntry[];
+  manifest: PartsManifest;
+}
+
+export interface PartExportCodec {
+  encodePng(pixels: PixelBuffer, context: CharacterExecutionContext): Promise<ArrayBuffer>;
+  decodePng(bytes: ArrayBuffer, context: CharacterExecutionContext): Promise<PixelBuffer>;
+  encodeZip(files: PartExportFile[], context: CharacterExecutionContext): Promise<ArrayBuffer>;
+  inspectZip(
+    archive: ArrayBuffer,
+    context: CharacterExecutionContext,
+  ): Promise<PartExportFileEntry[]>;
+}
+
+export interface PartPixelInvariantReport {
+  partId: PartId;
+  checkedPixels: number;
+  visiblePixels: number;
+  passed: true;
 }
 
 // --- Section 5 (referenced from section 2): mask edits -------------------------
