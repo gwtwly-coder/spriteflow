@@ -74,8 +74,7 @@ const SAM2_TINY_OUTPUT_NAMES = Object.freeze({
 });
 const SAM2_TINY_REVISION = "v0";
 const SAM2_TINY_LICENSE_ID = "apache-2.0";
-const SAM2_TINY_BASE_URL =
-  "https://pub-84f26155f7ef4247b3632fcd308d941e.r2.dev";
+const SAM2_TINY_BASE_URL = "https://pub-84f26155f7ef4247b3632fcd308d941e.r2.dev";
 
 function sam2TinyManifest(
   modelId: string,
