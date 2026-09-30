@@ -17,8 +17,6 @@ interface Props {
   sourceSize: { width: number; height: number } | null;
   tool: PartsTool;
   busy: boolean;
-  maskColor: string;
-  maskOpacity: number;
   canvasBackground: string;
   onImageClick(point: { x: number; y: number }): void;
 }
@@ -45,6 +43,19 @@ const getCheckerTile = () => {
 interface HighlightCacheEntry {
   part: PartAsset;
   canvas: HTMLCanvasElement;
+  signature: string;
+}
+
+/**
+ * 视觉调节面板（§13.3）把 token 写在 :root 内联样式上；画布无法直接用 var()，
+ * 每次 paint 前解析计算值（未设置时用缺省）。
+ */
+export function resolveVisualToken(name: string, fallback: string): string {
+  const value = window
+    .getComputedStyle(window.document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return value.length > 0 ? value : fallback;
 }
 
 /** 部件蒙版高亮缓存：按部位对象身份失效（蒙版替换 = 新对象）。 */
@@ -135,8 +146,6 @@ export function PartsCanvas({
   sourceSize,
   tool,
   busy,
-  maskColor,
-  maskOpacity,
   canvasBackground,
   onImageClick,
 }: Props) {
@@ -212,15 +221,19 @@ export function PartsCanvas({
       ctx.drawImage(image, 0, 0, sourceSize.width, sourceSize.height);
     }
     if (maskHighlight && sourceSize) {
-      const color = parseColor(maskColor);
+      const colorHex = resolveVisualToken("--parts-mask-color", "#b48bff");
+      const opacityRaw = Number.parseFloat(resolveVisualToken("--parts-mask-opacity", "0.45"));
+      const opacity = Number.isFinite(opacityRaw) ? opacityRaw : 0.45;
+      const color = parseColor(colorHex);
+      const signature = `${colorHex}:${opacity}`;
       for (const part of parts) {
         const entry = highlightCache.current.get(part.id);
         const fresh =
-          entry && entry.part === part
+          entry && entry.part === part && entry.signature === signature
             ? entry.canvas
-            : buildHighlight(part, preview, sourceSize, color, maskOpacity);
-        if (!entry || entry.part !== part)
-          highlightCache.current.set(part.id, { part, canvas: fresh });
+            : buildHighlight(part, preview, sourceSize, color, opacity);
+        if (!entry || entry.part !== part || entry.signature !== signature)
+          highlightCache.current.set(part.id, { part, canvas: fresh, signature });
         ctx.drawImage(fresh, part.sourceRect.x, part.sourceRect.y);
       }
     }
@@ -280,6 +293,12 @@ export function PartsCanvas({
     window.addEventListener("spriteflow-parts-fit", fit);
     return () => window.removeEventListener("spriteflow-parts-fit", fit);
   }, [fit]);
+  // 视觉调节面板（§13.3）改蒙版 token 时即时重绘（无 deps：paint 闭包随渲染更新）。
+  useEffect(() => {
+    const handler = () => paint();
+    window.addEventListener("spriteflow-parts-tokens", handler);
+    return () => window.removeEventListener("spriteflow-parts-tokens", handler);
+  });
 
   const onDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (!sourceSize) return;

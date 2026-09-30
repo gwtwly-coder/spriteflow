@@ -20,7 +20,7 @@ import {
   type SegmentationDegradedReason,
   type SegmentationResult,
 } from "@spriteflow/segment";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { errorCopy, ModeSwitch } from "../app/App";
 import { type Locale, translate } from "../i18n";
 import {
@@ -32,16 +32,31 @@ import {
   saveByok,
 } from "./byok";
 import { getCharacterClient, resetCharacterClient } from "./character-client";
+import type { LlmFailureReason } from "./character-protocol";
 import { buildExportNames, partDisplayName } from "./kind-display";
 import { imageRectOfPart, PartsCanvas, partAtPoint } from "./PartsCanvas";
 import { type ByokConfig, type PartsDegraded, usePartsStore } from "./parts-store";
 
-type Modal = "delete" | "rerun" | "consent" | "oversize" | "memory" | "byok" | "modelRetry" | null;
+type Modal =
+  | "delete"
+  | "rerun"
+  | "consent"
+  | "oversize"
+  | "memory"
+  | "byok"
+  | "modelRetry"
+  | "newFile"
+  | "devVisual"
+  | null;
 type ExportDrawerState = "closed" | "form" | "processing" | "success" | "failure" | "invariant";
 type Busy = "semantic" | "click" | "export" | null;
 type ActiveTask = { cancel(): Promise<unknown> };
 
 const WORKING_MAX_DIMENSION = 2048;
+
+// 视觉调节面板仅开发构建可加载（§13.3：生产零入口——动态 import 分支被
+// import.meta.env.DEV=false 消除后，该 chunk 不会进入生产包）。
+const DevVisualPanel = import.meta.env.DEV ? lazy(() => import("./dev-visual-panel")) : null;
 
 const t = (
   locale: Locale,
@@ -74,6 +89,18 @@ const DEFAULT_MODELS: Record<ByokConfig["provider"], string> = {
   cogvlm: "cogvlm-2",
   openai_gpt: "gpt-4o",
   custom: "",
+};
+
+/** L1 错误码 → 失败原因（AC-V02-C 的四类说明：key 无效/网络/额度/无法解析）。 */
+const LLM_REASON_BY_CODE: Partial<Record<CharacterError["code"], LlmFailureReason>> = {
+  LLM_AUTHENTICATION_FAILED: "unauthorized",
+  LLM_RATE_LIMITED: "rate_limited",
+  LLM_NETWORK_FAILED: "network",
+  LLM_TIMEOUT: "network",
+  LLM_INVALID_RESPONSE: "bad_response",
+  LLM_RESPONSE_TOO_LARGE: "bad_response",
+  LLM_CONFIGURATION_INVALID: "bad_response",
+  LLM_CONSENT_REQUIRED: "bad_response",
 };
 
 export function PartsWorkspace({
@@ -134,6 +161,7 @@ export function PartsWorkspace({
       void resetCharacterClient();
       clearKey();
       usePartsStore.getState().resetAll();
+      usePartsStore.temporal.getState().clear();
     },
     [],
   );
@@ -248,6 +276,7 @@ export function PartsWorkspace({
     resizeTo: { width: number; height: number } | null,
   ) => {
     setPreflight("decode");
+    setLlmFailure(null);
     const nextAsset = { assetId: crypto.randomUUID().replaceAll("-", ""), revision: 1 };
     try {
       const loaded = (await pipelineSubmit("load", {
@@ -283,6 +312,12 @@ export function PartsWorkspace({
       setModelReady(false);
       setModelError(null);
       store.setFile({ file: candidate, size: loaded.asset.workingSize });
+      // 工作图几何进 store（W3 画布 sourceSize / 顶栏尺寸都读 workingSize）。
+      store.setAsset({
+        asset: nextAsset,
+        preview: loaded.preview,
+        workingSize: loaded.asset.workingSize,
+      });
       if (store.byok) {
         setModal("consent");
         setPreflight("idle");
@@ -306,7 +341,8 @@ export function PartsWorkspace({
     error?: CharacterError;
     llmFailure?: "network" | "unauthorized" | "rate_limited" | "bad_response";
   }
-  /** W2 → W3 落库：语义成功 / 各类降级（诚实横幅，AC-V06）。 */
+  /** W2 的 L1 失败卡（AC-V02-C）：按原因分类说明 + 重试/点击模式两条路径。 */
+  const [llmFailure, setLlmFailure] = useState<LlmFailureReason | null>(null);
   const finishRun = (output: RunOutput) => {
     if (!output.ok || !output.result) {
       if (output.error?.code === "CANCELLED") {
@@ -316,9 +352,17 @@ export function PartsWorkspace({
         setProgress(null);
         return;
       }
-      // 模型失败（AC-V03-D）：不重传图片，保留可重试状态；自动拆件与点击模式
-      // 均标注不可用原因（二者依赖同一本地模型）。
-      setModelError(output.error ?? null);
+      // LLM 失败（AC-V02-C）：原因匹配的失败说明 + 重试语义定位/使用点击模式，
+      // 不进模型失败卡（模型与 LLM 是两类故障）；已上传图片与已有部位保留。
+      const reason =
+        output.llmFailure ?? (output.error ? LLM_REASON_BY_CODE[output.error.code] : undefined);
+      if (reason) {
+        setLlmFailure(reason);
+      } else {
+        // 模型失败（AC-V03-D）：不重传图片，保留可重试状态；自动拆件与点击模式
+        // 均标注不可用原因（二者依赖同一本地模型）。
+        setModelError(output.error ?? null);
+      }
       setBusy(null);
       setProgress(null);
       return;
@@ -346,6 +390,7 @@ export function PartsWorkspace({
     setBusy("semantic");
     store.setScreen("process");
     setProgress(null);
+    setLlmFailure(null);
     const llm = buildLlmConfig();
     if (!llm || !store.byok) {
       // key 已被清除：回到未配置路径卡片（诚实呈现，不发请求）。
@@ -362,6 +407,7 @@ export function PartsWorkspace({
     setBusy("click");
     store.setScreen("process");
     setProgress(null);
+    setLlmFailure(null);
     const output = await character().prepare({}, setProgress);
     if (!output.ok) {
       if (output.error === undefined) finishRun({ ok: false });
@@ -557,9 +603,24 @@ export function PartsWorkspace({
           </>
         )}
         <span className="grow" />
+        {store.screen === "review" && (
+          <button type="button" className="ghost" onClick={() => setModal("newFile")}>
+            {t(locale, "action.new_file")}
+          </button>
+        )}
         <button type="button" className="ghost" onClick={() => setModal("byok")}>
           {t(locale, "parts.upload.open_llm_settings")}
         </button>
+        {import.meta.env.DEV && DevVisualPanel !== null && (
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => setModal("devVisual")}
+            aria-label={t(locale, "dev.visual.title")}
+          >
+            ▧
+          </button>
+        )}
         <label className="lang">
           <span className="sr-only">{t(locale, "language.label")}</span>
           <select
@@ -597,10 +658,12 @@ export function PartsWorkspace({
           progress={progress}
           busy={busy}
           modelError={modelError}
+          llmFailure={llmFailure}
           semanticAvailable={store.byok !== null}
           onCancel={() => character().cancel()}
           onChooseClick={prepareClick}
           onOpenByok={() => setModal("byok")}
+          onRetryLlm={() => void runSemantic()}
           onRetryModel={() => {
             setModelError(null);
             if (busy === "semantic") void runSemantic();
@@ -661,7 +724,12 @@ export function PartsWorkspace({
           }}
         />
       )}
-      {modal !== null && modal !== "byok" && (
+      {modal === "devVisual" && DevVisualPanel !== null && (
+        <Suspense fallback={null}>
+          <DevVisualPanel locale={locale} onClose={() => setModal(null)} />
+        </Suspense>
+      )}
+      {modal !== null && modal !== "byok" && modal !== "devVisual" && (
         <PartsModal
           locale={locale}
           kind={modal}
@@ -687,10 +755,31 @@ export function PartsWorkspace({
               notify(t(locale, "part.deleted"));
             } else if (modal === "rerun") {
               setModal(null);
+              // 重新拆件=替换当前部位（copy-v3 §25）：清空为一次撤销事务。
+              store.clearParts();
               if (store.byok) setModal("consent");
               else void prepareClick();
             } else if (modal === "consent") {
               void runSemantic();
+            } else if (modal === "newFile") {
+              // 换一张图（§13.1）：取消任务 + 清空部位与历史 + 回 W1。
+              setModal(null);
+              character().cancel();
+              store.resetAll();
+              usePartsStore.temporal.getState().clear();
+              clearKey();
+              setFile(null);
+              setPreview(null);
+              setAssetRef(null);
+              setPreflight("idle");
+              setPipelineError(null);
+              setModelError(null);
+              setLlmFailure(null);
+              setModelReady(false);
+              setProgress(null);
+              setBusy(null);
+              setExportState("closed");
+              setExportResult(null);
             } else setModal(null);
           }}
         />
@@ -808,10 +897,12 @@ function PartsProcessing({
   progress,
   busy,
   modelError,
+  llmFailure,
   semanticAvailable,
   onCancel,
   onChooseClick,
   onOpenByok,
+  onRetryLlm,
   onRetryModel,
 }: {
   locale: Locale;
@@ -820,10 +911,12 @@ function PartsProcessing({
   progress: CharacterProgressEvent | null;
   busy: Busy;
   modelError: CharacterError | null;
+  llmFailure: LlmFailureReason | null;
   semanticAvailable: boolean;
   onCancel(): void;
   onChooseClick(): void;
   onOpenByok(): void;
+  onRetryLlm(): void;
   onRetryModel(): void;
 }) {
   const stage = progress?.stage;
@@ -836,7 +929,8 @@ function PartsProcessing({
     stage === CharacterStage.PromptInference ||
     stage === CharacterStage.MaskPostprocess;
   const inFinal = stage === CharacterStage.Validate || stage === CharacterStage.Complete;
-  const showPathCard = semanticAvailable === false && busy === null && modelError === null;
+  const showPathCard =
+    semanticAvailable === false && busy === null && modelError === null && llmFailure === null;
   const masksLabel =
     progress?.stage === CharacterStage.PromptInference && progress.totalUnits !== null
       ? `${t(locale, "parts.detect.masks")} ${progress.completedUnits}/${progress.totalUnits}`
@@ -851,6 +945,18 @@ function PartsProcessing({
             <p>{t(locale, "llm.not_configured.body")}</p>
             <button type="button" className="primary" onClick={onOpenByok}>
               {t(locale, "parts.upload.open_llm_settings")}
+            </button>
+            <button type="button" className="secondary" onClick={onChooseClick}>
+              {t(locale, "parts.fallback.use_click")}
+            </button>
+          </>
+        ) : llmFailure ? (
+          // AC-V02-C：原因匹配的失败说明 + 两条明确动作；不使用成功语气。
+          <>
+            <h2>{t(locale, "parts.fallback.llm_failed.title")}</h2>
+            <p>{t(locale, `llm.error.${llmFailure}` as never)}</p>
+            <button type="button" className="primary" onClick={onRetryLlm}>
+              {t(locale, "parts.fallback.retry_llm")}
             </button>
             <button type="button" className="secondary" onClick={onChooseClick}>
               {t(locale, "parts.fallback.use_click")}
@@ -1075,8 +1181,6 @@ function PartsReview({
             sourceSize={store.workingSize}
             tool={store.tool}
             busy={busy || !modelReady}
-            maskColor="var(--parts-mask-color, #b48bff)"
-            maskOpacity={0.45}
             canvasBackground="var(--parts-canvas-bg, var(--bg-0))"
             onImageClick={onCanvasClick}
           />
@@ -1406,7 +1510,7 @@ function PartsModal({
   onConfirm,
 }: {
   locale: Locale;
-  kind: Exclude<Modal, "byok">;
+  kind: Exclude<Modal, "byok" | "devVisual">;
   providerLabel: string;
   size: { width: number; height: number } | null;
   downscale: number;
@@ -1439,6 +1543,10 @@ function PartsModal({
     title = t(locale, "memory.precheck.title");
     body = t(locale, "memory.precheck.body");
     confirm = t(locale, "memory.downscale_retry");
+  } else if (kind === "newFile") {
+    title = t(locale, "confirm.new_file.title");
+    body = t(locale, "confirm.new_file.body");
+    confirm = t(locale, "confirm.new_file.action");
   } else {
     title = t(locale, "model.failed.title");
     body = t(locale, "model.failed.body");

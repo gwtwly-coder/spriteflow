@@ -111,11 +111,15 @@ export function App() {
   };
   const performSwitch = async (target: Workspace) => {
     setPendingSwitch(null);
-    // v3 会话状态随切换清空：取消进行中任务 + 清 BYOK key + 重置 v3 store。
-    if (usePartsStore.getState().asset !== null || usePartsStore.getState().parts.length > 0) {
+    // v3 会话状态随切换清空：取消进行中任务 + 清 BYOK key + 重置 v3 store
+    // 与撤销历史（切换后不可经撤销找回旧部位，AC-V01-C）。
+    if (usePartsStore.getState().file !== null || usePartsStore.getState().parts.length > 0) {
       await resetCharacterClient();
     }
     usePartsStore.getState().resetAll();
+    usePartsStore.temporal.getState().clear();
+    // 会话已清空，来源工作区的未完成标记同步失效（否则切回时误弹确认）。
+    setPartsDirty(false);
     setWorkspace(target);
   };
   return (
