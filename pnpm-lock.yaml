@@ -29,6 +29,9 @@ importers:
       comlink:
         specifier: 4.4.2
         version: 4.4.2
+      fflate:
+        specifier: 0.8.3
+        version: 0.8.3
       react:
         specifier: 19.3.0
         version: 19.3.0
