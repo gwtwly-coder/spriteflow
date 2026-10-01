@@ -1,7 +1,8 @@
 // W3 部位审校画布：图片层 + 部件蒙版高亮层（同视口变换，同一 canvas 视口容器）
 // + 部件边界框；视口 pan/zoom/fit 沿用 M1 模式（滚轮指针缩放 / 平移工具 / fit）。
 // fit 为确定性初始 fit（容器布局就绪后幂等应用一次，见 computeFitViewport）；
-// 滚轮缩放走原生 { passive: false } 监听以使 preventDefault 生效。
+// 滚轮缩放走原生 { passive: false } 监听以使 preventDefault 生效；
+// paint 在容器 0 尺寸（布局中途）时只登记逐帧重试，绝不把 0 写进画布尺寸。
 import type { PixelBuffer, Rect } from "@spriteflow/pipeline";
 import type { BitMask, PartAsset } from "@spriteflow/segment";
 import { maskBounds } from "@spriteflow/segment";
@@ -29,6 +30,15 @@ const clamp = (value: number, min: number, max: number) => Math.max(min, Math.mi
 
 /** fit 的画布四周留白（与 M1 CanvasEditor 一致）。 */
 export const FIT_PADDING = 48;
+
+/**
+ * paint 逐帧重试的上限（约 60fps 下 5s）：host 布局中途（宽已定/高未结算）时
+ * clientWidth/clientHeight 可读到 0——此时绝不把 0 写进 canvas 尺寸（RC P1：
+ * 重载后重进 W3 两次确定性复现 canvas.height 恒 0：0 被写死后若错过 RO 时机
+ * 且无新渲染，画布永远 0 高），改为逐帧重试等布局结算。上限只为防 host 永远
+ * 0 尺寸的退化场景里无限 rAF 自旋；任何渲染与 RO 回调都照常补 paint。
+ */
+const LAYOUT_RETRY_MAX_FRAMES = 300;
 
 /**
  * fit 视口纯计算：给定工作图尺寸与画布容器尺寸，返回让图片完整可见的居中视口。
@@ -189,6 +199,11 @@ export function PartsCanvas({
   const highlightCache = useRef(new Map<string, HighlightCacheEntry>());
   const drag = useRef<{ kind: "pan"; startX: number; startY: number } | null>(null);
   const downPoint = useRef<{ x: number; y: number } | null>(null);
+  // 0 尺寸布局重试（见 LAYOUT_RETRY_MAX_FRAMES）：pending 记录在途 rAF/timeout
+  // 句柄；paintLatest 让重试始终调用最近一次渲染的 paint 闭包（视口/部件最新）。
+  const layoutRetryRef = useRef<{ id: number; raf: boolean } | null>(null);
+  const layoutRetriesRef = useRef(0);
+  const paintLatestRef = useRef<() => void>(() => {});
   const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
   const zoom = usePartsStore((state) => state.zoom);
   const pan = usePartsStore((state) => state.pan);
@@ -225,19 +240,48 @@ export function PartsCanvas({
     };
   };
 
+  const cancelLayoutRetry = useCallback(() => {
+    const pending = layoutRetryRef.current;
+    if (pending === null) return;
+    layoutRetryRef.current = null;
+    if (pending.raf) window.cancelAnimationFrame(pending.id);
+    else window.clearTimeout(pending.id);
+  }, []);
+  const scheduleLayoutRetry = () => {
+    if (layoutRetryRef.current !== null) return;
+    const step = () => {
+      layoutRetryRef.current = null;
+      layoutRetriesRef.current += 1;
+      paintLatestRef.current();
+    };
+    // 测试环境等无 rAF 场景退化为 0ms 超时；浏览器里帧对齐重试。
+    const raf = typeof window.requestAnimationFrame === "function";
+    layoutRetryRef.current = raf
+      ? { id: window.requestAnimationFrame(step), raf: true }
+      : { id: window.setTimeout(step, 0), raf: false };
+  };
   const paint = () => {
     const canvas = canvasRef.current;
     const host = hostRef.current;
     if (!canvas || !host) return;
+    const hostWidth = host.clientWidth;
+    const hostHeight = host.clientHeight;
+    if (!(hostWidth > 0) || !(hostHeight > 0)) {
+      // 布局中途（如宽已定/高未结算）：绝不把 0 写进 canvas 尺寸（写了就可能
+      // 永远 0 高，RC P1 重载重进 W3 复现），逐帧重试等布局结算（有上限）。
+      if (layoutRetriesRef.current < LAYOUT_RETRY_MAX_FRAMES) scheduleLayoutRetry();
+      return;
+    }
+    layoutRetriesRef.current = 0;
     const dpr = window.devicePixelRatio || 1;
-    canvas.width = host.clientWidth * dpr;
-    canvas.height = host.clientHeight * dpr;
-    canvas.style.width = `${host.clientWidth}px`;
-    canvas.style.height = `${host.clientHeight}px`;
+    canvas.width = hostWidth * dpr;
+    canvas.height = hostHeight * dpr;
+    canvas.style.width = `${hostWidth}px`;
+    canvas.style.height = `${hostHeight}px`;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.scale(dpr, dpr);
-    ctx.clearRect(0, 0, host.clientWidth, host.clientHeight);
+    ctx.clearRect(0, 0, hostWidth, hostHeight);
     ctx.save();
     ctx.translate(pan.x, pan.y);
     ctx.scale(zoom, zoom);
@@ -301,6 +345,12 @@ export function PartsCanvas({
     }
     ctx.restore();
   };
+  // 0 尺寸重试回调永远调用最近渲染的 paint（闭包内的视口/部件状态取最新）；
+  // 卸载时取消在途重试（ref 读取与渲染周期无关）。
+  useLayoutEffect(() => {
+    paintLatestRef.current = paint;
+  });
+  useEffect(() => () => cancelLayoutRetry(), [cancelLayoutRetry]);
   // 手动 fit（缩放指示 "0" / spriteflow-parts-fit 事件）：用户显式动作，只要
   // 容器尺寸有效就立即应用；容器无布局时静默跳过（守卫见 computeFitViewport）。
   const fit = useCallback((): boolean => {
