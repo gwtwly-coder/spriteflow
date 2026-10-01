@@ -701,6 +701,13 @@ export function PartsWorkspace({
       <div aria-live="polite" className="sr-only">
         {busyVisible ? t(locale, "status.busy") : t(locale, "status.ready")}
       </div>
+      {/* ITS 编号步骤范式：W1–W4 全程可见，用户永远知道自己在哪一步。 */}
+      <PartsSteps
+        locale={locale}
+        screen={store.screen}
+        partCount={store.parts.length}
+        exportOpen={exportState !== "closed"}
+      />
       {store.screen === "upload" && (
         <PartsUpload
           locale={locale}
@@ -1108,6 +1115,118 @@ function PartsProcessing({
   );
 }
 
+/** ITS 编号步骤范式（image-to-slice ui.template.html "1. 输入描述词"）：W1→W4
+ * 全程可见的四步指示器，当前步高亮（aria-current="step"），已完成步打勾。 */
+function PartsSteps({
+  locale,
+  screen,
+  partCount,
+  exportOpen,
+}: {
+  locale: Locale;
+  screen: "upload" | "process" | "review";
+  partCount: number;
+  exportOpen: boolean;
+}) {
+  const steps: {
+    key: Parameters<typeof translate>[1];
+    hintKey: Parameters<typeof translate>[1];
+  }[] = [
+    { key: "parts.steps.upload", hintKey: "parts.steps.upload_hint" },
+    { key: "parts.steps.split", hintKey: "parts.steps.split_hint" },
+    { key: "parts.steps.refine", hintKey: "parts.steps.refine_hint" },
+    { key: "parts.steps.export", hintKey: "parts.steps.export_hint" },
+  ];
+  // 当前步：上传屏=1；过程屏=2；审校屏按部位数推进（0 个还在拆件=2，有了=精修 3）；
+  // 导出抽屉打开=4。
+  const current = exportOpen
+    ? 3
+    : screen === "upload"
+      ? 0
+      : screen === "process"
+        ? 1
+        : partCount === 0
+          ? 1
+          : 2;
+  return (
+    <nav className="parts-steps" aria-label={t(locale, "parts.steps.label")}>
+      <ol>
+        {steps.map((step, index) => {
+          const state = index < current ? "done" : index === current ? "current" : "todo";
+          return (
+            <li
+              key={step.key}
+              className={state}
+              aria-current={state === "current" ? "step" : undefined}
+            >
+              <span className="no" aria-hidden="true">
+                {state === "done" ? "✓" : index + 1}
+              </span>
+              <span className="step-text">
+                {t(locale, step.key)}
+                <small>{t(locale, step.hintKey)}</small>
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </nav>
+  );
+}
+
+/** 降级进点击模式的四步引导卡（ITS 上下文 hint 范式；产品主指定的四步文案）。
+ * 部位数 >0 后步骤①②呈完成态；可折叠为单行「显示引导」。 */
+function PartsClickGuide({ locale, partCount }: { locale: Locale; partCount: number }) {
+  const [folded, setFolded] = useState(false);
+  if (folded) {
+    return (
+      <div className="parts-guide folded">
+        <button type="button" onClick={() => setFolded(false)}>
+          {t(locale, "parts.guide.expand")}
+        </button>
+      </div>
+    );
+  }
+  const steps: Parameters<typeof translate>[1][] = [
+    "parts.guide.step1",
+    "parts.guide.step2",
+    "parts.guide.step3",
+    "parts.guide.step4",
+  ];
+  return (
+    <section className="parts-guide" aria-label={t(locale, "parts.guide.title")}>
+      <div className="parts-guide-head">
+        <strong>{t(locale, "parts.guide.title")}</strong>
+        <span className="grow" />
+        <button type="button" onClick={() => setFolded(true)}>
+          {t(locale, "parts.guide.collapse")}
+        </button>
+      </div>
+      <ol>
+        {steps.map((step, index) => {
+          const done = partCount > 0 && index < 2;
+          const current = partCount === 0 ? index === 0 : index === 2;
+          return (
+            <li
+              key={step}
+              data-state={done ? "done" : current ? "current" : "todo"}
+              className={done ? "done" : current ? "current" : "todo"}
+            >
+              <span className="no" aria-hidden="true">
+                {done ? "✓" : "①②③④".charAt(index)}
+              </span>
+              <span>
+                {t(locale, step)}
+                {done && <span className="sr-only">{t(locale, "parts.guide.done")}</span>}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
 /** W3 部位审校：工具栏 + 主画布 + 部件列表卡（无时间轴，v3 无帧概念）。 */
 function PartsReview({
   locale,
@@ -1238,56 +1357,69 @@ function PartsReview({
       </nav>
       <div className="workspace">
         <section className="canvas-wrap">
-          {bannerKey && (
-            <div className="warning-banner">
-              <strong>{t(locale, bannerKey.title)}</strong>
-              <span>
-                {degraded === "llm-failed" || degraded === "low-confidence"
-                  ? (reasonText ?? t(locale, "parts.fallback.low_confidence.body"))
-                  : t(locale, bannerKey.body)}
-              </span>
-              {degraded === "llm-failed" && (
-                <>
-                  <button type="button" onClick={onRetryLlm}>
-                    {t(locale, "parts.fallback.retry_llm")}
+          {/* 横幅 + 引导卡统一纵向堆叠（原多个 absolute 横幅会互相叠写）。 */}
+          <div className="canvas-top-stack">
+            {bannerKey && (
+              <div className="warning-banner">
+                <strong>{t(locale, bannerKey.title)}</strong>
+                <span>
+                  {degraded === "llm-failed" || degraded === "low-confidence"
+                    ? (reasonText ?? t(locale, "parts.fallback.low_confidence.body"))
+                    : t(locale, bannerKey.body)}
+                </span>
+                {degraded === "llm-failed" && (
+                  <>
+                    <button type="button" onClick={onRetryLlm}>
+                      {t(locale, "parts.fallback.retry_llm")}
+                    </button>
+                    <button type="button" onClick={onUseClick}>
+                      {t(locale, "parts.fallback.use_click")}
+                    </button>
+                  </>
+                )}
+                {degraded === "no-key" && (
+                  <button type="button" onClick={onOpenByok}>
+                    {t(locale, "parts.upload.open_llm_settings")}
                   </button>
-                  <button type="button" onClick={onUseClick}>
-                    {t(locale, "parts.fallback.use_click")}
-                  </button>
-                </>
-              )}
-              {degraded === "no-key" && (
-                <button type="button" onClick={onOpenByok}>
-                  {t(locale, "parts.upload.open_llm_settings")}
+                )}
+              </div>
+            )}
+            {modelError && (
+              <div className="warning-banner">
+                <strong>{t(locale, "model.failed.title")}</strong>
+                <span>
+                  {t(locale, "model.failed.body")} {t(locale, "model.required_hint")}
+                </span>
+                <button type="button" onClick={onRetryModel}>
+                  {t(locale, "model.retry")}
                 </button>
-              )}
-            </div>
-          )}
-          {modelError && (
-            <div className="warning-banner">
-              <strong>{t(locale, "model.failed.title")}</strong>
-              <span>
-                {t(locale, "model.failed.body")} {t(locale, "model.required_hint")}
-              </span>
-              <button type="button" onClick={onRetryModel}>
-                {t(locale, "model.retry")}
-              </button>
-            </div>
-          )}
-          {preparing && !modelError && (
-            // 审校器预热横幅（RC P1 缺陷 1）：进入 W3 后本地会话初始化 20–35s，
-            // 期间工具禁用 + 此横幅在场（<output> 隐式 role=status 供读屏播报，
-            // 同 AnimationViewport 先例），就绪后自动消失。
-            <output className="warning-banner">
-              <strong>{t(locale, "parts.detect.finalizing")}</strong>
-              <span>{t(locale, "parts.editor.model_preparing")}</span>
-            </output>
-          )}
-          {(store.backendWasm || store.wasmFallbackWarning) && (
-            // AC-V03-B：回退提示在审校屏持续在场（性能差异，非错误）。
-            <div className="warning-banner">
-              <span>{t(locale, "model.backend_wasm")}</span>
-            </div>
+              </div>
+            )}
+            {preparing && !modelError && (
+              // 审校器预热横幅（RC P1 缺陷 1）：进入 W3 后本地会话初始化 20–35s，
+              // 期间工具禁用 + 此横幅在场（<output> 隐式 role=status 供读屏播报，
+              // 同 AnimationViewport 先例），就绪后自动消失。
+              <output className="warning-banner">
+                <strong>{t(locale, "parts.detect.finalizing")}</strong>
+                <span>{t(locale, "parts.editor.model_preparing")}</span>
+              </output>
+            )}
+            {(store.backendWasm || store.wasmFallbackWarning) && (
+              // AC-V03-B：回退提示在审校屏持续在场（性能差异，非错误）。
+              <div className="warning-banner">
+                <span>{t(locale, "model.backend_wasm")}</span>
+              </div>
+            )}
+            {/* 降级引导卡（ITS 范式核心）：任何降级进点击模式（非人形/LLM 失败/
+                无 key/低置信）都在横幅下方给出四步操作引导，不留“零提示”画布。 */}
+            {store.mode === "click" && store.degraded !== null && (
+              <PartsClickGuide locale={locale} partCount={store.parts.length} />
+            )}
+          </div>
+          {store.parts.length === 0 && !preparing && !modelError && (
+            // 零部位画布中央叠加提示（ITS 上下文 hint）：首个部位创建后消失；
+            // pointer-events:none 不挡画布点击。
+            <div className="parts-canvas-empty">{t(locale, "parts.canvas.empty_hint")}</div>
           )}
           <PartsCanvas
             preview={preview}

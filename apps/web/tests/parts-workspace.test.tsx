@@ -17,6 +17,7 @@ import { beforeEach, vi } from "vitest";
 import { App } from "../src/app/App";
 import { PartsWorkspace } from "../src/character/PartsWorkspace";
 import { usePartsStore } from "../src/character/parts-store";
+import { type Locale, translate } from "../src/i18n";
 
 const characterMock = vi.hoisted(() => {
   return {
@@ -595,5 +596,138 @@ describe("v3 parts workspace", () => {
     // 确认切换已清空 v3 会话：回到 W1 上传空状态，部位数为 0。
     expect(screen.getByText("拖入透明人物立绘")).toBeTruthy();
     expect(usePartsStore.getState().parts).toHaveLength(0);
+  });
+});
+
+// --- 点击模式引导（照搬 Image To Slice 交互范式：编号步骤 + 上下文 hint） ---
+// 产品主实测：非人形图降级到点击模式后"上手没有任何提示"。以下用例锁定：
+// 引导卡四步在场、步骤①②随部位数完成、折叠/展开、编号步骤条全程可见。
+
+describe("v3 click-mode guidance (ITS patterns)", () => {
+  const GUIDE_STEPS = [
+    "点上方工具栏的「新增部位」",
+    "在图上点你想拆的部位：每点一下切出一个部位，可重复多点",
+    "点歪了用「减区域」修正，或选中部位卡删除",
+    "部位满意后点「导出」",
+  ];
+
+  async function addFirstPart(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("button", { name: /新增部位/ }));
+    const canvas = screen.getByLabelText("部位画布");
+    const { fireEvent } = await import("@testing-library/react");
+    fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
+    fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 5, clientY: 5 });
+    await screen.findByText("部位 1");
+  }
+
+  it("renders the four-step guide card and the canvas empty hint after degrading into click mode", async () => {
+    const user = userEvent.setup();
+    await reachReviewByClickMode(user);
+    // 引导卡在场且四步文本齐全（降级 ≠ 零提示）。
+    const guide = screen.getByRole("region", { name: "点击模式这样用" });
+    const guideText = guide.textContent ?? "";
+    for (const step of GUIDE_STEPS) expect(guideText).toContain(step);
+    // 初始状态：步骤①为当前步，②③④待办。
+    const items = within(guide).getAllByRole("listitem");
+    expect(items.map((item) => item.getAttribute("data-state"))).toEqual([
+      "current",
+      "todo",
+      "todo",
+      "todo",
+    ]);
+    // 零部位：画布中央空状态提示在场。
+    expect(screen.getByText("点击「新增部位」后，在角色上点击要拆的部位")).toBeTruthy();
+    // 编号步骤条全程可见：0 部位时当前步是第 2 步（拆件）。
+    const rail = screen.getByRole("navigation", { name: "拆部位步骤" });
+    const railItems = within(rail).getAllByRole("listitem");
+    expect(railItems).toHaveLength(4);
+    expect(railItems[0]?.getAttribute("aria-current")).toBeNull();
+    expect(railItems[1]?.getAttribute("aria-current")).toBe("step");
+  });
+
+  it("marks guide steps 1-2 and rail steps 1-2 done once a part exists", async () => {
+    const user = userEvent.setup();
+    await reachReviewByClickMode(user);
+    await addFirstPart(user);
+    // 引导卡：①②完成态，③当前步，④待办。
+    const guide = screen.getByRole("region", { name: "点击模式这样用" });
+    const items = within(guide).getAllByRole("listitem");
+    expect(items.map((item) => item.getAttribute("data-state"))).toEqual([
+      "done",
+      "done",
+      "current",
+      "todo",
+    ]);
+    // 首个部位创建后画布中央提示消失。
+    expect(screen.queryByText("点击「新增部位」后，在角色上点击要拆的部位")).toBeNull();
+    // 编号步骤条：①②打勾完成，当前步推进到第 3 步（精修部位）。
+    const rail = screen.getByRole("navigation", { name: "拆部位步骤" });
+    const railItems = within(rail).getAllByRole("listitem");
+    expect(railItems[0]?.className).toContain("done");
+    expect(railItems[1]?.className).toContain("done");
+    expect(railItems[2]?.getAttribute("aria-current")).toBe("step");
+  });
+
+  it("folds the guide into a single row and expands it back", async () => {
+    const user = userEvent.setup();
+    await reachReviewByClickMode(user);
+    expect(screen.getByRole("region", { name: "点击模式这样用" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "收起引导" }));
+    // 折叠：四步卡收起为单行「显示引导」。
+    expect(screen.queryByRole("region", { name: "点击模式这样用" })).toBeNull();
+    expect(screen.getByText("还没有部位。用“新增部位”点击图中区域。")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "显示引导" }));
+    // 展开：引导卡与四步文本回来。
+    const guide = screen.getByRole("region", { name: "点击模式这样用" });
+    expect(guide.textContent ?? "").toContain(GUIDE_STEPS[0] ?? "");
+  });
+
+  it("keeps the guide in sync after the degraded state clears (semantic rerun success)", async () => {
+    const user = userEvent.setup();
+    await reachReviewByClickMode(user);
+    // 存 key → 重新拆件 → 同意 → 语义成功：降级清除后引导卡退场（模式不再是点击）。
+    await user.click(firstOf(await screen.findAllByText("配置语义定位")));
+    await user.type(await screen.findByLabelText("API Key"), "sk-test");
+    await user.click(screen.getByRole("button", { name: "保存" }));
+    await user.click(screen.getByRole("button", { name: "重新拆件" }));
+    await screen.findByText("重新拆件并替换当前部位？");
+    await user.click(within(screen.getByRole("dialog")).getByRole("button", { name: "重新拆件" }));
+    await screen.findByText("语义定位会把这张图片发送到你配置的 GLM-4V。");
+    await user.click(screen.getByRole("button", { name: "同意并开始拆件" }));
+    await screen.findByText("识别到 1 个部位。");
+    expect(screen.queryByRole("region", { name: "点击模式这样用" })).toBeNull();
+  });
+});
+
+describe("click-mode guidance i18n (zh/en)", () => {
+  const keys = [
+    "parts.steps.label",
+    "parts.steps.upload",
+    "parts.steps.upload_hint",
+    "parts.steps.split",
+    "parts.steps.split_hint",
+    "parts.steps.refine",
+    "parts.steps.refine_hint",
+    "parts.steps.export",
+    "parts.steps.export_hint",
+    "parts.guide.title",
+    "parts.guide.step1",
+    "parts.guide.step2",
+    "parts.guide.step3",
+    "parts.guide.step4",
+    "parts.guide.done",
+    "parts.guide.collapse",
+    "parts.guide.expand",
+    "parts.canvas.empty_hint",
+  ] as const;
+
+  it("resolves every new guidance key in both locales", () => {
+    for (const key of keys) {
+      for (const locale of ["zh", "en"] as Locale[]) {
+        const text = translate(locale, key);
+        expect(text.length, `${locale} ${key} is empty`).toBeGreaterThan(0);
+        expect(text, `${locale} missing ${key}`).not.toBe(key);
+      }
+    }
   });
 });
