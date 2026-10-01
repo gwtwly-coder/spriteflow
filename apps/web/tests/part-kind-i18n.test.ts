@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
 import { PartKind } from "@spriteflow/segment";
-import { translate } from "../src/i18n/index";
+import { describe, expect, it } from "vitest";
 import type { Locale } from "../src/i18n/index";
+import { translate } from "../src/i18n/index";
 
 // 2026-10-01 walkthrough P0: DeepSeek returned upper-arm-*/shin-* kinds and the
 // kind-badge key was missing from the dictionaries - translate() crashed on
@@ -23,7 +23,9 @@ describe("part kind badge i18n (walkthrough P0 regression)", () => {
 
   it("translate never throws on a missing key (falls back to the key string)", () => {
     for (const locale of locales) {
-      expect(translate(locale, "part.kind.definitely-missing" as never)).toBe("part.kind.definitely-missing");
+      expect(translate(locale, "part.kind.definitely-missing" as never)).toBe(
+        "part.kind.definitely-missing",
+      );
     }
   });
 });
