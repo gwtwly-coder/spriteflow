@@ -16,4 +16,13 @@ export default defineConfig({
   optimizeDeps: {
     exclude: ["onnxruntime-web"],
   },
+  // 2026-10-01 走查破案：workspace 包（pipeline/segment）的 dist 变更会触发整页
+  // reload——而根 lint/typecheck 门禁每次都重建 pipeline dist，导致任何人在跑
+  // 门禁时浏览器会话被随机清空（多次"页面自发重置/状态丢失"的元凶）。排除后
+  // 包重建需要手动刷新生效，行为可预期。
+  server: {
+    watch: {
+      ignored: ["**/packages/*/dist/**"],
+    },
+  },
 });
