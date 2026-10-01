@@ -51,3 +51,11 @@
 - parts.editor.canvas 词条补录 copy-v3 §22；P2 挂账批量清理（见 project-state）
 - 正式 10 次 P50 计时 + 产品主亲手实测（PRD 退出标准）
 - z.ai 预检缺口持续跟踪；生产部署时 CSP connect-src 放开（R2 + BYOK https:）随部署记录
+
+## 7. 高挑精灵（05）无头全管线实证补充（2026-10-01 晚）
+
+- DeepSeek-flash L1：23 部位中文语义命名（含左右解剖学区分 + tiara 配饰），13.7s/次，finish_reason=stop
+- SAM 2.1 逐部位蒙版 + extractPartPixels：23/23 部位独立解码器（PIL）验证逐字节 0 失配
+- 重建对比图：`D:\桌面\elf-parts-preview\preview-source-vs-reconstruction.jpg`（左原图/右 23 部位原位拼回）
+- 如实边界：蒙版边缘块状（SAM 1024 低分辨率上采样）、部位间空隙（契约允许不全覆盖）——产品内加/减区域精修正为此设计
+- 产物：`D:\桌面\elf-parts-preview\`（23 部位 PNG + parts.json + 对比图）
