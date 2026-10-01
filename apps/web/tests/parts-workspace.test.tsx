@@ -5,8 +5,13 @@
 
 import type { PipelineClient } from "@spriteflow/pipeline";
 import type { BitMask, PartAsset, PartExportResult, SegmentationResult } from "@spriteflow/segment";
-import { CharacterErrorCode, PartKind, SegmentationDegradedReason } from "@spriteflow/segment";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+  CharacterErrorCode,
+  CharacterStage,
+  PartKind,
+  SegmentationDegradedReason,
+} from "@spriteflow/segment";
+import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, vi } from "vitest";
 import { App } from "../src/app/App";
@@ -305,6 +310,133 @@ describe("v3 parts workspace", () => {
     expect(
       screen.getByText("当前浏览器不支持 WebGPU，已切换到兼容模式，速度会慢一些。"),
     ).toBeTruthy();
+  });
+
+  // --- 审校器预热窗口（RC 2026-09-30 P1 缺陷 1）：语义路径进入 W3 后
+  // ensureInteractive 在后台初始化本地会话（缓存命中也要 20–35s），期间不得
+  // 无声吞点击、不得假装就绪。夹具用挂起的 prepare 控制就绪时机。 ---
+  async function reachReviewWithPendingPrepare(
+    user: ReturnType<typeof userEvent.setup>,
+  ): Promise<(value: unknown) => void> {
+    let resolvePrepare!: (value: unknown) => void;
+    characterMock.behavior.prepare = () =>
+      new Promise((resolve) => {
+        resolvePrepare = resolve;
+      });
+    render(
+      <PartsWorkspace
+        locale="zh"
+        setLocale={() => {}}
+        onSwitchRequest={() => {}}
+        onDirtyChange={() => {}}
+      />,
+    );
+    await user.click(firstOf(await screen.findAllByText("配置语义定位")));
+    await user.type(await screen.findByLabelText("API Key"), "sk-test");
+    await user.click(screen.getByRole("button", { name: "保存" }));
+    await uploadFile();
+    await screen.findByText("语义定位会把这张图片发送到你配置的 GLM-4V。");
+    await user.click(screen.getByRole("button", { name: "同意并开始拆件" }));
+    // 语义成功 → W3 立即出现；ensureInteractive 的 prepare 仍挂起。
+    await screen.findByText("审校部位");
+    return resolvePrepare;
+  }
+
+  it("shows the warm-up state during background session init: tools disabled with hint, clicks answered, auto-unlock (RC P1-1)", async () => {
+    const user = userEvent.setup();
+    const resolvePrepare = await reachReviewWithPendingPrepare(user);
+    // 工具禁用且带等待提示；预热横幅在场；状态不再假装"就绪"。
+    const addPart = screen.getByRole("button", { name: /新增部位/ });
+    expect((addPart as HTMLButtonElement).disabled).toBe(true);
+    expect(addPart.getAttribute("title")).toBe("正在准备审校器，请稍候…");
+    expect(screen.getByText("正在准备审校器…")).toBeTruthy();
+    expect(screen.getByText("本地模型就绪后即可点击画布新增或加减部位。")).toBeTruthy();
+    expect(screen.getAllByText("正在处理，请稍候。").length).toBeGreaterThan(0);
+    // 预热窗口内 select 点击不被无声吞掉（纯 store 操作，立即可用）。
+    const canvas = screen.getByLabelText("部位画布");
+    const { fireEvent } = await import("@testing-library/react");
+    fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 1, clientY: 1 });
+    fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 1, clientY: 1 });
+    await waitFor(() => expect(usePartsStore.getState().selectedPartId).toBe("part-hair"));
+    // 区域工具未就绪时点击给等待反馈（不调 refine、不留假部位）。
+    //（工具栏此时禁用；区域工具在场是失败卡重试路径的真实形态，经 store 直设模拟。
+    // store 直设须包 act：否则重渲染未提交，点击走的是旧渲染的 select 闭包。）
+    await act(async () => {
+      usePartsStore.getState().setTool("add-part");
+    });
+    fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 2, clientY: 2 });
+    fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 2, clientY: 2 });
+    expect(screen.getByText("正在准备审校器，请稍候…")).toBeTruthy();
+    expect(characterMock.client?.refine).not.toHaveBeenCalled();
+    // 会话就绪：自动解除禁用与横幅，随后点击产生部位。
+    await act(async () => {
+      resolvePrepare({ ok: true, provider: "wasm", cachedModel: true, webgpuFallback: false });
+    });
+    await waitFor(() =>
+      expect((screen.getByRole("button", { name: /新增部位/ }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    );
+    expect(screen.queryByText("正在准备审校器…")).toBeNull();
+    expect(screen.queryByText("本地模型就绪后即可点击画布新增或加减部位。")).toBeNull();
+    await user.click(screen.getByRole("button", { name: /新增部位/ }));
+    fireEvent.pointerDown(canvas, { pointerId: 1, button: 0, clientX: 3, clientY: 3 });
+    fireEvent.pointerUp(canvas, { pointerId: 1, button: 0, clientX: 3, clientY: 3 });
+    await screen.findByText("部位 2");
+    const parts = usePartsStore.getState().parts;
+    expect(parts).toHaveLength(2);
+    expect(parts[1]?.name).toBe("part_000");
+    expect(characterMock.client?.refine).toHaveBeenCalledTimes(1);
+  });
+
+  it("surfaces the existing model failure card when background session init fails, retry recovers (RC P1-1 / AC-V03-D)", async () => {
+    characterMock.behavior.prepare = () => ({
+      ok: false as const,
+      error: {
+        code: CharacterErrorCode.ModelInitializationFailed,
+        messageKey: "character.error.MODEL_INITIALIZATION_FAILED",
+        stage: CharacterStage.ModelInitialize,
+        recoverable: true,
+        recoveryActions: [],
+        details: {},
+      },
+    });
+    const user = userEvent.setup();
+    render(
+      <PartsWorkspace
+        locale="zh"
+        setLocale={() => {}}
+        onSwitchRequest={() => {}}
+        onDirtyChange={() => {}}
+      />,
+    );
+    await user.click(firstOf(await screen.findAllByText("配置语义定位")));
+    await user.type(await screen.findByLabelText("API Key"), "sk-test");
+    await user.click(screen.getByRole("button", { name: "保存" }));
+    await uploadFile();
+    await screen.findByText("语义定位会把这张图片发送到你配置的 GLM-4V。");
+    await user.click(screen.getByRole("button", { name: "同意并开始拆件" }));
+    await screen.findByText("审校部位");
+    // 初始化失败：既有模型失败卡（横幅）在场，预热横幅让位，工具保持禁用。
+    await screen.findByText("本地模型加载失败");
+    expect(screen.queryByText("正在准备审校器…")).toBeNull();
+    expect((screen.getByRole("button", { name: /新增部位/ }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
+    // 重试 → 就绪 → 解锁。
+    characterMock.behavior.prepare = () => ({
+      ok: true as const,
+      provider: "wasm" as const,
+      cachedModel: true,
+      webgpuFallback: false,
+    });
+    await user.click(screen.getByRole("button", { name: "重试加载" }));
+    await waitFor(() =>
+      expect((screen.getByRole("button", { name: /新增部位/ }) as HTMLButtonElement).disabled).toBe(
+        false,
+      ),
+    );
+    expect(screen.queryByText("本地模型加载失败")).toBeNull();
   });
 
   it("surfaces non-humanoid degradation verbatim and lands in click mode", async () => {

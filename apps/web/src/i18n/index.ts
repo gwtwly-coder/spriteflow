@@ -271,6 +271,9 @@ const zh = {
   "parts.editor.add_region_hint": "点击图中区域，把它加入选中部位。",
   "parts.editor.remove_region_hint": "点击部位里多余的区域，把它减掉。",
   "parts.editor.add_part_hint": "点击图中区域，新建一个部位。",
+  // 审校器预热（RC P1：进入 W3 后本地会话初始化 20–35s，须有可视状态而非无声吞点击）。
+  "parts.editor.model_preparing": "本地模型就绪后即可点击画布新增或加减部位。",
+  "parts.editor.model_preparing_wait": "正在准备审校器，请稍候…",
   "part.region_updated": "已更新部位区域。",
   "part.added": "已新增部位。",
   "part.deleted": "已删除部位。",
@@ -640,6 +643,9 @@ Object.assign(en, {
   "parts.editor.add_region_hint": "Click an area to add it to the selected part.",
   "parts.editor.remove_region_hint": "Click an area inside the part to remove it.",
   "parts.editor.add_part_hint": "Click an area to create a new part.",
+  "parts.editor.model_preparing":
+    "Once the local model is ready, you can click the canvas to add or refine parts.",
+  "parts.editor.model_preparing_wait": "Preparing the editor, please wait…",
   "part.region_updated": "Part region updated.",
   "part.added": "Part added.",
   "part.deleted": "Part deleted.",

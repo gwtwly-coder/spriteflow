@@ -482,19 +482,33 @@ export function PartsWorkspace({
       });
       setModelReady(true);
       setModelError(null);
-    } else if (output.error?.code !== "CANCELLED") {
+    } else if (
+      output.error?.code !== "CANCELLED" &&
+      // BUSY = 已有一次 prepare 在跑（如后台预热未完成时用户又触发了重试/换模式）：
+      // 状态由在跑的那次结算，这里不得抢先报模型失败卡。
+      output.error?.code !== "BUSY"
+    ) {
       setModelError(output.error ?? null);
     }
   };
   /** W3 点击增删（V-04）：正/负点经 SamSession.segment 精修（整幅替换蒙版）。 */
   const onCanvasClick = async (point: { x: number; y: number }) => {
-    if (refining || busy !== null || !modelReady || !assetRef) return;
+    if (!assetRef) return;
     const tool = store.tool;
+    // 选中/平移是纯 store 操作，不依赖审校器会话：预热窗口内也必须可用
+    //（RC P1 缺陷 1：进入 W3 后 ensureInteractive 还在跑时点击被无声吞掉）。
     if (tool === "select" || tool === "pan") {
       const hit = partAtPoint(store.parts, point);
       store.selectPart(hit?.id ?? null);
       return;
     }
+    if (!modelReady) {
+      // 区域类工具依赖审校器会话：未就绪时不允许"点了没反应"——给出等待反馈
+      //（工具栏同时保持禁用 + 预热横幅在场）；初始化失败时失败卡已在场，不重复打扰。
+      if (modelError === null) notify(t(locale, "parts.editor.model_preparing_wait"));
+      return;
+    }
+    if (refining || busy !== null) return;
     setRefining(true);
     try {
       const client = character();
@@ -635,7 +649,11 @@ export function PartsWorkspace({
         store.parts.findIndex((part) => part.id === selectedPart.id),
       )
     : "";
-  const busyVisible = busy !== null || refining;
+  // 审校器预热窗口（RC P1 缺陷 1）：进入 W3 后 ensureInteractive 还在初始化本地
+  // 会话（缓存命中也要 20–35s 的 ORT init + 首次编译）。期间必须呈现明确的
+  // "准备中"状态：工具禁用 + 预热横幅 + 状态栏/aria-live 按忙碌播报，就绪后自动解除。
+  const preparing = store.screen === "review" && !modelReady && modelError === null;
+  const busyVisible = busy !== null || refining || preparing;
   return (
     <main className="app-shell parts-shell">
       <header className="topbar">
@@ -726,6 +744,7 @@ export function PartsWorkspace({
           store={store}
           preview={preview}
           busy={busyVisible}
+          preparing={preparing}
           modelReady={modelReady}
           modelError={modelError}
           selectedName={selectedName}
@@ -1095,6 +1114,7 @@ function PartsReview({
   store,
   preview,
   busy,
+  preparing,
   modelReady,
   modelError,
   selectedName,
@@ -1113,6 +1133,7 @@ function PartsReview({
   store: ReturnType<typeof usePartsStore.getState>;
   preview: PixelBuffer | null;
   busy: boolean;
+  preparing: boolean;
   modelReady: boolean;
   modelError: CharacterError | null;
   selectedName: string;
@@ -1152,7 +1173,11 @@ function PartsReview({
       type="button"
       className={store.tool === tool ? "tool active" : "tool"}
       disabled={!modelReady}
-      title={`${t(locale, key)} — ${t(locale, hintKey)}`}
+      title={
+        preparing && !modelReady
+          ? t(locale, "parts.editor.model_preparing_wait")
+          : `${t(locale, key)} — ${t(locale, hintKey)}`
+      }
       onClick={() => store.setTool(tool)}
     >
       {t(locale, key)}
@@ -1248,6 +1273,15 @@ function PartsReview({
                 {t(locale, "model.retry")}
               </button>
             </div>
+          )}
+          {preparing && !modelError && (
+            // 审校器预热横幅（RC P1 缺陷 1）：进入 W3 后本地会话初始化 20–35s，
+            // 期间工具禁用 + 此横幅在场（<output> 隐式 role=status 供读屏播报，
+            // 同 AnimationViewport 先例），就绪后自动消失。
+            <output className="warning-banner">
+              <strong>{t(locale, "parts.detect.finalizing")}</strong>
+              <span>{t(locale, "parts.editor.model_preparing")}</span>
+            </output>
           )}
           {(store.backendWasm || store.wasmFallbackWarning) && (
             // AC-V03-B：回退提示在审校屏持续在场（性能差异，非错误）。
