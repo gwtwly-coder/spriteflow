@@ -326,10 +326,11 @@ const zh = {
   "part.kind.mouth": "嘴",
   "part.kind.neck": "颈部",
   "part.kind.torso": "躯干",
-  "part.kind.upper_arm": "上臂",
   "part.kind.forearm": "前臂",
   "part.kind.hand": "手",
   "part.kind.thigh": "大腿",
+  "part.kind.shin": "小腿",
+  "part.kind.upper": "上臂",
   "part.kind.lower_leg": "小腿",
   "part.kind.foot": "脚",
   "part.kind.accessory": "饰品",
@@ -697,10 +698,11 @@ Object.assign(en, {
   "part.kind.mouth": "Mouth",
   "part.kind.neck": "Neck",
   "part.kind.torso": "Torso",
-  "part.kind.upper_arm": "Upper arm",
   "part.kind.forearm": "Forearm",
   "part.kind.hand": "Hand",
   "part.kind.thigh": "Thigh",
+  "part.kind.shin": "Shin",
+  "part.kind.upper": "Upper arm",
   "part.kind.lower_leg": "Lower leg",
   "part.kind.foot": "Foot",
   "part.kind.accessory": "Accessory",
@@ -731,6 +733,6 @@ export function translate(
   key: CopyKey,
   values: Record<string, string | number> = {},
 ): string {
-  const source = (locale === "zh" ? zh : en)[key];
+  const source = (locale === "zh" ? zh : en)[key] ?? String(key);
   return source.replace(/\{(\w+)\}/g, (_, name: string) => String(values[name] ?? `{${name}}`));
 }
