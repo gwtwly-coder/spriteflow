@@ -1,0 +1,260 @@
+{
+  "sample": "05-tall-elf-woman",
+  "driver": "Node WASM + R2-frozen fp16 artifacts, production dist path (OnnxSamBackend+SamSession), GT-box prompts",
+  "before": [
+    {
+      "part": "head",
+      "visible": true,
+      "predictedIou": 0.692,
+      "maskPx": 11462,
+      "opaquePx": 11044,
+      "boxRecall": 0.282,
+      "partRecall": 0.422
+    },
+    {
+      "part": "hair",
+      "visible": true,
+      "predictedIou": 0.7,
+      "maskPx": 41929,
+      "opaquePx": 40416,
+      "boxRecall": 0.177,
+      "partRecall": 0.266
+    },
+    {
+      "part": "torso",
+      "visible": true,
+      "predictedIou": 0.672,
+      "maskPx": 9990,
+      "opaquePx": 9985,
+      "boxRecall": 0.162,
+      "partRecall": 0.166
+    },
+    {
+      "part": "gown-skirt",
+      "visible": true,
+      "predictedIou": 0.733,
+      "maskPx": 260199,
+      "opaquePx": 259811,
+      "boxRecall": 0.458,
+      "partRecall": 0.662
+    },
+    {
+      "part": "upper-arm-right",
+      "visible": true,
+      "predictedIou": 0.712,
+      "maskPx": 6363,
+      "opaquePx": 6164,
+      "boxRecall": 0.356,
+      "partRecall": 0.568
+    },
+    {
+      "part": "forearm-right",
+      "visible": true,
+      "predictedIou": 0.797,
+      "maskPx": 9815,
+      "opaquePx": 9751,
+      "boxRecall": 0.209,
+      "partRecall": 0.289
+    },
+    {
+      "part": "hand-right",
+      "visible": true,
+      "predictedIou": 0.736,
+      "maskPx": 3992,
+      "opaquePx": 3888,
+      "boxRecall": 0.34,
+      "partRecall": 0.552
+    },
+    {
+      "part": "upper-arm-left",
+      "visible": true,
+      "predictedIou": 0.667,
+      "maskPx": 4521,
+      "opaquePx": 3995,
+      "boxRecall": 0.223,
+      "partRecall": 0.475
+    },
+    {
+      "part": "forearm-left",
+      "visible": true,
+      "predictedIou": 0.536,
+      "maskPx": 10822,
+      "opaquePx": 10546,
+      "boxRecall": 0.296,
+      "partRecall": 0.442
+    },
+    {
+      "part": "hand-left",
+      "visible": true,
+      "predictedIou": 0.646,
+      "maskPx": 4352,
+      "opaquePx": 3857,
+      "boxRecall": 0.396,
+      "partRecall": 0.624
+    },
+    {
+      "part": "thigh-right",
+      "visible": false,
+      "predictedIou": 0.426,
+      "maskPx": 19612,
+      "opaquePx": 19612,
+      "boxRecall": 0.471,
+      "partRecall": 0.473
+    },
+    {
+      "part": "thigh-left",
+      "visible": true,
+      "predictedIou": 0.656,
+      "maskPx": 19619,
+      "opaquePx": 19619,
+      "boxRecall": 0.336,
+      "partRecall": 0.336
+    },
+    {
+      "part": "shin-right",
+      "visible": true,
+      "predictedIou": 0.701,
+      "maskPx": 23117,
+      "opaquePx": 23067,
+      "boxRecall": 0.419,
+      "partRecall": 0.434
+    },
+    {
+      "part": "shin-left",
+      "visible": true,
+      "predictedIou": 0.658,
+      "maskPx": 22968,
+      "opaquePx": 22708,
+      "boxRecall": 0.345,
+      "partRecall": 0.398
+    }
+  ],
+  "after": [
+    {
+      "part": "head",
+      "visible": true,
+      "predictedIou": 0.522,
+      "maskPx": 23997,
+      "opaquePx": 23496,
+      "boxRecall": 0.642,
+      "partRecall": 0.979
+    },
+    {
+      "part": "hair",
+      "visible": true,
+      "predictedIou": 0.359,
+      "maskPx": 147470,
+      "opaquePx": 146289,
+      "boxRecall": 0.64,
+      "partRecall": 0.986
+    },
+    {
+      "part": "torso",
+      "visible": true,
+      "predictedIou": 0.432,
+      "maskPx": 59548,
+      "opaquePx": 59504,
+      "boxRecall": 0.967,
+      "partRecall": 0.992
+    },
+    {
+      "part": "gown-skirt",
+      "visible": true,
+      "predictedIou": 0.574,
+      "maskPx": 394046,
+      "opaquePx": 387552,
+      "boxRecall": 0.695,
+      "partRecall": 0.988
+    },
+    {
+      "part": "upper-arm-right",
+      "visible": true,
+      "predictedIou": 0.569,
+      "maskPx": 9745,
+      "opaquePx": 9557,
+      "boxRecall": 0.554,
+      "partRecall": 0.894
+    },
+    {
+      "part": "forearm-right",
+      "visible": true,
+      "predictedIou": 0.525,
+      "maskPx": 25973,
+      "opaquePx": 25813,
+      "boxRecall": 0.688,
+      "partRecall": 0.945
+    },
+    {
+      "part": "hand-right",
+      "visible": true,
+      "predictedIou": 0.681,
+      "maskPx": 4929,
+      "opaquePx": 4610,
+      "boxRecall": 0.451,
+      "partRecall": 0.706
+    },
+    {
+      "part": "upper-arm-left",
+      "visible": true,
+      "predictedIou": 0.539,
+      "maskPx": 7585,
+      "opaquePx": 7108,
+      "boxRecall": 0.407,
+      "partRecall": 0.924
+    },
+    {
+      "part": "forearm-left",
+      "visible": true,
+      "predictedIou": 0.408,
+      "maskPx": 22189,
+      "opaquePx": 21593,
+      "boxRecall": 0.672,
+      "partRecall": 0.996
+    },
+    {
+      "part": "hand-left",
+      "visible": true,
+      "predictedIou": 0.646,
+      "maskPx": 4827,
+      "opaquePx": 4261,
+      "boxRecall": 0.442,
+      "partRecall": 0.695
+    },
+    {
+      "part": "thigh-right",
+      "visible": false,
+      "predictedIou": 0.336,
+      "maskPx": 35092,
+      "opaquePx": 34959,
+      "boxRecall": 0.869,
+      "partRecall": 0.869
+    },
+    {
+      "part": "thigh-left",
+      "visible": true,
+      "predictedIou": 0.378,
+      "maskPx": 48271,
+      "opaquePx": 48271,
+      "boxRecall": 0.853,
+      "partRecall": 0.853
+    },
+    {
+      "part": "shin-right",
+      "visible": true,
+      "predictedIou": 0.614,
+      "maskPx": 44154,
+      "opaquePx": 44065,
+      "boxRecall": 0.83,
+      "partRecall": 0.859
+    },
+    {
+      "part": "shin-left",
+      "visible": true,
+      "predictedIou": 0.513,
+      "maskPx": 47376,
+      "opaquePx": 47075,
+      "boxRecall": 0.712,
+      "partRecall": 0.826
+    }
+  ]
+}
