@@ -55,6 +55,7 @@
 5. 安排安全证据的针对性独立复核，随 v3 实现补 BYOK、模型完整性、LLM JSON 等实际防护与验证。资源不足保留待验收，不以用户亲自找错替代。
 6. 发布前核对本轮基线、CI、独立验收与部署条件，给出有范围的结论；发布由用户决定。
 
+- **✅ SAM 蒙版碎片化修复完成并复验（2026-10-02，639ee34+885b0c3）**：根因=SAM 四候选取 argmax(自评 iou) 系统性选中子部件碎片（torso 整躯干候选自评仅 0.432 却是正解）。修法=按"与提示框 IoU"择优（p50 排序防膨胀塌排名）+p35 阈值+补洞/闭运算/最大连通域+框内裁剪，全部在 onnxBackend 蒙版解码内、契约零变化。**消融证伪**：框内多正点提示反降覆盖（弃用）；质心迭代中性（弃用）。硬指标（GT 框）：torso 9,985→59,504、hair 40,416→146,289、14 部位最低捕获率 0.17→0.695。**RC 真实 LLM 全链路复验（DeepSeek L1 框）**：torso 4,343→33,694（7.8×）、hair 36,498→154,779（4.2×）——L1 方差下成立。成品：D:\桌面\elf-parts-after-fix\ + D:\桌面\sam-fix-before-after.jpg；14 部位三联图 apps/web/evidence/sam-quality/。211 测试/门禁绿。注意：predictedIou 现报所选候选自评（数值普遍下降但语义更诚实，UI 预期需知）；WebGPU 路径未单独复跑（解码 provider 无关）。
 - **SAM 模型选型：✅ 已裁定（2026-09-30 产品主选 A = fp16 主档）**。落地：契约 **0.2.1-r3**（maxModelBytes 40→80MiB，版本头注记变更依据）；architecture-v3 §6 权重预算行同步（fp32 回退档 128MiB 的会话内存表现待真模型冒烟实测后修订峰值）；研究文档已记裁定。**代码同步待办**：packages/segment/src/defaults.ts 的 DEFAULT_CHARACTER_LIMITS.maxModelBytes 41_943_040→83_886_080 + defaults.test.ts 断言（等 browser 验收代理跑完再动，避免污染其工作树）。**R2 操作卡已交产品主**（桶+上传 4 文件+公共 r2.dev+CORS）；r2.dev 域名返回后替换 manifest 占位 URL 并做真模型冒烟。CSP connect-src 的 R2/BYOK 放开待办已记入 security-review。
 
 - **segment 验收登记的 4 项 P2（不阻断；随 browser 适配增量触碰 llm.ts 时清理）**：①null image/provider 抛未约定 TypeError 而非 CharacterError（llm.ts:119/178，契约 §1"不抛未约定异常"边界）；②取消期间 transport 抛 AbortError 被归为超时且未复查 isCancelled（llm.ts:471-484）；③未闭合开场 fence 也被剥离（llm.ts:320-330，仍需严格 JSON.parse，无实质风险）；④tests tsconfig lib 含 DOM（仅测试编译，src 边界不受影响）。
