@@ -111,6 +111,12 @@ export interface FakeOrtOptions {
   failingProviders?: readonly string[];
   /** Logits grid for the decoder masks output (dims [1,1,gh,gw]). */
   decoderLogits?: readonly number[];
+  /**
+   * Per-candidate logits planes for the decoder masks output (dims
+   * [1,N,gh,gw]). An undefined entry falls back to decoderLogits so a test can
+   * script only the hypotheses it cares about.
+   */
+  candidateLogits?: readonly (readonly number[] | undefined)[];
   decoderGrid?: { width: number; height: number };
   scores?: readonly number[];
   /** Makes the first successful session's run() reject. */
@@ -167,15 +173,25 @@ export function fakeOrt(options: FakeOrtOptions = {}): FakeOrtHandle {
         const grid = options.decoderGrid ?? { width: 4, height: 4 };
         const logits = options.decoderLogits ?? [];
         const baseScores = options.scores ?? [0.9];
-        // Real decoder emits 4 mask hypotheses [1,4,256,256]; the fake repeats
-        // the scripted logits on every plane so argmax always agrees.
+        // Real decoder emits 4 mask hypotheses [1,4,256,256]; candidateLogits
+        // scripts distinct hypotheses per plane, others repeat decoderLogits.
         const count = Math.max(1, baseScores.length);
         const scores = Float32Array.from({ length: count }, (_, index) => baseScores[index] ?? 0);
-        const plane = Float32Array.from(
-          logits.length > 0 ? logits : new Float32Array(grid.width * grid.height),
-        );
-        const masksData = new Float32Array(count * plane.length);
-        for (let index = 0; index < count; index++) masksData.set(plane, index * plane.length);
+        const emptyPlane = () =>
+          Float32Array.from(
+            logits.length > 0 ? logits : new Float32Array(grid.width * grid.height),
+          );
+        const planes: Float32Array[] = [];
+        for (let index = 0; index < count; index++) {
+          const candidate = options.candidateLogits?.[index];
+          planes.push(candidate === undefined ? emptyPlane() : Float32Array.from(candidate));
+        }
+        const masksData = new Float32Array(count * grid.width * grid.height);
+        let planeOffset = 0;
+        for (const plane of planes) {
+          masksData.set(plane, planeOffset);
+          planeOffset += plane.length;
+        }
         return {
           pred_masks: new FakeTensor("float32", masksData, [1, count, grid.height, grid.width]),
           iou_scores: new FakeTensor("float32", scores, [1, count]),

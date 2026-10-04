@@ -266,6 +266,194 @@ describe("OnnxSamBackend embed and infer", () => {
   });
 });
 
+// 2026-10-04 蒙版碎片化修复（真模型消融数据见 apps/web/evidence/sam-quality/）：
+// SAM 解码器每 prompt 出 4 个候选蒙版，其自评 iou_scores 系统性偏向子部件碎片
+// （tall-elf torso 只切出腰带）。新解码管线：候选按与提示框的网格 IoU 择优、
+// 阈值 logit>-0.62（p≈0.35）、补洞+闭运算+保留最大连通域、上采样后裁剪回提示框。
+// 以下测试改前红、改后绿（默认 fake ORT 网格 4×4，资产 8×8，网格单元映射资产 2×2；
+// 形态学用例改用 8×8 网格与资产 1:1 映射，避免 3×3 结构元吞掉整个 4×4 网格）。
+describe("mask decode pipeline: candidate selection and post-processing", () => {
+  const BOX44 = { x: 2, y: 2, width: 4, height: 4 };
+  // 网格布局（4×4，行优先）: 0  1  2  3 / 4  5  6  7 / 8  9 10 11 / 12 13 14 15
+  // 资产像素 (x,y) → 网格 (floor(x/2), floor(y/2))。
+  const grid4 = (value: number) => new Array<number>(16).fill(value);
+  const grid8 = (value: number) => new Array<number>(64).fill(value);
+  const withCells = (base: number[], cells: readonly number[], value: number) =>
+    base.map((original, index) => (cells.includes(index) ? value : original));
+
+  it("selects the candidate with the best prompt-box IoU over the argmax(iou_scores) fragment", async () => {
+    const model = await syntheticModel();
+    const ort = fakeOrt({
+      // 候选0 自评最高但覆盖全图（与框 IoU=0.25）——旧行为选中它；
+      // 候选1 自评最低但恰好覆盖框（IoU=1.0）；候选2 单格；候选3 空。
+      candidateLogits: [
+        grid4(1),
+        withCells(grid4(-1), [5, 6, 9, 10], 1),
+        withCells(grid4(-1), [0], 1),
+        grid4(-1),
+      ],
+      scores: [0.95, 0.3, 0.5, 0.1],
+    });
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    await backend.create(model.encoderManifest, "wasm");
+    await backend.embed(asset(8, 8), model.encoderManifest, context());
+    const result = await backend.infer({ type: "box", box: BOX44, points: [] }, context());
+    expect(result.predictedIou).toBeCloseTo(0.3);
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const insideBox =
+          x >= BOX44.x && x < BOX44.x + BOX44.width && y >= BOX44.y && y < BOX44.y + BOX44.height;
+        expect(getMaskBit(result.mask, x, y)).toBe(insideBox);
+      }
+    }
+  });
+
+  it("clips the upsampled mask to the prompt box in asset coordinates", async () => {
+    const model = await syntheticModel();
+    const ort = fakeOrt({ decoderLogits: grid4(1), scores: [0.9] });
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    await backend.create(model.encoderManifest, "wasm");
+    await backend.embed(asset(8, 8), model.encoderManifest, context());
+    const result = await backend.infer(
+      { type: "box", box: { x: 1, y: 1, width: 4, height: 4 }, points: [] },
+      context(),
+    );
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        const insideBox = x >= 1 && x < 5 && y >= 1 && y < 5;
+        expect(getMaskBit(result.mask, x, y)).toBe(insideBox);
+      }
+    }
+  });
+
+  it("thresholds candidate logits at logit -0.62 (p≈0.35), keeping weak-positive cells", async () => {
+    const model = await syntheticModel();
+    // 8×8 网格 1:1 资产。格 9（=(1,1)，logit -0.3）旧阈值 >0 丢弃、新阈值保留；
+    // 中央 4×4 深负块（行 2-5 × 列 4-7）大于 3×3 结构元，闭运算后仍被排除。
+    const darkBlock: number[] = [];
+    for (let row = 2; row <= 5; row++)
+      for (let col = 4; col <= 7; col++) darkBlock.push(row * 8 + col);
+    const ort = fakeOrt({
+      decoderGrid: { width: 8, height: 8 },
+      decoderLogits: withCells(withCells(grid8(1), [9], -0.3), darkBlock, -5),
+      scores: [0.9],
+    });
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    await backend.create(model.encoderManifest, "wasm");
+    await backend.embed(asset(8, 8), model.encoderManifest, context());
+    const result = await backend.infer(
+      { type: "points", points: [{ point: { x: 1, y: 1 }, label: "positive" }], box: null },
+      context(),
+    );
+    expect(getMaskBit(result.mask, 1, 1)).toBe(true); // 弱正纳入
+    expect(getMaskBit(result.mask, 5, 3)).toBe(false); // 深负大块仍排除
+  });
+
+  it("fills interior holes in the candidate mask before upsampling", async () => {
+    const model = await syntheticModel();
+    // 网格中心 2×2（5,6,9,10）深负：闭环内部按补洞填平。
+    const ort = fakeOrt({
+      decoderLogits: withCells(grid4(1), [5, 6, 9, 10], -5),
+      scores: [0.9],
+    });
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    await backend.create(model.encoderManifest, "wasm");
+    await backend.embed(asset(8, 8), model.encoderManifest, context());
+    const result = await backend.infer(
+      { type: "points", points: [{ point: { x: 0, y: 0 }, label: "positive" }], box: null },
+      context(),
+    );
+    expect(getMaskBit(result.mask, 2, 2)).toBe(true);
+    expect(getMaskBit(result.mask, 5, 5)).toBe(true);
+  });
+
+  it("keeps only the largest 4-connected component of the candidate mask", async () => {
+    const model = await syntheticModel();
+    // 8×8 网格 1:1 资产。孤岛 {(0,0)} 与 3×3 大块（行 3-5 × 列 3-5）相距足够远，
+    // 闭运算不会桥接；小孤岛被过滤。
+    const block: number[] = [];
+    for (let row = 3; row <= 5; row++) for (let col = 3; col <= 5; col++) block.push(row * 8 + col);
+    const ort = fakeOrt({
+      decoderGrid: { width: 8, height: 8 },
+      decoderLogits: withCells(withCells(grid8(-1), [0], 1), block, 1),
+      scores: [0.9],
+    });
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    await backend.create(model.encoderManifest, "wasm");
+    await backend.embed(asset(8, 8), model.encoderManifest, context());
+    const result = await backend.infer(
+      { type: "points", points: [{ point: { x: 4, y: 4 }, label: "positive" }], box: null },
+      context(),
+    );
+    expect(getMaskBit(result.mask, 0, 0)).toBe(false); // 孤岛
+    expect(getMaskBit(result.mask, 4, 4)).toBe(true); // 大块
+    expect(getMaskBit(result.mask, 3, 5)).toBe(true);
+  });
+
+  it("ranks candidates on their p50 masks, not the dilated p35 extent (torso regression)", async () => {
+    const model = await syntheticModel();
+    // 8×8 网格 1:1 资产，box = 左半（列 0-3）。
+    // 候选0（自评 0.95，SAM 偏爱的碎片）：列 4-5 强正、其余弱正 -0.3 —— p50 蒙版在框外
+    // （IoU 0），p35 膨胀成全图（IoU 0.5）。
+    // 候选1（自评 0.40）：列 0-3 强正、其余 -0.3 —— p50 恰好盖框（IoU 1.0），p35 全图（0.5）。
+    // 若排序用 p35 蒙版：两者 0.5 平手 → 自评高者胜（选错碎片，真图 torso 即此回归）；
+    // 排序用 p50：候选1 以 1.0 胜出。断言 predictedIou=0.4 即锁定 p50 排名。
+    const plane = (strong: readonly number[], weakValue: number) => {
+      const cells = new Array<number>(64).fill(weakValue);
+      for (const index of strong) cells[index] = 1;
+      return cells;
+    };
+    const strongCol = (from: number, to: number) => {
+      const out: number[] = [];
+      for (let row = 0; row < 8; row++)
+        for (let col = from; col <= to; col++) out.push(row * 8 + col);
+      return out;
+    };
+    const ort = fakeOrt({
+      decoderGrid: { width: 8, height: 8 },
+      candidateLogits: [
+        plane(strongCol(4, 5), -0.3),
+        plane(strongCol(0, 3), -0.3),
+        new Array<number>(64).fill(-5),
+        new Array<number>(64).fill(-5),
+      ],
+      scores: [0.95, 0.4, 0.1, 0.1],
+    });
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    await backend.create(model.encoderManifest, "wasm");
+    await backend.embed(asset(8, 8), model.encoderManifest, context());
+    const result = await backend.infer(
+      { type: "box", box: { x: 0, y: 0, width: 4, height: 8 }, points: [] },
+      context(),
+    );
+    expect(result.predictedIou).toBeCloseTo(0.4);
+    for (let y = 0; y < 8; y++) {
+      for (let x = 0; x < 8; x++) {
+        expect(getMaskBit(result.mask, x, y)).toBe(x < 4);
+      }
+    }
+  });
+
+  it("falls back to argmax(iou_scores) selection for point-only prompts without a box", async () => {
+    const model = await syntheticModel();
+    // 候选1 单格 (2,2)（网格中央，闭运算不扩边）。
+    const ort = fakeOrt({
+      candidateLogits: [grid4(1), withCells(grid4(-1), [10], 1)],
+      scores: [0.2, 0.8],
+    });
+    const backend = createOnnxSamBackendWithDeps(backendDeps(model, ort));
+    await backend.create(model.encoderManifest, "wasm");
+    await backend.embed(asset(8, 8), model.encoderManifest, context());
+    const result = await backend.infer(
+      { type: "points", points: [{ point: { x: 4, y: 4 }, label: "positive" }], box: null },
+      context(),
+    );
+    expect(result.predictedIou).toBeCloseTo(0.8);
+    expect(getMaskBit(result.mask, 4, 4)).toBe(true); // 网格(2,2) → 资产 [4,6)×[4,6)
+    expect(getMaskBit(result.mask, 0, 0)).toBe(false); // 网格0 未被选中（闭运算不跨 2 格）
+  });
+});
+
 describe("SamSession over the real backend with a fake ORT (webgpu → wasm)", () => {
   it("falls back once, re-embeds on the WASM session and segments", async () => {
     const model = await syntheticModel();
@@ -309,9 +497,11 @@ describe("SamSession over the real backend with a fake ORT (webgpu → wasm)", (
     );
     expect(mask.provider).toBe("wasm");
     expect(mask.predictedIou).toBeCloseTo(0.9);
+    // 网格列 0-1 → 资产列 0-3；box (1,1,4,4) 裁剪后仅列 1-3、行 1-4 置位
+    // （2026-10-04 碎片化修复：上采样蒙版限制在提示框内）。
     for (let y = 0; y < 8; y++) {
       for (let x = 0; x < 8; x++) {
-        expect(getMaskBit(mask.mask, x, y)).toBe(x < 4);
+        expect(getMaskBit(mask.mask, x, y)).toBe(x >= 1 && x < 4 && y >= 1 && y < 5);
       }
     }
     await session.dispose();

@@ -104,6 +104,218 @@ const SAM_MASK_GRID = 256;
 const SAM_DECODER_MASKS_INPUT = "input_masks";
 const SAM_DECODER_HAS_MASK_INPUT = "has_mask_input";
 
+// Mask decode pipeline (2026-10-04 fragmentation fix, measured headless on the
+// real fp16 decoder over the tall-elf golden character): the decoder emits 4
+// mask hypotheses per prompt and its self-reported iou_scores systematically
+// favor sub-part fragments (torso → belt-only at cov 0.16). Selection therefore
+// ranks candidates by grid-space IoU between their confident p50 masks and the
+// prompt box — the geometric agreement we actually care about — with
+// argmax(iou_scores) kept as the fallback for point-only prompts. Ranking must
+// use p50, not the looser mask threshold: at p35 every hypothesis dilates past
+// the box, the ranking collapses toward ties and the self-score tie-break
+// re-selects the fragment (measured torso regression 59.5k→45.5k px). The
+// winning plane is then thresholded at p≈0.35 (logit −0.62, picked by sweep:
+// recall gains level off below), hole-filled, closed with a 3×3 structuring
+// element (out-of-bounds counts as foreground so border-touching parts like
+// hair are not eroded), reduced to its largest 4-connected component, then
+// upsampled and clipped to the prompt box so a part mask can never bleed
+// across neighboring part boxes. Evidence: apps/web/evidence/sam-quality/.
+const SAM_MASK_LOGIT_THRESHOLD = -0.62;
+const SAM_SELECT_LOGIT_THRESHOLD = 0;
+const SAM_SELECT_TIE_EPSILON = 1e-9;
+
+interface GridRect {
+  x0: number;
+  y0: number;
+  x1: number;
+  y1: number;
+}
+
+/** Maps an asset-space prompt box onto the decoder logits grid (inclusive). */
+function gridRectForBox(
+  box: Rect,
+  gridWidth: number,
+  gridHeight: number,
+  assetWidth: number,
+  assetHeight: number,
+): GridRect {
+  const clamp = (value: number, max: number) => Math.min(max - 1, Math.max(0, value));
+  return {
+    x0: clamp(Math.floor((box.x * gridWidth) / assetWidth), gridWidth),
+    y0: clamp(Math.floor((box.y * gridHeight) / assetHeight), gridHeight),
+    x1: clamp(Math.ceil(((box.x + box.width) * gridWidth) / assetWidth) - 1, gridWidth),
+    y1: clamp(Math.ceil(((box.y + box.height) * gridHeight) / assetHeight) - 1, gridHeight),
+  };
+}
+
+/** Grid-space IoU between one thresholded candidate plane and the prompt box. */
+function candidateBoxIoU(cells: Uint8Array, rect: GridRect, gridWidth: number): number {
+  let inter = 0;
+  let area = 0;
+  for (let y = 0; y < cells.length / gridWidth; y++) {
+    const row = y * gridWidth;
+    for (let x = 0; x < gridWidth; x++) {
+      if (cells[row + x] === 0) continue;
+      area += 1;
+      if (x >= rect.x0 && x <= rect.x1 && y >= rect.y0 && y <= rect.y1) inter += 1;
+    }
+  }
+  const boxArea = Math.max(1, (rect.x1 - rect.x0 + 1) * (rect.y1 - rect.y0 + 1));
+  const union = area + boxArea - inter;
+  return union > 0 ? inter / union : 0;
+}
+
+/** Thresholds one candidate plane onto a 0/1 grid. */
+function thresholdPlane(
+  data: Float32Array,
+  candidate: number,
+  planeSize: number,
+  threshold: number,
+): Uint8Array {
+  const cells = new Uint8Array(planeSize);
+  const offset = candidate * planeSize;
+  for (let cell = 0; cell < planeSize; cell++) {
+    cells[cell] = (data[offset + cell] ?? 0) > threshold ? 1 : 0;
+  }
+  return cells;
+}
+
+/** Dilates by a 3×3 square structuring element. */
+function dilateGrid(cells: Uint8Array, gridWidth: number, gridHeight: number): Uint8Array {
+  const out = new Uint8Array(cells.length);
+  for (let y = 0; y < gridHeight; y++) {
+    for (let x = 0; x < gridWidth; x++) {
+      if (cells[y * gridWidth + x] === 0) continue;
+      for (let dy = -1; dy <= 1; dy++) {
+        const ny = y + dy;
+        if (ny < 0 || ny >= gridHeight) continue;
+        for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx;
+          if (nx >= 0 && nx < gridWidth) out[ny * gridWidth + nx] = 1;
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Erodes by a 3×3 square structuring element with out-of-bounds treated as
+ * foreground: closing must bridge interior gaps without trimming masks that
+ * legitimately touch the grid border (top-of-image hair).
+ */
+function erodeGrid(cells: Uint8Array, gridWidth: number, gridHeight: number): Uint8Array {
+  const out = new Uint8Array(cells.length);
+  for (let y = 0; y < gridHeight; y++) {
+    for (let x = 0; x < gridWidth; x++) {
+      let keep = 1;
+      for (let dy = -1; dy <= 1 && keep === 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const ny = y + dy;
+          const nx = x + dx;
+          if (ny < 0 || ny >= gridHeight || nx < 0 || nx >= gridWidth) continue;
+          if (cells[ny * gridWidth + nx] === 0) {
+            keep = 0;
+            break;
+          }
+        }
+      }
+      out[y * gridWidth + x] = keep;
+    }
+  }
+  return out;
+}
+
+/** Fills enclosed zero regions (holes) by flooding background from the border. */
+function fillGridHoles(cells: Uint8Array, gridWidth: number, gridHeight: number): void {
+  const seen = new Uint8Array(cells.length);
+  const queue: number[] = [];
+  const visit = (x: number, y: number) => {
+    if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) return;
+    const index = y * gridWidth + x;
+    if (seen[index] === 1 || cells[index] === 1) return;
+    seen[index] = 1;
+    queue.push(index);
+  };
+  for (let x = 0; x < gridWidth; x++) {
+    visit(x, 0);
+    visit(x, gridHeight - 1);
+  }
+  for (let y = 0; y < gridHeight; y++) {
+    visit(0, y);
+    visit(gridWidth - 1, y);
+  }
+  for (let cursor = 0; cursor < queue.length; cursor++) {
+    const index = queue[cursor] ?? 0;
+    const x = index % gridWidth;
+    const y = Math.floor(index / gridWidth);
+    visit(x - 1, y);
+    visit(x + 1, y);
+    visit(x, y - 1);
+    visit(x, y + 1);
+  }
+  for (let index = 0; index < cells.length; index++) {
+    if (cells[index] === 0 && seen[index] === 0) cells[index] = 1;
+  }
+}
+
+/** Zeroes every cell outside the largest 4-connected component (in place copy). */
+function keepLargestComponent(
+  cells: Uint8Array,
+  gridWidth: number,
+  gridHeight: number,
+): Uint8Array {
+  const labels = new Int32Array(cells.length).fill(-1);
+  let bestSize = 0;
+  let bestLabel = -1;
+  let nextLabel = 0;
+  const stack: number[] = [];
+  for (let start = 0; start < cells.length; start++) {
+    if (cells[start] === 0 || labels[start] !== -1) continue;
+    let size = 0;
+    const label = nextLabel;
+    nextLabel += 1;
+    labels[start] = label;
+    stack.push(start);
+    while (stack.length > 0) {
+      const index = stack.pop() ?? 0;
+      size += 1;
+      const x = index % gridWidth;
+      const y = Math.floor(index / gridWidth);
+      if (x > 0 && cells[index - 1] === 1 && labels[index - 1] === -1) {
+        labels[index - 1] = label;
+        stack.push(index - 1);
+      }
+      if (x < gridWidth - 1 && cells[index + 1] === 1 && labels[index + 1] === -1) {
+        labels[index + 1] = label;
+        stack.push(index + 1);
+      }
+      if (y > 0 && cells[index - gridWidth] === 1 && labels[index - gridWidth] === -1) {
+        labels[index - gridWidth] = label;
+        stack.push(index - gridWidth);
+      }
+      if (
+        y < gridHeight - 1 &&
+        cells[index + gridWidth] === 1 &&
+        labels[index + gridWidth] === -1
+      ) {
+        labels[index + gridWidth] = label;
+        stack.push(index + gridWidth);
+      }
+    }
+    if (size > bestSize) {
+      bestSize = size;
+      bestLabel = label;
+    }
+  }
+  if (bestLabel === -1) return cells;
+  const out = new Uint8Array(cells.length);
+  for (let index = 0; index < cells.length; index++) {
+    out[index] = labels[index] === bestLabel ? 1 : 0;
+  }
+  return out;
+}
+
 function inferenceError(stage: Stage, details?: CharacterError["details"]): SamModelLoadError {
   return new SamModelLoadError(characterError(Code.InferenceUnavailable, stage, { details }));
 }
@@ -325,17 +537,98 @@ export class OnnxSamBackend implements SamInferenceBackend {
     if (masks === undefined || scores === undefined || !(scores.data instanceof Float32Array)) {
       throw inferenceError(Stage.PromptInference, { modelId: decoder.manifest.modelId });
     }
-    let bestIndex = 0;
-    for (let index = 1; index < scores.data.length; index++) {
-      if ((scores.data[index] ?? 0) > (scores.data[bestIndex] ?? 0)) bestIndex = index;
-    }
-    const predictedIou = scores.data[bestIndex] ?? 0;
-    const mask = this.maskFromLogits(masks, bestIndex, embedding.assetWidth, embedding.assetHeight);
+    // A points prompt may carry an optional accompanying box; both prompt
+    // discriminants expose `.box` and clipping needs the raw rect (or null).
+    const promptBox: Rect | null = prompt.type === "box" ? prompt.box : prompt.box;
+    const decoded = this.decodeMask(
+      masks,
+      scores.data,
+      promptBox,
+      embedding.assetWidth,
+      embedding.assetHeight,
+    );
     return {
-      mask,
+      mask: decoded.mask,
       sourceRect: { x: 0, y: 0, width: embedding.assetWidth, height: embedding.assetHeight },
-      predictedIou,
+      predictedIou: decoded.predictedIou,
     };
+  }
+
+  /**
+   * Candidate selection + post-processing (see SAM_MASK_LOGIT_THRESHOLD block
+   * comment): rank the decoder's 4 hypotheses by prompt-box IoU when a box is
+   * available (argmax(iou_scores) otherwise), then threshold/fill/close/keep
+   * the winning plane on the logits grid and upsample with an exact asset-space
+   * clip to the prompt box.
+   */
+  private decodeMask(
+    masks: OrtTensorLike,
+    scores: Float32Array,
+    promptBox: Rect | null,
+    assetWidth: number,
+    assetHeight: number,
+  ): { mask: ReturnType<typeof createBitMask>; predictedIou: number } {
+    const dims = masks.dims;
+    const gridHeight = dims.length >= 2 ? (dims[dims.length - 2] ?? 1) : 1;
+    const gridWidth = dims.length >= 1 ? (dims[dims.length - 1] ?? 1) : 1;
+    const planeSize = gridHeight * gridWidth;
+    const candidateCount =
+      dims.length === 4 && Number.isInteger(dims[1]) && (dims[1] ?? 1) > 1
+        ? (dims[1] as number)
+        : 1;
+    const mask = createBitMask(assetWidth, assetHeight);
+    if (!(masks.data instanceof Float32Array)) {
+      return { mask, predictedIou: 0 };
+    }
+    const logits = masks.data;
+
+    let selected = 0;
+    let bestScore = scores[0] ?? 0;
+    for (let index = 1; index < candidateCount && index < scores.length; index++) {
+      if ((scores[index] ?? 0) > bestScore) {
+        bestScore = scores[index] ?? 0;
+        selected = index;
+      }
+    }
+    if (promptBox !== null && candidateCount > 1) {
+      const rect = gridRectForBox(promptBox, gridWidth, gridHeight, assetWidth, assetHeight);
+      let bestIoU = -1;
+      for (let index = 0; index < candidateCount; index++) {
+        const iou = candidateBoxIoU(
+          thresholdPlane(logits, index, planeSize, SAM_SELECT_LOGIT_THRESHOLD),
+          rect,
+          gridWidth,
+        );
+        // Strictly better wins; an exact tie prefers the higher self-score
+        // (stable and deterministic across the 4-hypothesis decoder output).
+        const better =
+          iou > bestIoU + SAM_SELECT_TIE_EPSILON ||
+          (Math.abs(iou - bestIoU) <= SAM_SELECT_TIE_EPSILON &&
+            (scores[index] ?? 0) > (scores[selected] ?? 0));
+        if (better) {
+          bestIoU = iou;
+          selected = index;
+        }
+      }
+    }
+
+    let cells = thresholdPlane(logits, selected, planeSize, SAM_MASK_LOGIT_THRESHOLD);
+    fillGridHoles(cells, gridWidth, gridHeight);
+    cells = erodeGrid(dilateGrid(cells, gridWidth, gridHeight), gridWidth, gridHeight);
+    cells = keepLargestComponent(cells, gridWidth, gridHeight);
+
+    for (let y = 0; y < assetHeight; y++) {
+      if (promptBox !== null && (y < promptBox.y || y >= promptBox.y + promptBox.height)) continue;
+      const gridY = Math.min(gridHeight - 1, Math.floor((y * gridHeight) / assetHeight));
+      for (let x = 0; x < assetWidth; x++) {
+        if (promptBox !== null && (x < promptBox.x || x >= promptBox.x + promptBox.width)) {
+          continue;
+        }
+        const gridX = Math.min(gridWidth - 1, Math.floor((x * gridWidth) / assetWidth));
+        if (cells[gridY * gridWidth + gridX] === 1) setMaskBit(mask, x, y, true);
+      }
+    }
+    return { mask, predictedIou: scores[selected] ?? 0 };
   }
 
   private async buildPromptFeeds(
@@ -414,32 +707,6 @@ export class OnnxSamBackend implements SamInferenceBackend {
     );
     feeds[SAM_DECODER_HAS_MASK_INPUT] = new makeTensor("float32", new Float32Array([0]), [1]);
     return feeds;
-  }
-
-  private maskFromLogits(
-    masks: OrtTensorLike,
-    bestIndex: number,
-    assetWidth: number,
-    assetHeight: number,
-  ): ReturnType<typeof createBitMask> {
-    const dims = masks.dims;
-    const gridHeight = dims.length >= 2 ? (dims[dims.length - 2] ?? 1) : 1;
-    const gridWidth = dims.length >= 1 ? (dims[dims.length - 1] ?? 1) : 1;
-    const planeSize = gridHeight * gridWidth;
-    const data = masks.data;
-    const planeOffset =
-      dims.length === 4 && (dims[1] ?? 1) > 1 && bestIndex > 0 ? bestIndex * planeSize : 0;
-    const mask = createBitMask(assetWidth, assetHeight);
-    if (!(data instanceof Float32Array)) return mask;
-    for (let y = 0; y < assetHeight; y++) {
-      const gridY = Math.min(gridHeight - 1, Math.floor((y * gridHeight) / assetHeight));
-      for (let x = 0; x < assetWidth; x++) {
-        const gridX = Math.min(gridWidth - 1, Math.floor((x * gridWidth) / assetWidth));
-        const logit = data[planeOffset + gridY * gridWidth + gridX];
-        if (logit !== undefined && logit > 0) setMaskBit(mask, x, y, true);
-      }
-    }
-    return mask;
   }
 
   async dispose(): Promise<void> {
